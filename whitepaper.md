@@ -460,7 +460,7 @@ The NFT-based membership system proposed in this white paper represents more tha
 3. Establish a permanent, verifiable record of club activities and decisions
 4. Build a foundation for ongoing innovation in club operations
 
-While the technical implementation requires initial investment in development and member education, the long-term benefits extend beyond operational efficiency to create genuine educational value. Members will graduate with practical experience in blockchain applications, governance systems, and community building—skills that are increasingly valued in the expanding web3 ecosystem.
+While the technical implementation requires initial investment in development and member education, the long-term benefits extend beyond operational efficiency to create genuine educational value. Members will graduate with practical experience in blockchain applications, governance systems, and community building, all skills that are increasingly valued in the expanding web3 ecosystem.
 
 This system is not just a club tool, but a replicable model for decentralized student governance. We envision future iterations supporting inter-club DAOs, research funding mechanisms, and even university-wide governance experiments. It is both an infrastructure and an invitation for other organizations to explore decentralization hands-on.
 

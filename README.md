@@ -28,17 +28,19 @@ This repository contains the MVP implementation of an on-chain membership system
 - `.env.example` and repo prepared for collaboration
 
 For full current status, see:  
-[PROJECT_STATUS.md](./PROJECT_STATUS.md)
+[project-status-refined.md](./project-status-refined.md)
+
 
 ---
 
 ## Documentation
 
-- [whitepaper/membership-nft-whitepaper.md](./whitepaper/membership-nft-whitepaper.md)  
+- [membership-nft-whitepaper.md](./whitepaper.md)  
   Covers the full system design, roadmap, governance strategy, treasury setup, and security considerations.
 
-- [OPTIONS.md](./OPTIONS.md)  
+- [OPTIONS.md](./options.md)  
   Outlines all possible paths forward: chains, token standards, governance tools, and tradeoffs.
+
 
 ---
 
