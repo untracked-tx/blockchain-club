@@ -1,0 +1,19 @@
+{
+  "name": "Vice President",
+  "description": "Assists the President in club leadership and decision-making.",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/vp.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Officer"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

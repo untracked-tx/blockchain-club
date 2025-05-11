@@ -1,0 +1,19 @@
+{
+  "name": "Historical Glitch",
+  "description": "For founding cohort or early backers",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/hist_glitch.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Founder Series"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

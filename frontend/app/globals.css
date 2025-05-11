@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-md hover:shadow-primary/10 hover:-translate-y-1;
+}
+
+/* RainbowKit Custom Styles */
+:root {
+  --rk-colors-accentColor: hsl(var(--primary));
+  --rk-colors-accentColorForeground: hsl(var(--primary-foreground));
+  --rk-colors-actionButtonBorder: hsl(var(--border));
+  --rk-colors-actionButtonBorderMobile: hsl(var(--border));
+  --rk-colors-actionButtonSecondaryBackground: hsl(var(--secondary));
+  --rk-colors-connectButtonBackground: hsl(var(--background));
+  --rk-colors-connectButtonBackgroundError: hsl(var(--destructive));
+  --rk-colors-connectButtonInnerBackground: hsl(var(--secondary));
+  --rk-colors-connectButtonText: hsl(var(--foreground));
+  --rk-colors-connectButtonTextError: hsl(var(--destructive-foreground));
+  --rk-colors-connectionIndicator: hsl(var(--primary));
+  --rk-colors-error: hsl(var(--destructive));
+  --rk-colors-generalBorder: hsl(var(--border));
+  --rk-colors-generalBorderDim: hsl(var(--border));
+  --rk-colors-menuItemBackground: hsl(var(--secondary));
+  --rk-colors-modalBackdrop: rgba(0, 0, 0, 0.5);
+  --rk-colors-modalBackground: hsl(var(--background));
+  --rk-colors-modalBorder: hsl(var(--border));
+  --rk-colors-modalText: hsl(var(--foreground));
+  --rk-colors-modalTextDim: hsl(var(--muted-foreground));
+  --rk-colors-modalTextSecondary: hsl(var(--muted-foreground));
+  --rk-radii-actionButton: var(--radius);
+  --rk-radii-connectButton: var(--radius);
+  --rk-radii-menuButton: var(--radius);
+  --rk-radii-modal: var(--radius);
+  --rk-fonts-body: system-ui, sans-serif;
+}

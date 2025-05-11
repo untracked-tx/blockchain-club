@@ -1,0 +1,9 @@
+{
+    "name": "The Graduate #2",
+    "description": "Graduate series token for Blockchain Club",
+    "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/graduate.png",
+    "attributes": [
+      { "trait_type": "Role", "value": "The Graduate" },
+      { "trait_type": "Edition", "value": "Graduate Series" }
+    ]
+}

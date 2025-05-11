@@ -1,0 +1,19 @@
+{
+  "name": "Quad",
+  "description": "Attended a speaker event",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/quad.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Observer"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

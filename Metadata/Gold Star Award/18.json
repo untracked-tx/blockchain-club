@@ -1,0 +1,19 @@
+{
+  "name": "Gold Star",
+  "description": "For special recognition or contribution",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/gold_star.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Gold Star Award"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

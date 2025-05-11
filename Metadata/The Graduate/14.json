@@ -1,0 +1,19 @@
+{
+  "name": "The Graduate",
+  "description": "For graduating or inactive members",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/the_graduate.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "The Graduate"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

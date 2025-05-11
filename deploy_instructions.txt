@@ -1,0 +1,75 @@
+Summary
+Smart Contract: BlockchainClubMembership.sol is now fully optimized, EVM-deployable, and follows best practices (role-based access, pausing, soulbound, voting, whitelisting, etc.).
+Test Suite: membership_test_modified.js covers all critical behaviors and passes 100% of tests.
+Dependencies: All dependency conflicts are resolved. The project uses Hardhat v2.20+, Ethers v6, and the latest OpenZeppelin and Hardhat plugins.
+Deployment: The contract is ready for deployment to Polygon Amoy or any EVM-compatible network.
+Frontend: The frontend directory is set up for integration with the deployed contract.
+
+Deployment Instructions (Windows PowerShell)
+
+1. Set Up Environment Variables
+Create a .env file in your project root with:
+```
+POLYGONSCAN_API_KEY=RZ4XDWWJSDR2U8DF3SHWF5WC5BDVDZ4UZ5
+AMOY_RPC_URL=https://rpc-amoy.polygon.technology
+PRIVATE_KEY=<your_private_key>
+```
+Replace values as needed.
+
+2. Install Dependencies
+Run the following command to install all required dependencies:
+```
+npm install
+```
+
+3. Compile the Contract
+Compile the smart contracts to generate artifacts:
+```
+npx hardhat compile
+```
+
+4. Deploy to Polygon Amoy
+Deploy the contract using the reset-deploy.js script:
+```
+npx hardhat run scripts/reset-deploy.js --network amoy
+```
+The script will print the deployed proxy and implementation addresses.
+
+5. Verify Deployment
+Verify the contract on Amoy Polygonscan:
+```
+npx hardhat run scripts/verify-contract.js --network amoy
+```
+Alternatively, use:
+```
+npx hardhat verify --network amoy <implementation_address>
+```
+
+6. Run the Test Suite
+Run the test suite to ensure all tests pass:
+```
+npx hardhat test
+```
+
+7. Integrate with Frontend
+Update your frontend configuration with the deployed contract address and ABI:
+- Update `frontend/lib/constants.ts` with the new `CONTRACT_ADDRESS` and `ABI`.
+- Test all frontend interactions to ensure compatibility.
+
+8. Run Docker Tasks
+To build and run the project using Docker, follow these steps:
+
+- **Build the Docker Image**:
+  ```
+  npx hardhat run docker-build
+  ```
+
+- **Run the Docker Container in Release Mode**:
+  ```
+  npx hardhat run docker-run: release
+  ```
+
+- **Run the Docker Container in Debug Mode**:
+  ```
+  npx hardhat run docker-run: debug
+  ```

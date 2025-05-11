@@ -1,6 +1,7 @@
 require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
-require("@nomicfoundation/hardhat-verify");
+require("@openzeppelin/hardhat-upgrades");
+require("solidity-coverage");
 
 module.exports = {
   solidity: {
@@ -8,19 +9,29 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 100,
       },
     },
   },
   networks: {
     amoy: {
-      url: process.env.AMOY_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      url: "https://rpc-amoy.polygon.technology",
+      accounts: [process.env.PRIVATE_KEY],
     },
   },
   etherscan: {
     apiKey: {
-      polygonAmoy: process.env.POLYGONSCAN_API_KEY || "",
+      amoy: process.env.POLYGONSCAN_API_KEY,
     },
+    customChains: [
+      {
+        network: "amoy",
+        chainId: 80002,
+        urls: {
+          apiURL: "https://api-amoy.polygonscan.com/api",
+          browserURL: "https://amoy.polygonscan.com",
+        },
+      },
+    ],
   },
 };

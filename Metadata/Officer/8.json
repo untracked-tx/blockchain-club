@@ -1,0 +1,19 @@
+{
+  "name": "President",
+  "description": "Club leadership with maximum voting power",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/pres.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Officer"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

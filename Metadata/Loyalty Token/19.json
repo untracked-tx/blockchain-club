@@ -1,0 +1,19 @@
+{
+  "name": "Long Run",
+  "description": "For milestones like 1-year membership",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/longrun.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Loyalty Token"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

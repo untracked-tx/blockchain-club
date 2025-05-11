@@ -1,0 +1,19 @@
+{
+  "name": "Digital Art",
+  "description": "Collectible + cultural fundraiser piece",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/digi_art.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Art Drop"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

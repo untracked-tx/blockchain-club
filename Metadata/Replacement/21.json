@@ -1,0 +1,19 @@
+{
+  "name": "The Fool",
+  "description": "Burn-and-replace when access is lost",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/the_fool.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Replacement"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

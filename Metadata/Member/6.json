@@ -1,0 +1,19 @@
+{
+  "name": "Let's Get This Party Started",
+  "description": "Standard 2025 membership with voting rights",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/letsgetthispartystarted2k25.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Member"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Rhodes Scholar",
+  "description": "Awarded for merit or financial aid",
+  "image": "ipfs://bafybeibemcwls5jmwjaoswwsfrsx7hglqrqcjjw5ljuycl7zvqjwthutl4/rhodes_scholar.png",
+  "attributes": [
+    {
+      "trait_type": "Role",
+      "value": "Scholarship"
+    },
+    {
+      "trait_type": "Gallery",
+      "value": "Blockchain Club"
+    },
+    {
+      "trait_type": "Created",
+      "value": "2025-05-09"
+    }
+  ]
+}

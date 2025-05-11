@@ -1,0 +1,56 @@
+# 🎯 Optimal Token Design Overview
+
+This proposal outlines our club’s approach to designing a thoughtful and flexible token system. It’s split into three interconnected tracks — **Governance**, **Infrastructure**, and **Culture/Experience** — to clearly show how everything works together to support club operations, community engagement, and smooth user onboarding.
+
+---
+
+## 🧭 Governance Track
+
+This track defines how different roles participate in decision-making. Voting power and responsibilities scale with involvement, but always preserve transparency and fairness.
+
+| **Role**     | **NFT Type**       | **Voting Power** | **Transferable?** | **Example Use Case**                  |
+|--------------|--------------------|------------------|-------------------|----------------------------------------|
+| Observer     | POAP / Event Token | 0                | ✅ Yes            | Attended a workshop or speaker event   |
+| Member       | Voting NFT         | 1 vote           | ❌ Soulbound      | Paid dues, gets to vote in proposals   |
+| Officer      | Admin NFT          | 3–5 votes        | ❌ Soulbound      | Can promote members and start votes    |
+
+- Officers are promoted by existing officers and hold enhanced responsibilities (and voting power).
+- Members are the backbone of governance, with voting rights tied to club engagement and dues.
+
+---
+
+## 🧱 Infrastructure Track
+
+This is the tech stack that powers everything behind the scenes — from contract deployment to treasury security.
+
+| **Feature**        | **Tooling / Stack**                     | **Status**   |
+|--------------------|------------------------------------------|--------------|
+| NFT Contract       | ERC-721 + Metadata & Edition Logic       | ✅ Deployed   |
+| Treasury           | Gnosis Safe (3-of-5 multisig)            | ✅ Set        |
+| Governance         | Snapshot with weighted voting planned    | 🔜 Planning  |
+| ETH Routing        | Ops + Scholarship wallet routing setup   | ✅ Coded      |
+
+- **Deployed on Polygon Amoy testnet** for now, with mainnet readiness in place.
+- Snapshot governance will reflect roles and weights defined by token ownership.
+
+---
+
+## 🎨 Culture / Experience Track
+
+We want the tokens to feel alive — reflecting involvement, creativity, and identity. These NFTs aren’t just functional — they’re expressive, symbolic, and designed to grow with the community.
+
+| **Token Type**      | **Minted By**   | **Cost (ETH)** | **Purpose**                                  |
+|---------------------|------------------|----------------|-----------------------------------------------|
+| Observer POAP       | Officer          | Free           | Attestation of attendance (talks, workshops)  |
+| Member Pass         | Self-minted      | 0.01           | Grants access + voting rights in governance   |
+| Officer Badge       | Officers Only    | 0 – 0.05       | Internal badge for leadership + admin actions |
+| Alumni / Collector  | Anyone           | 0.005+         | Supporter tokens — no voting, but commemorative |
+| Art Drop            | Club Wallet      | 0.03+          | Cultural drops — limited run, collectible      |
+
+- Art Drops help fundraise and create fun, community-driven assets.
+- Alumni tokens offer a way for graduates and non-voting supporters to stay connected.
+
+---
+
+Together, these three tracks create a robust system that blends governance, transparency, community, and fun — all on-chain.
+
