@@ -1,4 +1,4 @@
-import contractJson from "../../artifacts/contracts/BlockchainClubMembership.sol/BlockchainClubMembership.json";
+import contractJson from "./BlockchainClubMembership.json";
 
 // Export the ABI for use in the frontend
 export const CONTRACT_ABI = contractJson.abi;
