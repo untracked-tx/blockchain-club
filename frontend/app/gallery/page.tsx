@@ -9,7 +9,7 @@ import NFTDetailModal from "@/components/nft-detail-modal"
 import { useWriteContract } from "wagmi";
 // Use the central contracts object for contract address/ABI
 import { contracts } from "@/lib/contracts";
-import { parseEther, stringToBytes, fromHex, encodeBytes32String, toBytes32, pad, toHex } from "viem";
+import { parseEther, stringToBytes, fromHex, pad, toHex } from "viem";
 import { polygon } from "wagmi/chains";
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast";
@@ -637,7 +637,7 @@ export default function GalleryPage() {
         category={selectedCategory}
       />
     </div>
-  )
+  );
 }
 
 // TODO: Add filter/sort controls for role, edition, mint date
