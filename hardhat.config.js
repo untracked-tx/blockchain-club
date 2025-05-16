@@ -2,6 +2,8 @@ require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("solidity-coverage");
+require("ts-node/register");
+
 
 module.exports = {
   solidity: {
@@ -9,7 +11,7 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 100,
+        runs: 200,
       },
     },
   },

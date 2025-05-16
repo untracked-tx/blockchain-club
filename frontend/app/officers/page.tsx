@@ -26,6 +26,11 @@ import {
   BarChart3,
   Clock,
 } from "lucide-react"
+import { useContract } from "../../hooks/useContract"
+import { safeRoleBytes } from "../../lib/utils"
+import { useToast } from "../../hooks/use-toast"
+import { ethers } from "ethers"
+import ConnectWalletButton from "../../components/connect-wallet-button"
 
 // Mock whitelist data
 const mockWhitelistRequests = [
@@ -111,6 +116,103 @@ export default function OfficersPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [targetAddress, setTargetAddress] = useState("")
+  const { toast } = useToast();
+  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
+  const contract = useContract(provider);
+
+  // Wallet connect logic (RainbowKit)
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      setProvider(new ethers.BrowserProvider((window as any).ethereum));
+    }
+  }, []);
+
+  // Officer check (on-chain)
+  useEffect(() => {
+    const checkOfficer = async () => {
+      if (!contract || !provider) return;
+      try {
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        const isOfficer = await contract.hasRole(safeRoleBytes("OFFICER_ROLE"), address);
+        setIsOfficer(isOfficer);
+      } catch (e) {
+        setIsOfficer(false);
+      }
+    };
+    checkOfficer();
+  }, [contract, provider]);
+
+  // --- Whitelist Management State ---
+  const [whitelistAddress, setWhitelistAddress] = useState("");
+  const [whitelistStatus, setWhitelistStatus] = useState<null | boolean>(null);
+  const [whitelistLoading, setWhitelistLoading] = useState(false);
+
+  // --- Role Management State ---
+  const [roleAddress, setRoleAddress] = useState("");
+  const [roleName, setRoleName] = useState("");
+  const [roleStatus, setRoleStatus] = useState<null | boolean>(null);
+  const [roleLoading, setRoleLoading] = useState(false);
+
+  // Whitelist check/add/remove handlers
+  const handleCheckWhitelist = async () => {
+    setWhitelistLoading(true);
+    setWhitelistStatus(null);
+    try {
+      if (!contract) throw new Error("Contract not loaded");
+      const status = await contract.whitelist(whitelistAddress);
+      setWhitelistStatus(status);
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to check whitelist status." });
+    } finally {
+      setWhitelistLoading(false);
+    }
+  };
+
+  const handleSetWhitelist = async (value: boolean) => {
+    setWhitelistLoading(true);
+    try {
+      if (!contract) throw new Error("Contract not loaded");
+      const tx = await contract.setWhitelist(whitelistAddress, value);
+      await tx.wait();
+      setWhitelistStatus(value);
+      toast({ title: "Success", description: value ? "Address whitelisted." : "Address removed from whitelist." });
+    } catch (e) {
+      toast({ title: "Error", description: "Transaction failed." });
+    } finally {
+      setWhitelistLoading(false);
+    }
+  };
+
+  // Role check/grant handlers
+  const handleCheckRole = async () => {
+    setRoleLoading(true);
+    setRoleStatus(null);
+    try {
+      if (!contract) throw new Error("Contract not loaded");
+      const status = await contract.hasRole(safeRoleBytes(roleName), roleAddress);
+      setRoleStatus(status);
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to check role." });
+    } finally {
+      setRoleLoading(false);
+    }
+  };
+
+  const handleGrantRole = async () => {
+    setRoleLoading(true);
+    try {
+      if (!contract) throw new Error("Contract not loaded");
+      const tx = await contract.grantRole(safeRoleBytes(roleName), roleAddress);
+      await tx.wait();
+      setRoleStatus(true);
+      toast({ title: "Success", description: `Role granted to ${roleAddress}` });
+    } catch (e) {
+      toast({ title: "Error", description: "Transaction failed." });
+    } finally {
+      setRoleLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Simulate loading delay
@@ -341,9 +443,12 @@ export default function OfficersPage() {
           </div>
 
           <Tabs defaultValue="whitelist" onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-5 bg-gray-100">
+            <TabsList className="grid w-full grid-cols-6 bg-gray-100">
               <TabsTrigger value="whitelist" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
                 Whitelist Management
+              </TabsTrigger>
+              <TabsTrigger value="role" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
+                Role Management
               </TabsTrigger>
               <TabsTrigger value="tokens" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
                 Token Supply
@@ -482,6 +587,39 @@ export default function OfficersPage() {
                 </CardFooter>
               </Card>
 
+              <Card className="border-gray-200 bg-white shadow-sm mb-6">
+                <CardHeader>
+                  <CardTitle>On-Chain Whitelist Management</CardTitle>
+                  <CardDescription>Check, add, or remove addresses from the on-chain whitelist.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
+                    <div className="flex-1">
+                      <Label htmlFor="whitelist-address">Wallet Address</Label>
+                      <Input id="whitelist-address" placeholder="0x..." value={whitelistAddress} onChange={e => setWhitelistAddress(e.target.value)} />
+                    </div>
+                    <Button onClick={handleCheckWhitelist} disabled={whitelistLoading || !whitelistAddress}>
+                      {whitelistLoading ? "Checking..." : "Check Status"}
+                    </Button>
+                    <Button onClick={() => handleSetWhitelist(true)} disabled={whitelistLoading || !whitelistAddress || whitelistStatus === true}>
+                      Add
+                    </Button>
+                    <Button onClick={() => handleSetWhitelist(false)} disabled={whitelistLoading || !whitelistAddress || whitelistStatus === false} variant="destructive">
+                      Remove
+                    </Button>
+                  </div>
+                  {whitelistStatus !== null && (
+                    <div className="mt-4">
+                      {whitelistStatus ? (
+                        <Badge className="bg-green-100 text-green-800">Whitelisted</Badge>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-800">Not Whitelisted</Badge>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               <div className="flex justify-end mt-6">
                 <Button
                   variant="destructive"
@@ -496,6 +634,42 @@ export default function OfficersPage() {
                   Emergency Pause
                 </Button>
               </div>
+            </TabsContent>
+
+            <TabsContent value="role">
+              <Card className="border-gray-200 bg-white shadow-sm mb-6">
+                <CardHeader>
+                  <CardTitle>On-Chain Role Management</CardTitle>
+                  <CardDescription>Check or grant a role to an address on-chain.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
+                    <div className="flex-1">
+                      <Label htmlFor="role-address">Wallet Address</Label>
+                      <Input id="role-address" placeholder="0x..." value={roleAddress} onChange={e => setRoleAddress(e.target.value)} />
+                    </div>
+                    <div className="flex-1">
+                      <Label htmlFor="role-name">Role Name</Label>
+                      <Input id="role-name" placeholder="e.g. OFFICER_ROLE" value={roleName} onChange={e => setRoleName(e.target.value)} />
+                    </div>
+                    <Button onClick={handleCheckRole} disabled={roleLoading || !roleAddress || !roleName}>
+                      {roleLoading ? "Checking..." : "Check Role"}
+                    </Button>
+                    <Button onClick={handleGrantRole} disabled={roleLoading || !roleAddress || !roleName || roleStatus === true}>
+                      Grant Role
+                    </Button>
+                  </div>
+                  {roleStatus !== null && (
+                    <div className="mt-4">
+                      {roleStatus ? (
+                        <Badge className="bg-green-100 text-green-800">Role Assigned</Badge>
+                      ) : (
+                        <Badge className="bg-red-100 text-red-800">Role Not Assigned</Badge>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="tokens">

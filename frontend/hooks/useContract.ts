@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../lib/constants";
+import { contracts } from "@/lib/contracts"
 
 export function useContract(provider: ethers.BrowserProvider | null) {
   const [contract, setContract] = useState<ethers.Contract | null>(null);
@@ -13,6 +13,9 @@ export function useContract(provider: ethers.BrowserProvider | null) {
         return;
       }
       const signer = await provider.getSigner();
+      const CONTRACT = contracts.membership;
+      const CONTRACT_ADDRESS = CONTRACT.address;
+      const CONTRACT_ABI = CONTRACT.abi;
       console.log("[DEBUG] Initializing contract with address:", CONTRACT_ADDRESS);
       console.log("[DEBUG] Using ABI:", CONTRACT_ABI);
       setContract(new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer));

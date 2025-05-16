@@ -7,12 +7,18 @@ import { Badge } from "@/components/ui/badge"
 import { Users, Shield, Award, GraduationCap, Star, Clock, Palette, Key, BookOpen, Sparkles } from "lucide-react"
 import NFTDetailModal from "@/components/nft-detail-modal"
 import { useWriteContract } from "wagmi";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "@/lib/constants";
-import { parseEther } from "viem";
+// Use the central contracts object for contract address/ABI
+import { contracts } from "@/lib/contracts";
+import { parseEther, stringToBytes, fromHex, encodeBytes32String, toBytes32, pad, toHex } from "viem";
 import { polygon } from "wagmi/chains";
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+// Import the useMyTokens hook
+import { useMyTokens } from "@/hooks/use-mytokens";
+import { useAccount } from "wagmi";
 
 // NFT data based on the provided mapping
 const nftData = {
@@ -257,6 +263,29 @@ export default function GalleryPage() {
   const { writeContract, isPending, isSuccess, error } = useWriteContract();
   const { toast } = useToast();
 
+  // Filter state
+  const [roleFilter, setRoleFilter] = useState<string>("All");
+
+  // Get connected wallet address
+  const { address } = useAccount();
+  // Fetch tokens for the connected user
+  const { tokens } = useMyTokens(address);
+
+  // Compute ownedTokens from tokens (token.id or token.tokenId)
+  const ownedTokens = tokens.reduce((acc: { [tokenId: string]: boolean }, token: any) => {
+    acc[token.tokenId || token.id] = true;
+    return acc;
+  }, {});
+
+  // Filter logic
+  const filteredGovernance = nftData.governance.filter(category => {
+    if (roleFilter === "All") return true;
+    return category.role && category.role.toLowerCase() === roleFilter.toLowerCase();
+  });
+
+  // Special/limited types
+  const limitedTypes = ["Founder Series", "Gold Star Award", "Secret Sauce Token", "Loyalty Token"];
+
   const handleMint = async (role: string, price: number, requireWhitelist: boolean) => {
     try {
       // Ensure the user is whitelisted if required
@@ -268,16 +297,24 @@ export default function GalleryPage() {
         }
       }
 
+      // Convert role to bytes32 hex string
+      const roleBytes = stringToBytes(role);
+      const roleBytes32 = pad(roleBytes, { size: 32 });
+      const roleHex = toHex(roleBytes32);
       // Convert price to bigint and send transaction
-      await writeContract({
-        address: CONTRACT_ADDRESS, // Updated contract address
-        abi: CONTRACT_ABI, // Updated ABI
+      const args = [roleHex, parseEther(price.toString()), requireWhitelist];
+      const txConfig: any = {
+        address: contracts.membership.address, // Use central contracts object
+        abi: contracts.membership.abi, // Use central contracts object
         functionName: "mintToken",
-        args: [role, parseEther(price.toString()), requireWhitelist],
-        value: parseEther(price.toString()),
+        args,
         chain: polygon,
-        account: "0xYourWalletAddress",
-      });
+      };
+      const value = parseEther(price.toString());
+      if (value.toString() !== "0") {
+        txConfig.value = value;
+      }
+      await writeContract(txConfig);
       toast({
         title: "Success!",
         description: "Token minted successfully!",
@@ -369,6 +406,19 @@ export default function GalleryPage() {
 
   return (
     <div className="container mx-auto px-4 py-16">
+      {/* Filter chips */}
+      <div className="mb-8 flex flex-wrap gap-2">
+        {["All", "Observer", "Member", "Officer", "Supporter"].map((role) => (
+          <Button
+            key={role}
+            variant={roleFilter === role ? "default" : "outline"}
+            className={cn("rounded-full px-4 py-1 text-sm", roleFilter === role && "bg-blue-600 text-white")}
+            onClick={() => setRoleFilter(role)}
+          >
+            {role}
+          </Button>
+        ))}
+      </div>
       <div className="mb-8">
         <h1 className="mb-2 text-4xl font-bold text-gray-900">Token Gallery</h1>
         <p className="max-w-2xl text-lg text-gray-600">
@@ -390,7 +440,7 @@ export default function GalleryPage() {
         </div>
 
         <div className="space-y-12">
-          {nftData.governance.map((category) => (
+          {filteredGovernance.map((category) => (
             <div key={category.role} className="space-y-6">
               <div className="border-b border-gray-200 pb-2">
                 <h3 className="flex items-center text-xl font-bold text-gray-900">
@@ -417,41 +467,66 @@ export default function GalleryPage() {
                 </div>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {category.tokens.map((token) => (
-                    <Card
-                      key={token.id}
-                      className="overflow-hidden border-gray-200 bg-white shadow-sm cursor-pointer transition-all hover:shadow-md"
-                      onClick={() => handleTokenClick(token, category)}
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-gray-900">{token.name}</CardTitle>
-                        <CardDescription className="text-gray-600">{token.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="overflow-hidden rounded-md">
-                          <Image
-                            src={token.imageUri || "/placeholder.svg"}
-                            alt={`${token.name}`}
-                            width={300}
-                            height={192}
-                            className="h-48 w-full object-contain"
-                            priority={false}
-                          />
-                        </div>
-                        <Button
-                          className="mt-4 w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedToken(token);
-                            setSelectedCategory(category);
-                            setIsDetailModalOpen(true);
-                          }}
+                  <AnimatePresence>
+                    {category.tokens.map((token) => {
+                      const isOwned = !!ownedTokens[token.id];
+                      const isLimited = limitedTypes.includes(category.type) || limitedTypes.includes(category.role);
+                      return (
+                        <motion.div
+                          key={token.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.3 }}
                         >
-                          Mint {token.name}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <Card
+                            className={cn(
+                              "overflow-hidden border-gray-200 bg-white shadow-sm cursor-pointer transition-all hover:shadow-md relative",
+                              isOwned && "opacity-60 bg-gray-100"
+                            )}
+                            onClick={() => handleTokenClick(token, category)}
+                          >
+                            <CardHeader className="pb-2">
+                              <div className="flex items-center gap-2">
+                                <CardTitle className="text-gray-900">{token.name}</CardTitle>
+                                {isLimited && (
+                                  <Badge className="bg-yellow-200 text-yellow-800 ml-1">Limited</Badge>
+                                )}
+                                {isOwned && (
+                                  <Badge className="bg-green-200 text-green-800 ml-1">Owned</Badge>
+                                )}
+                              </div>
+                              <CardDescription className="text-gray-600">{token.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="overflow-hidden rounded-md">
+                                <Image
+                                  src={token.imageUri || "/placeholder.svg"}
+                                  alt={`${token.name}`}
+                                  width={300}
+                                  height={192}
+                                  className="h-48 w-full object-contain"
+                                  priority={false}
+                                />
+                              </div>
+                              <Button
+                                className="mt-4 w-full"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedToken(token);
+                                  setSelectedCategory(category);
+                                  setIsDetailModalOpen(true);
+                                }}
+                                disabled={isOwned}
+                              >
+                                {isOwned ? "Owned" : `Mint ${token.name}`}
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
                 </div>
               )}
             </div>
@@ -460,7 +535,7 @@ export default function GalleryPage() {
       </div>
 
       <div>
-        <div className="mb-8 rounded-xl bg-purple-50 p-6">
+        <div className="mb-8 rounded-xl bg-purple-50 p-6"></div>
           <h2 className="mb-4 text-2xl font-bold text-gray-900 flex items-center">
             <Palette className="mr-2 h-6 w-6 text-purple-600" />
             Culture & Experience Track

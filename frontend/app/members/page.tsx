@@ -10,10 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Vote, Shield, ExternalLink, Wallet, BarChart3, History } from "lucide-react"
 import { useAccount } from "wagmi";
-import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "@/lib/constants";
+import { contracts } from "../../lib/contracts";
+import { useContractRead } from "wagmi";
+import { motion, AnimatePresence } from "framer-motion";
+import { readContract } from 'wagmi/actions';
+import { useMyTokens } from "@/hooks/use-mytokens";
 
-const AMOY_CHAIN_ID = 80002;
+const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID || "80002";
+const CONTRACT_NAME = "membership";
+const CONTRACT_ABI = contracts[CONTRACT_NAME].abi;
+const CONTRACT_ADDRESS = contracts[CONTRACT_NAME].address;
 
 // Mock voting history
 const mockVotingHistory = [
@@ -57,132 +63,32 @@ type Token = {
 
 export default function MembersPage() {
   const { address, isConnected } = useAccount();
-  const [tokens, setTokens] = useState<Token[]>([]);
   const [votingHistory, setVotingHistory] = useState(mockVotingHistory)
-  const [selectedDisplayToken, setSelectedDisplayToken] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("tokens")
-  const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [wrongNetwork, setWrongNetwork] = useState(false);
   const [mounted, setMounted] = useState(false); // NEW: track client mount
+  const [selectedDisplayToken, setSelectedDisplayToken] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Fetch tokens owned by the user
+  // Fetch balanceOf using wagmi
+  const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+  });
+
+  const { tokens, isLoading, error } = useMyTokens();
+
   useEffect(() => {
-    let isMounted = true;
-    async function fetchTokens() {
-      if (!isConnected || !address) {
-        if (isMounted) {
-          setTokens([]);
-          setIsLoading(false);
-        }
-        return;
-      }
-      setIsLoading(true);
-      setErrorMsg(null);
-      setWrongNetwork(false);
-      try {
-        if (typeof window !== "undefined" && (window as any).ethereum) {
-          const provider = new ethers.BrowserProvider((window as any).ethereum);
-          const network = await provider.getNetwork();
-          if (Number(network.chainId) !== AMOY_CHAIN_ID) {
-            if (isMounted) {
-              setWrongNetwork(true);
-              setTokens([]);
-              setIsLoading(false);
-              setErrorMsg("Please connect your wallet to the Polygon Amoy testnet (chainId 80002). Token fetching is only supported on this network.");
-            }
-            return;
-          }
-          const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-          // Defensive: check if contract has balanceOf and tokenOfOwnerByIndex
-          if (typeof contract.balanceOf !== "function" || typeof contract.tokenOfOwnerByIndex !== "function") {
-            if (isMounted) {
-              setTokens([]);
-              setIsLoading(false);
-              setErrorMsg("This contract does not support token enumeration. Please contact support.");
-            }
-            return;
-          }
-          console.log("[DEBUG] CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
-          console.log("[DEBUG] CONTRACT_ABI:", CONTRACT_ABI);
-          const balance = await contract.balanceOf(address);
-          const ownedTokens: Token[] = [];
-          for (let i = 0; i < balance; i++) {
-            try {
-              const tokenId = await contract.tokenOfOwnerByIndex(address, i);
-              let name = `Token #${tokenId}`;
-              let description = "Membership NFT";
-              let imageUri = "/placeholder.svg";
-              let acquired = "";
-              // Fetch tokenURI and metadata
-              if (typeof contract.tokenURI === "function") {
-                const tokenUri = await contract.tokenURI(tokenId);
-                if (tokenUri) {
-                  // Handle IPFS URIs
-                  let fetchUri = tokenUri;
-                  if (tokenUri.startsWith("ipfs://")) {
-                    fetchUri = `https://ipfs.io/ipfs/${tokenUri.replace("ipfs://", "")}`;
-                  }
-                  try {
-                    const res = await fetch(fetchUri);
-                    if (res.ok) {
-                      const meta = await res.json();
-                      name = meta.name || name;
-                      description = meta.description || description;
-                      imageUri = meta.image || imageUri;
-                      acquired = meta.acquired || "";
-                    }
-                  } catch (metaErr) {
-                    console.warn(`Failed to fetch metadata for token ${tokenId}:`, metaErr);
-                  }
-                }
-              }
-              // Fix: Convert IPFS image URIs to gateway URLs
-              if (imageUri.startsWith("ipfs://")) {
-                imageUri = `https://ipfs.io/ipfs/${imageUri.replace("ipfs://", "")}`;
-              }
-              ownedTokens.push({
-                id: Number(tokenId),
-                name,
-                description,
-                imageUri,
-                votingPower: 1, // TODO: fetch real voting power if available
-                acquired,
-                tokenId: tokenId.toString(),
-              });
-            } catch (err) {
-              if (isMounted) {
-                setTokens([]);
-                setIsLoading(false);
-                setErrorMsg("This contract does not support token enumeration. Please contact support.");
-              }
-              return;
-            }
-          }
-          if (isMounted) {
-            setTokens(ownedTokens);
-            setSelectedDisplayToken(ownedTokens[0]?.id?.toString() || undefined);
-          }
-        } else {
-          if (isMounted) setTokens([]);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setTokens([]);
-          setErrorMsg("Failed to fetch tokens. Please try again or contact support.");
-          console.error("Token fetch error:", err);
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
+    if (tokens.length > 0 && !selectedDisplayToken) {
+      setSelectedDisplayToken(tokens[0].tokenId);
     }
-    fetchTokens();
-    return () => { isMounted = false; };
-  }, [isConnected, address]);
+  }, [tokens, selectedDisplayToken]);
 
   const handleDisplayTokenChange = (value: string) => {
     setSelectedDisplayToken(value)
@@ -206,7 +112,7 @@ export default function MembersPage() {
   }
 
   const getTotalVotingPower = () => {
-    return tokens.reduce((total, token) => total + token.votingPower, 0)
+    return tokens.reduce((total: number, token: any) => total + token.votingPower, 0)
   }
 
   const getVoteColor = (vote: string) => {
@@ -395,7 +301,7 @@ export default function MembersPage() {
                                 <SelectValue placeholder="Select token to display" />
                               </SelectTrigger>
                               <SelectContent>
-                                {tokens.map((token) => (
+                                {tokens.map((token: any) => (
                                   <SelectItem key={token.id} value={token.id.toString()}>
                                     {token.name} (Power: {token.votingPower})
                                   </SelectItem>
@@ -403,7 +309,7 @@ export default function MembersPage() {
                               </SelectContent>
                             </Select>
                           </div>
-                          <Button variant="outline" className="border-gray-200 text-gray-700">
+                          <Button className="border-gray-200 text-gray-700">
                             Set as Default
                           </Button>
                           {/* TODO: Add burn, reissue, or request help actions here */}
@@ -411,59 +317,66 @@ export default function MembersPage() {
                       </div>
 
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {tokens.map((token) => (
-                          <Card
-                            key={token.id}
-                            className={`border-gray-200 bg-white shadow-sm overflow-hidden ${
-                              token.id.toString() === selectedDisplayToken ? "ring-2 ring-blue-500" : ""
-                            }`}
-                          >
-                            <CardHeader className="pb-2">
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-gray-900">{token.name}</CardTitle>
-                                {token.isDefault && <Badge className="bg-blue-100 text-blue-800">Default</Badge>}
-                              </div>
-                              <CardDescription className="text-gray-600">{token.type}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              <div className="overflow-hidden rounded-md">
-                                <img
-                                  src={getTokenImage(token)}
-                                  alt={token.name}
-                                  className="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Voting Power:</span>
-                                  <span className="font-medium text-gray-900">{token.votingPower}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Acquired:</span>
-                                  <span className="font-medium text-gray-900">{formatDate(token.acquired)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">Token ID:</span>
-                                  <span className="font-mono text-xs text-gray-600">{token.tokenId}</span>
-                                </div>
-                              </div>
-                            </CardContent>
-                            <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
-                              <Button
-                                variant="outline"
-                                className="w-full border-gray-200 text-gray-700"
-                                onClick={() => setSelectedDisplayToken(token.id.toString())}
+                        <AnimatePresence>
+                          {tokens.map((token: any) => (
+                            <motion.div
+                              key={token.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -20 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <Card
+                                className={`border-gray-200 bg-white shadow-sm overflow-hidden ${
+                                  token.id.toString() === selectedDisplayToken ? "ring-2 ring-blue-500" : ""
+                                }`}
                               >
-                                {token.id.toString() === selectedDisplayToken ? "Selected" : "Select"}
-                              </Button>
-                            </CardFooter>
-                          </Card>
-                        ))}
+                                <CardHeader className="pb-2">
+                                  <div className="flex items-center justify-between">
+                                    <CardTitle className="text-gray-900">{token.name}</CardTitle>
+                                    {token.isDefault && <Badge className="bg-blue-100 text-blue-800">Default</Badge>}
+                                  </div>
+                                  <CardDescription className="text-gray-600">{token.type}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                  <div className="overflow-hidden rounded-md">
+                                    <img
+                                      src={getTokenImage(token)}
+                                      alt={token.name}
+                                      className="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm text-gray-600">Voting Power:</span>
+                                      <span className="font-medium text-gray-900">{token.votingPower}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm text-gray-600">Acquired:</span>
+                                      <span className="font-medium text-gray-900">{formatDate(token.acquired)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-sm text-gray-600">Token ID:</span>
+                                      <span className="font-mono text-xs text-gray-600">{token.tokenId}</span>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
+                                  <Button
+                                    className="w-full border-gray-200 text-gray-700"
+                                    onClick={() => setSelectedDisplayToken(token.id.toString())}
+                                  >
+                                    {token.id.toString() === selectedDisplayToken ? "Selected" : "Select"}
+                                  </Button>
+                                </CardFooter>
+                              </Card>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
                       </div>
                     </CardContent>
                     <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3 flex justify-between">
                       <Button
-                        variant="outline"
                         className="border-gray-200 text-gray-700"
                         onClick={() => {
                           let url = "https://amoy.polygonscan.com/address/" + CONTRACT_ADDRESS;
@@ -520,11 +433,11 @@ export default function MembersPage() {
                     </div>
                   ) : votingHistory.length > 0 ? (
                     <div className="space-y-4">
-                      {votingHistory.map((vote) => (
+                      {votingHistory.map((vote: any) => (
                         <div key={vote.id} className="rounded-md border border-gray-200 p-4">
                           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="bg-gray-50 text-gray-700">
+                              <Badge className="bg-gray-50 text-gray-700">
                                 {vote.proposal}
                               </Badge>
                               <Badge className={getVoteColor(vote.vote)}>
@@ -550,7 +463,7 @@ export default function MembersPage() {
                   )}
                 </CardContent>
                 <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
-                  <Button variant="outline" className="w-full border-gray-200 text-gray-700">
+                  <Button className="w-full border-gray-200 text-gray-700">
                     <ExternalLink className="mr-2 h-4 w-4" /> View All Activity on Snapshot
                   </Button>
                 </CardFooter>
@@ -560,7 +473,7 @@ export default function MembersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // TODO: Replace mockVotingHistory with real vote data

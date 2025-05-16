@@ -112,19 +112,26 @@ contract BlockchainClubMembership is Initializable, ERC721Upgradeable, ERC721Enu
      * @dev If price is zero, mint is free. If requireWhitelist is true, only whitelisted addresses can mint. Each address can mint only one of each role.
      * @param role The role string to mint.
      * @param price The required price (in wei) for minting this role.
-     * @param requireWhitelist Whether whitelist is required for this role.
      */
-    function mintToken(string calldata role, uint256 price, bool requireWhitelist) external payable nonReentrant whenNotPaused {
-        if (requireWhitelist) {
-            require(whitelist[msg.sender], "You are not whitelisted");
+    function mintToken(bytes32 role, uint256 price) external payable nonReentrant whenNotPaused {
+        if (role == keccak256("Observer") || role == keccak256("Supporter")) {
+            require(msg.value >= price, "Insufficient payment");
+        } else if (role == keccak256("Member")) {
+            require(whitelist[msg.sender], "Not whitelisted");
+            require(msg.value >= price, "Insufficient payment");
+        } else if (role == keccak256("Officer")) {
+            require(hasRole(OFFICER_ROLE, msg.sender), "Not authorized for officer role");
+            require(msg.value >= price, "Insufficient payment");
+        } else {
+            revert("Invalid role");
         }
-        require(msg.value >= price, "Insufficient payment");
-        require(!hasMintedRole[msg.sender][role], "You have already minted this role");
+
+        require(!hasMintedRole[msg.sender][string(abi.encodePacked(role))], "You have already minted this role");
 
         uint256 tokenId = nextTokenId;
         _safeMint(msg.sender, tokenId);
-        roles[tokenId] = role;
-        hasMintedRole[msg.sender][role] = true;
+        roles[tokenId] = string(abi.encodePacked(role));
+        hasMintedRole[msg.sender][string(abi.encodePacked(role))] = true;
         mintedBy[tokenId] = msg.sender;
         nextTokenId++;
 
@@ -382,6 +389,10 @@ contract BlockchainClubMembership is Initializable, ERC721Upgradeable, ERC721Enu
     function setBaseTokenURI(string calldata newBaseURI) external onlyOwner {
         baseTokenURI = newBaseURI;
     }
+
+    // Set the new baseTokenURI to the provided IPFS URI
+    // This should be called after deployment or upgrade
+    // Example: setBaseTokenURI("ipfs://bafybeid4iszj4bzuy4s2tqxcck77oplakns6vrxbmyd3smfatxq6jjzjdm/");
 
     /**
      * @notice Pause contract functions (only owner or officer).

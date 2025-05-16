@@ -1,0 +1,8 @@
+graph TD
+    A[Connect Wallet] -->|User connects via RainbowKit| B[Check Network]
+    B -->|Switch to Polygon Amoy| C[Request Whitelist]
+    C -->|If required| D[Mint NFT]
+    D -->|Observer, Member, Officer| E[NFT Appears in Dashboard]
+    E --> F[View Governance Proposals]
+    F -->|Eligible to vote| G[Vote on Proposals]
+    G --> H[Treasury Updates via Gnosis Safe]
