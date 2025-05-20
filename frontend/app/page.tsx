@@ -17,12 +17,12 @@ export default function Home() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/gallery">
-                <Button size="lg" className="rounded-md px-8 py-6 text-lg font-medium bg-blue-600 hover:bg-blue-700 text-white">
+                <Button className="rounded-md px-8 py-6 text-lg font-medium bg-blue-600 hover:bg-blue-700 text-white">
                   Mint Your Membership <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/about">
-                <Button variant="outline" size="lg" className="rounded-md px-8 py-6 text-lg font-medium">
+                <Button className="rounded-md px-8 py-6 text-lg font-medium">
                   Learn More
                 </Button>
               </Link>
@@ -143,7 +143,7 @@ export default function Home() {
               Mint your membership token and become an active participant in our academic community dedicated to blockchain research, education, and innovation.
             </p>
             <Link href="/gallery">
-              <Button size="lg" className="rounded-md px-8 py-6 text-lg font-medium">
+              <Button className="rounded-md px-8 py-6 text-lg font-medium">
                 Explore Token Gallery <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>

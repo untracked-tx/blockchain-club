@@ -70,11 +70,10 @@ const nftData = {
           imageUri: "/trader_chill.png",
           ipfsMetadata: "ipfs://QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco/trader_chill",
         },
-        {
-          id: "letsgetthispartystarted2k25",
+        { id: "letsgetthispartystarted2k25",
           name: "Let's Get This Party Started",
           description: "Standard 2025 membership with voting rights",
-          imageUri: "letsgetthispartystarted2k25.png",
+          imageUri: "/letsgetthispartystarted2k25.png",
           ipfsMetadata: "ipfs://QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco/letsgetthispartystarted2k25",
         },
         {
@@ -411,7 +410,6 @@ export default function GalleryPage() {
         {["All", "Observer", "Member", "Officer", "Supporter"].map((role) => (
           <Button
             key={role}
-            variant={roleFilter === role ? "default" : "outline"}
             className={cn("rounded-full px-4 py-1 text-sm", roleFilter === role && "bg-blue-600 text-white")}
             onClick={() => setRoleFilter(role)}
           >
@@ -501,12 +499,19 @@ export default function GalleryPage() {
                             <CardContent>
                               <div className="overflow-hidden rounded-md">
                                 <Image
-                                  src={token.imageUri || "/placeholder.svg"}
+                                  src={token.imageUri ? 
+                                    (token.imageUri.startsWith('/') ? token.imageUri : `/${token.imageUri}`) 
+                                    : "/placeholder.svg"}
                                   alt={`${token.name}`}
                                   width={300}
                                   height={192}
                                   className="h-48 w-full object-contain"
                                   priority={false}
+                                  onError={(e) => {
+                                    // Fallback to placeholder if image fails to load
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "/placeholder.svg";
+                                  }}
                                 />
                               </div>
                               <Button
@@ -534,84 +539,89 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      <div>
-        <div className="mb-8 rounded-xl bg-purple-50 p-6"></div>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900 flex items-center">
-            <Palette className="mr-2 h-6 w-6 text-purple-600" />
-            Culture & Experience Track
-          </h2>
-          <p className="text-gray-600 mb-2">
-            These special tokens recognize achievements, milestones, and contributions to the club community.
-          </p>
-        </div>
+      <div className="mb-8 rounded-xl bg-purple-50 p-6">
+        <h2 className="mb-4 text-2xl font-bold text-gray-900 flex items-center">
+          <Palette className="mr-2 h-6 w-6 text-purple-600" />
+          Culture & Experience Track
+        </h2>
+        <p className="text-gray-600 mb-2">
+          These special tokens recognize achievements, milestones, and contributions to the club community.
+        </p>
+      </div>
 
-        <div className="space-y-12">
-          {nftData.culture.map((category) => (
-            <div key={category.type} className="space-y-6">
-              <div className="border-b border-gray-200 pb-2">
-                <h3 className="flex items-center text-xl font-bold text-gray-900">
-                  {getCategoryIcon(category)}
-                  <span className="ml-2">{category.type}</span>
-                  <Badge className="ml-3 bg-purple-100 text-purple-800">Minted By: {category.mintedBy}</Badge>
-                  <Badge className="ml-2 bg-amber-100 text-amber-800">Cost: {category.cost}</Badge>
-                </h3>
-              </div>
-
-              {isLoading ? (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {[1, 2].map((i) => (
-                    <Card key={i} className="border-gray-200 bg-white shadow-sm">
-                      <CardHeader>
-                        <Skeleton className="h-6 w-24" />
-                      </CardHeader>
-                      <CardContent>
-                        <Skeleton className="mb-4 h-48 w-full rounded-md" />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {category.tokens.map((token) => (
-                    <Card
-                      key={token.id}
-                      className="overflow-hidden border-gray-200 bg-white shadow-sm cursor-pointer transition-all hover:shadow-md"
-                      onClick={() => handleTokenClick(token, category)}
-                    >
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-gray-900">{token.name}</CardTitle>
-                        <CardDescription className="text-gray-600">{token.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="overflow-hidden rounded-md">
-                          <Image
-                            src={token.imageUri || "/placeholder.svg"}
-                            alt={`${token.name}`}
-                            width={300}
-                            height={192}
-                            className="h-48 w-full object-contain"
-                            priority={false}
-                          />
-                        </div>
-                        <Button
-                          className="mt-4 w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedToken(token);
-                            setSelectedCategory(category);
-                            setIsDetailModalOpen(true);
-                          }}
-                        >
-                          Mint {token.name}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+      <div className="space-y-12">
+        {nftData.culture.map((category) => (
+          <div key={category.type} className="space-y-6">
+            <div className="border-b border-gray-200 pb-2">
+              <h3 className="flex items-center text-xl font-bold text-gray-900">
+                {getCategoryIcon(category)}
+                <span className="ml-2">{category.type}</span>
+                <Badge className="ml-3 bg-purple-100 text-purple-800">Minted By: {category.mintedBy}</Badge>
+                <Badge className="ml-2 bg-amber-100 text-amber-800">Cost: {category.cost}</Badge>
+              </h3>
             </div>
-          ))}
-        </div>
+
+            {isLoading ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[1, 2].map((i) => (
+                  <Card key={i} className="border-gray-200 bg-white shadow-sm">
+                    <CardHeader>
+                      <Skeleton className="h-6 w-24" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="mb-4 h-48 w-full rounded-md" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {category.tokens.map((token) => (
+                  <Card
+                    key={token.id}
+                    className="overflow-hidden border-gray-200 bg-white shadow-sm cursor-pointer transition-all hover:shadow-md"
+                    onClick={() => handleTokenClick(token, category)}
+                  >
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-gray-900">{token.name}</CardTitle>
+                      <CardDescription className="text-gray-600">{token.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-hidden rounded-md">
+                        <Image
+                          src={token.imageUri ? 
+                            (token.imageUri.startsWith('/') ? token.imageUri : `/${token.imageUri}`) 
+                            : "/placeholder.svg"}
+                          alt={`${token.name}`}
+                          width={300}
+                          height={192}
+                          className="h-48 w-full object-contain"
+                          priority={false}
+                          onError={(e) => {
+                            // Fallback to placeholder if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.svg";
+                          }}
+                        />
+                      </div>
+                      <Button
+                        className="mt-4 w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedToken(token);
+                          setSelectedCategory(category);
+                          setIsDetailModalOpen(true);
+                        }}
+                      >
+                        Mint {token.name}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Call to action section */}

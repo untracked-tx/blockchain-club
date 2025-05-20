@@ -16,7 +16,8 @@ import { motion, AnimatePresence } from "framer-motion";
 // Officer addresses (lowercase)
 const OFFICER_ADDRESSES: string[] = [
   // Add officer wallet addresses here, all lowercase
-  // Example: '0x1234abcd...'
+  '0xDA30c053156E690176574dAEe79CEB94e3C8F0cC', // Contract owner/deployer address
+  // Add other officer wallet addresses as needed
 ];
 
 // Map UI/category role to contract role string
@@ -24,13 +25,21 @@ function getContractRole(category: any, token: any): string {
   // Prefer category.role, fallback to token.name
   const role = (category?.role || token?.name || '').toLowerCase();
   switch (role) {
-    case 'observer': return 'OBSERVER';
-    case 'member': return 'MEMBER';
-    case 'officer': return 'OFFICER';
-    case 'supporter': return 'SUPPORTER';
-    case 'alumni': return 'ALUMNI';
-    default: return role.toUpperCase();
+    case 'observer': return 'Observer';
+    case 'member': return 'Member';
+    case 'officer': return 'Officer';
+    case 'supporter': return 'Supporter';
+    default: 
+      console.warn(`[WARNING] Unsupported role: ${role}. Only Observer, Member, Officer, and Supporter are supported.`);
+      // Default to Observer for invalid roles as the safest option
+      return 'Observer';
   }
+}
+
+// Validate that only supported roles are used
+function isValidRole(role: string): boolean {
+  const validRoles = ['Observer', 'Member', 'Officer', 'Supporter'];
+  return validRoles.includes(role);
 }
 
 interface NFTDetailModalProps {
@@ -110,30 +119,62 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
         setIsLoading(false);
         return;
       }
+      
       const contractRole = getContractRole(category, token);
+        // Check if user has already minted this role (only for Member and Officer roles)
+      try {
+        if (contractRole === 'Member' || contractRole === 'Officer') {
+          const provider = new ethers.BrowserProvider((window as any).ethereum);
+          const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+          const hasMinted = await contract.hasMintedRole(address, contractRole);
+          
+          if (hasMinted) {
+            setError(`You have already minted this role token. Each wallet can only mint one ${contractRole} token.`);
+            setStep("Error");
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (checkError) {
+        console.error("[ERROR] Failed to check if role already minted:", checkError);
+        // Continue with minting attempt - if there's an issue, the contract will reject it
+      }
+      
       // Officer mint restriction
-      if (contractRole === 'OFFICER' && !OFFICER_ADDRESSES.includes(address.toLowerCase())) {
-        setError({ reason: 'Not authorized for role', message: 'Only officer wallets can mint this token.' });
+      if (contractRole === 'Officer' && !OFFICER_ADDRESSES.includes(address.toLowerCase())) {
+        setError("Only officer wallets can mint this token. Not authorized for officer role.");
         setStep('Error');
         setIsLoading(false);
         return;
       }
+      
+      // Member role restriction - check whitelist
+      if (contractRole === 'Member') {
+        const isWhitelisted = await checkWhitelist(address);
+        if (!isWhitelisted) {
+          setError("You are not whitelisted for the Member role. Please contact a club officer.");
+          setStep('Error');
+          setIsLoading(false);
+          return;
+        }
+      }
+      
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       // Determine mint args for contract
       let mintValue = ethers.parseEther("0");
       let requireWhitelist = false;
-      if (contractRole === 'OBSERVER') {
+      if (contractRole === 'Observer') {
         mintValue = ethers.parseEther("0");
         requireWhitelist = false;
-      } else if (contractRole === 'MEMBER') {
+      } else if (contractRole === 'Member') {
         mintValue = ethers.parseEther("0.01");
         requireWhitelist = true;
-      } else if (contractRole === 'SUPPORTER') {
+      } else if (contractRole === 'Supporter') {
         mintValue = ethers.parseEther("0.02");
         requireWhitelist = false;
-      } else if (contractRole === 'OFFICER') {
+      } else if (contractRole === 'Officer') {
         mintValue = ethers.parseEther("0");
         requireWhitelist = true;
       } else {
@@ -142,18 +183,31 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
           const match = category.cost.match(/([\d.]+)/);
           if (match) mintValue = ethers.parseEther(match[1]);
         }
-      }
-      // Debug log
+      }      // Debug log
       console.log('[DEBUG][Mint] contractRole:', contractRole, '| value:', mintValue.toString(), '| address:', address, '| requireWhitelist:', requireWhitelist, '| category:', category);
+      
+      // Validate the role before minting
+      if (!isValidRole(contractRole)) {
+        setError(`Invalid role: ${contractRole}. Only Observer, Member, Officer, and Supporter are supported.`);
+        setStep("Error");
+        setIsLoading(false);
+        return;
+      }
+
       // Call mint with correct args and value
       // Only pass overrides if mintValue is nonzero (ethers v6 will error if you pass { value: 0n })
       if (typeof contract.mintToken === 'function') {
         let tx;
+        // Convert the role string to bytes32 as required by the contract
+        const roleBytes32 = ethers.keccak256(ethers.toUtf8Bytes(contractRole));
+        console.log('[DEBUG][Mint] Role bytes32:', roleBytes32);
+        console.log('[DEBUG][Mint] Role string:', contractRole);
+        
         // ethers.parseEther returns a bigint, but to avoid ES2020 issues, use .toString() for comparison
         if (mintValue.toString() === '0') {
-          tx = await contract.mintToken(contractRole, mintValue, requireWhitelist);
+          tx = await contract.mintToken(roleBytes32, mintValue);
         } else {
-          tx = await contract.mintToken(contractRole, mintValue, requireWhitelist, { value: mintValue });
+          tx = await contract.mintToken(roleBytes32, mintValue, { value: mintValue });
         }
         setStep("Transaction submitted. Waiting for confirmation...");
         setTxHash(tx.hash);
@@ -171,11 +225,9 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
         setStep("Mint successful!");
         setIsSuccess(true);
       }, 7000);
-    } catch (err: any) {
-      // Bespoke error messages for common contract reverts
-      let userError = err;
-      if (err?.reason?.includes("already minted") || err?.message?.includes("already minted")) {
-        userError = "You have already minted this token. Each wallet can only mint one of each role.";
+    } catch (err: any) {      // Bespoke error messages for common contract reverts
+      let userError = err;      if (err?.reason?.includes("already minted") || err?.message?.includes("already minted")) {
+        userError = "You have already minted this token. Each wallet can only mint one Member or Officer token.";
       } else if (err?.reason?.includes("not whitelisted") || err?.message?.includes("not whitelisted")) {
         userError = "You are not whitelisted for this role. Please contact a club officer.";
       } else if (err?.reason?.includes("Insufficient payment") || err?.message?.includes("Insufficient payment")) {
@@ -185,7 +237,17 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
       } else if (err?.reason?.includes("You are not the owner of this token") || err?.message?.includes("You are not the owner of this token")) {
         userError = "You are not the owner of this token.";
       } else if (err?.reason?.includes("Token does not exist") || err?.message?.includes("Token does not exist")) {
-        userError = "This token does not exist.";
+        userError = "This token does not exist.";      } else if (err?.code === "UNSUPPORTED_OPERATION" && err?.message?.includes("no matching fragment")) {
+        userError = "Contract function error. This is likely due to a parameter mismatch. Please try again or contact support.";
+        console.error("[ERROR] Function signature mismatch:", err);
+        // Log additional debug info to help developers troubleshoot
+        console.debug("[DEBUG] Contract address:", CONTRACT_ADDRESS);
+        const currentContractRole = getContractRole(category, token);
+        console.debug("[DEBUG] Role bytes32:", ethers.keccak256(ethers.toUtf8Bytes(currentContractRole)));
+        console.debug("[DEBUG] Role string:", currentContractRole);
+      } else if (err?.reason?.includes("Invalid role") || err?.message?.includes("Invalid role")) {
+        userError = "Invalid role. Only Observer, Member, Officer, and Supporter roles are supported.";
+        console.error("[ERROR] Invalid role:", err);
       }
       setError(userError);
       setStep("Error");
@@ -218,19 +280,25 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
         // Check whitelist
         let whitelisted = false;
         try { whitelisted = await contract.whitelist(address); } catch {}
-        setIsWhitelisted(!!whitelisted);
-        // Check if user already owns this role/token
+        setIsWhitelisted(!!whitelisted);        // Check if user already owns this role/token
         let hasRole = false;
-        try { hasRole = await contract.hasRole && await contract.hasRole(contractRole + "_ROLE", address); } catch {}
+        try { 
+          // For Member and Officer roles, check if already minted
+          if (contractRole === 'Member' || contractRole === 'Officer') {
+            hasRole = await contract.hasMintedRole(address, contractRole);
+          } else {
+            // For Observer and Supporter, allow multiple mints
+            hasRole = false;
+          }
+        } catch {}
         setAlreadyMinted(!!hasRole);
         setUserRole(contractRole);
         // Officer check
         let officer = false;
         try { officer = await contract.hasRole && await contract.hasRole("OFFICER_ROLE", address); } catch {}
-        setIsOfficer(!!officer);
-        // Eligibility logic per requirements
-        if (hasRole) {
-          setEligibilityReason(`You already own this token.`);
+        setIsOfficer(!!officer);        // Eligibility logic per requirements
+        if (hasRole && (contractRole === 'Member' || contractRole === 'Officer')) {
+          setEligibilityReason(`You already have a ${contractRole} token.`);
         } else if (
           (contractRole === 'MEMBER' || contractRole === 'OFFICER') && !whitelisted
         ) {
@@ -306,19 +374,28 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
               {isConnected && (
                 <div className="mb-4">
                   {/* Eligibility summary badge */}
-                  <div className="flex items-center gap-2 mb-2">
-                    {alreadyMinted ? (
-                      <Badge className="bg-green-100 text-green-800 flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-green-500" /> Already Minted</Badge>
+                  <div className="flex items-center flex-wrap gap-2 mb-2">
+                    {alreadyMinted && (userRole === 'Member' || userRole === 'Officer') ? (
+                      <Badge className="bg-green-100 text-green-800 flex items-center gap-1 px-3 py-1.5">
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" /> 
+                        Already Minted
+                      </Badge>
+                    ) : eligibilityReason ? (
+                      <Badge className={
+                        eligibilityReason.toLowerCase().includes('not whitelisted') || 
+                        eligibilityReason.toLowerCase().includes('officer') 
+                          ? "bg-yellow-100 text-yellow-800 flex items-center gap-1 px-3 py-1.5" 
+                          : "bg-red-100 text-red-800 flex items-center gap-1 px-3 py-1.5"
+                      }>
+                        <AlertCircle className="h-4 w-4 mr-1" /> {eligibilityReason}
+                      </Badge>
                     ) : (
-                      (userRole === 'MEMBER' || userRole === 'OFFICER') && eligibilityReason ? (
-                        <Badge className={eligibilityReason.toLowerCase().includes('not whitelisted') || eligibilityReason.toLowerCase().includes('officer') ? "bg-yellow-100 text-yellow-800 flex items-center gap-1" : "bg-red-100 text-red-800 flex items-center gap-1"}>
-                          <AlertCircle className="h-4 w-4" /> {eligibilityReason}
-                        </Badge>
-                      ) : null
+                      <Badge className="bg-blue-100 text-blue-800 flex items-center gap-1 px-3 py-1.5">
+                        <CheckCircle2 className="h-4 w-4 text-blue-500 mr-1" /> 
+                        Ready to mint
+                      </Badge>
                     )}
                   </div>
-                  {/* Detailed status alerts (optional, can be removed if redundant) */}
-                  {/* ...existing code for Alert blocks can be left as-is or removed for brevity... */}
                 </div>
               )}
 
@@ -442,9 +519,8 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                             </span>
                           ) : (
                             <span className="font-semibold block truncate w-full" title={typeof error === 'string' ? error : error?.message || 'An unknown error occurred.'}
-                              style={{maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-                              {typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.includes('already minted')
-                                ? 'You have already minted this token. Each wallet can only mint one.'
+                              style={{maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>                              {typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.includes('already minted')
+                                ? 'You have already minted this token. Each wallet can only mint one Member or Officer token.'
                                 : typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.includes('missing revert data')
                                   ? 'Minting is not possible for this token or address. You may not be eligible, or the contract rejected the transaction.'
                                   : typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.toLowerCase().includes('not eligible')
@@ -464,13 +540,19 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                 </div>
               )}
 
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="overflow-hidden rounded-md flex items-center justify-center" style={{ minHeight: 200 }}>
+              <div className="grid gap-6 md:grid-cols-2">                <div className="overflow-hidden rounded-md flex items-center justify-center" style={{ minHeight: 200 }}>
                   <img 
-                    src={token.imageUri || "/placeholder.svg"} 
+                    src={token.imageUri ? 
+                      (token.imageUri.startsWith('/') ? token.imageUri : `/${token.imageUri}`) 
+                      : "/placeholder.svg"} 
                     alt={token.name} 
                     className="max-h-64 max-w-full object-contain mx-auto"
                     style={{ maxHeight: 256, width: "auto" }}
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
 
@@ -518,21 +600,19 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                onClick={handleMint}
-                                disabled={
+                                onClick={handleMint}                                disabled={
                                   isLoading ||
                                   isSuccess ||
-                                  alreadyMinted ||
-                                  ((userRole === 'MEMBER' || userRole === 'OFFICER') && !isWhitelisted) ||
-                                  (userRole === 'OFFICER' && !isOfficer)
+                                  (alreadyMinted && (userRole === 'Member' || userRole === 'Officer')) ||
+                                  ((userRole === 'Member' || userRole === 'Officer') && !isWhitelisted) ||
+                                  (userRole === 'Officer' && !isOfficer)
                                 }
                                 className="w-full"
                               >
                                 {isLoading
                                   ? "Minting..."
                                   : isSuccess
-                                    ? "Minted!"
-                                    : alreadyMinted
+                                    ? "Minted!"                                  : alreadyMinted && (userRole === 'Member' || userRole === 'Officer')
                                       ? "Already Minted"
                                       : eligibilityReason
                                         ? "Not Eligible"
@@ -541,8 +621,7 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                             </TooltipTrigger>
                             <TooltipContent>
                               {isLoading
-                                ? 'Minting in progress...'
-                                : alreadyMinted
+                                ? 'Minting in progress...'                                : alreadyMinted && (userRole === 'Member' || userRole === 'Officer')
                                   ? 'You already own this token.'
                                   : eligibilityReason
                                     ? eligibilityReason
@@ -566,10 +645,11 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                         <p className="mt-2 text-xs text-blue-600 text-center">
                           Tx Hash: <a href={`https://amoy.polygonscan.com/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">{txHash.slice(0, 10)}...{txHash.slice(-6)}</a>
                         </p>
-                      )}
-                      {isConnected && (
+                      )}                      {isConnected && (
                         <div className="mt-2 text-xs text-muted-foreground text-center">
                           <span>Debug: Role sent to contract: <b>{getContractRole(category, token)}</b></span>
+                          <br />
+                          <span>Role as bytes32: <b>{ethers.keccak256(ethers.toUtf8Bytes(getContractRole(category, token))).slice(0, 10)}...</b></span>
                         </div>
                       )}
                       {isSuccess && (

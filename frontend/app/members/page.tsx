@@ -13,7 +13,6 @@ import { useAccount } from "wagmi";
 import { contracts } from "../../lib/contracts";
 import { useContractRead } from "wagmi";
 import { motion, AnimatePresence } from "framer-motion";
-import { readContract } from 'wagmi/actions';
 import { useMyTokens } from "@/hooks/use-mytokens";
 
 const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID || "80002";
