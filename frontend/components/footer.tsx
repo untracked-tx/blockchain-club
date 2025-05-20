@@ -24,9 +24,8 @@ export default function Footer() {
                 <Link href="/governance" className="text-sm text-gray-600 hover:text-blue-600">
                   Governance
                 </Link>
-              </li>
-              <li>
-                <Link href="/about" className="text-sm text-gray-600 hover:text-blue-600">
+              </li>              <li>
+                <Link href="/#about" className="text-sm text-gray-600 hover:text-blue-600">
                   About Us
                 </Link>
               </li>
@@ -35,9 +34,8 @@ export default function Footer() {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Resources</h3>
-            <ul className="mt-2 space-y-2">
-              <li>
-                <Link href="/about#whitepaper" className="text-sm text-gray-600 hover:text-blue-600">
+            <ul className="mt-2 space-y-2">              <li>
+                <Link href="/#about" className="text-sm text-gray-600 hover:text-blue-600">
                   Whitepaper
                 </Link>
               </li>

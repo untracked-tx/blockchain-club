@@ -8,13 +8,12 @@ import ConnectWalletButton from "./connect-wallet-button"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
+  
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
     { name: "Gallery", href: "/gallery" },
     { name: "Governance", href: "/governance" },
     { name: "Research", href: "/research" },
