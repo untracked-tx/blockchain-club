@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Area, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
 interface PortfolioChartProps {
   data: {
@@ -50,7 +50,6 @@ export function PortfolioChart({ data }: PortfolioChartProps) {
     }
     return null
   }
-
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -63,6 +62,16 @@ export function PortfolioChart({ data }: PortfolioChartProps) {
             bottom: 5,
           }}
         >
+          <defs>
+            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#0EA5E9" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#0EA5E9" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="colorStroke" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="5%" stopColor="#2563EB" />
+              <stop offset="95%" stopColor="#06B6D4" />
+            </linearGradient>
+          </defs>
           <XAxis
             dataKey="date"
             tickFormatter={formatDate}
@@ -70,22 +79,46 @@ export function PortfolioChart({ data }: PortfolioChartProps) {
             tickLine={false}
             tick={{ fontSize: 12, fill: "#6B7280" }}
             dy={10}
-          />
-          <YAxis
+          />          <YAxis
             tickFormatter={(value) => `$${(value / 1000).toFixed(1)}k`}
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 12, fill: "#6B7280" }}
             dx={-10}
+            domain={['dataMin - 2000', 'dataMax + 1000']}
           />
-          <Tooltip content={<CustomTooltip />} />
-          <Line
+          <ReferenceLine 
+            y={25000} 
+            stroke="#10B981" 
+            strokeWidth={1.5} 
+            strokeDasharray="5 5"
+            label={{ 
+              position: 'right', 
+              value: 'Initial Goal', 
+              fill: '#10B981', 
+              fontSize: 12 
+            }}
+          />
+          <Tooltip content={<CustomTooltip />} />          <Area
             type="monotone"
             dataKey="value"
-            stroke="#3B82F6"
-            strokeWidth={2}
-            dot={false}
-            activeDot={{ r: 6, fill: "#3B82F6", stroke: "#fff", strokeWidth: 2 }}
+            stroke="url(#colorStroke)"
+            strokeWidth={3}
+            fill="url(#colorValue)"
+            fillOpacity={1}
+            dot={(props) => props.cy < 30000 ? null : (
+              <circle 
+                cx={props.cx} 
+                cy={props.cy} 
+                r={4} 
+                fill="#2563EB" 
+                stroke="#fff" 
+                strokeWidth={2}
+              />
+            )} 
+            activeDot={{ r: 8, fill="#2563EB", stroke: "#fff", strokeWidth: 2 }}
+            isAnimationActive={true}
+            animationDuration={1500}
           />
         </LineChart>
       </ResponsiveContainer>

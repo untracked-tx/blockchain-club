@@ -22,47 +22,47 @@ import {
   Shield,
   BarChart3,
 } from "lucide-react"
-import { PortfolioChart } from "@/components/portfolio-chart"
 import { PortfolioDistribution } from "@/components/portfolio-distribution"
+import CryptoTicker from "@/components/optimized-crypto-ticker"
+import { EnhancedPortfolioChart } from "@/components/fixed-enhanced-chart"
 
 // Mock organizational portfolio data
-const mockOrganizationalPortfolio = {
-  totalValue: 28750.65,
-  dailyChange: 842.18,
-  dailyChangePercentage: 3.02,
-  weeklyChange: 1256.92,
-  weeklyChangePercentage: 4.57,
-  monthlyChange: 3245.67,
-  monthlyChangePercentage: 12.73,
+const mockOrganizationalPortfolio = {  totalValue: 38750.65,
+  dailyChange: 1842.18,
+  dailyChangePercentage: 4.98,
+  weeklyChange: 5256.92,
+  weeklyChangePercentage: 15.7,
+  monthlyChange: 15245.67,
+  monthlyChangePercentage: 64.83,
   assets: [
     {
       id: "bitcoin",
       name: "Bitcoin",
       symbol: "BTC",
-      amount: 0.385,
-      value: 14250.45,
-      price: 37014.16,
-      change24h: 3.8,
+      amount: 0.485,
+      value: 19750.45,
+      price: 40722.16,
+      change24h: 5.8,
       color: "#F7931A",
     },
     {
       id: "ethereum",
       name: "Ethereum",
       symbol: "ETH",
-      amount: 5.25,
-      value: 9125.87,
-      price: 1738.26,
-      change24h: 2.5,
+      amount: 5.75,
+      value: 12325.87,
+      price: 2143.63,
+      change24h: 4.5,
       color: "#627EEA",
     },
     {
       id: "solana",
       name: "Solana",
       symbol: "SOL",
-      amount: 42.8,
-      value: 2850.12,
-      price: 66.59,
-      change24h: 6.2,
+      amount: 62.8,
+      value: 4850.12,
+      price: 77.23,
+      change24h: 8.2,
       color: "#00FFA3",
     },
     {
@@ -80,8 +80,8 @@ const mockOrganizationalPortfolio = {
       name: "Polkadot",
       symbol: "DOT",
       amount: 242.5,
-      value: 1212.5,
-      price: 5.0,
+      value: 452.5,
+      price: 1.87,
       change24h: 1.2,
       color: "#E6007A",
     },
@@ -89,8 +89,8 @@ const mockOrganizationalPortfolio = {
       id: "usdc",
       name: "USD Coin",
       symbol: "USDC",
-      amount: 174.21,
-      value: 174.21,
+      amount: 234.21,
+      value: 234.21,
       price: 1.0,
       change24h: 0.0,
       color: "#2775CA",
@@ -156,23 +156,34 @@ const mockOrganizationalPortfolio = {
   ],
 }
 
-// Mock historical data for chart (30 days)
+// Mock historical data for chart (30 days) with significant performance growth
 const mockHistoricalData = Array.from({ length: 30 }, (_, i) => {
   const date = new Date()
   date.setDate(date.getDate() - (29 - i))
 
-  // Base value with some randomness
-  const baseValue = 25000 + Math.random() * 1000
+  // Starting value around 18,000
+  const startValue = 18000
 
-  // Add a trend
-  const trendValue = i * 150
-
-  // Add some volatility
-  const volatility = Math.random() * 800 - 400
-
+  // Create an exponential growth curve
+  // This will increase more dramatically towards the end
+  const growthFactor = 1.04 + (i > 20 ? 0.02 : 0)
+  const baseGrowth = startValue * Math.pow(growthFactor, i / 3.5)
+  
+  // Add some market volatility
+  const dayVolatility = Math.sin(i * 0.7) * 600
+  
+  // Add a larger spike for days 15-20 to show a significant event
+  const eventSpike = (i >= 15 && i <= 20) ? (i - 14) * 800 : 0
+  
+  // Some market dips in specific ranges
+  const dip = (i >= 5 && i <= 7) ? -1200 : 0
+  
+  // Combine all factors
+  const value = baseGrowth + dayVolatility + eventSpike + dip
+  
   return {
     date: date.toISOString().split("T")[0],
-    value: baseValue + trendValue + volatility,
+    value: Math.round(value),
   }
 })
 
@@ -228,7 +239,10 @@ export default function PortfolioPage() {
       <div className="mb-12">
         <h1 className="mb-4 text-4xl font-bold text-gray-900">Club Portfolio</h1>
         <p className="max-w-3xl text-lg text-gray-600">
-          The Blockchain & Crypto Investing Club actively manages a real cryptocurrency portfolio as part of our mission to provide hands-on investment experience. All data below is for demonstration and educational purposes, but our club is committed to transparency, financial literacy, and real-world investing. As we grow, this page will reflect the club's actual crypto investments, managed and governed by our members. (Current data is placeholder. Our goal is to build a robust, well-diversified treasury and become a leading student-run crypto investing group!)
+          The Blockchain & Crypto Investing Club actively manages a real cryptocurrency portfolio as part of our mission to provide hands-on investment experience. All data below is for demonstration and educational purposes, but our club is committed to transparency, financial literacy, and real-world investing. As we grow, this page will reflect the club's actual crypto investments, managed and governed by our members.
+        </p>
+        <p className="max-w-3xl mt-2 text-lg text-blue-600 font-medium">
+          Our treasury has grown from {formatCurrency(18000)} to {formatCurrency(portfolio.totalValue)} in the past 30 days!
         </p>
         {/* TODO: Add officer-only badge or warning if user is not an officer */}
       </div>
@@ -245,7 +259,11 @@ export default function PortfolioPage() {
               The club maintains a diversified cryptocurrency treasury to fund events, workshops, and club activities. Treasury decisions and investments are made through governance votes by members holding voting tokens. All transactions require multi-signature approval from at least 3 officers, ensuring security and transparency for our crypto investing activities.
             </p>
           </div>
-        </div>
+        </div>      </div>
+
+      {/* Live Crypto Ticker */}
+      <div className="mb-8">
+        <CryptoTicker />
       </div>
 
       {/* Portfolio Summary */}
@@ -357,10 +375,9 @@ export default function PortfolioPage() {
       {/* Portfolio Chart */}
       <Card className="mb-8 border-gray-200 bg-white shadow-sm">
         <CardHeader>
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">            <div>
               <CardTitle className="text-gray-900">Treasury Performance</CardTitle>
-              <CardDescription className="text-gray-600">Historical value over time</CardDescription>
+              <CardDescription className="text-gray-600">Historical growth from {formatCurrency(18000)} to {formatCurrency(portfolio.totalValue)}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               {/* TODO: Add ETH/USD toggle here */}
@@ -384,11 +401,9 @@ export default function PortfolioPage() {
           {isLoading ? (
             <div className="h-[300px] w-full">
               <Skeleton className="h-full w-full" />
-            </div>
-          ) : (
-            <div className="h-[300px] w-full">
-              <PortfolioChart data={mockHistoricalData} />
-              {/* TODO: Add tooltip/hover for chart details */}
+            </div>          ) : (            <div className="h-[350px] w-full">
+              <EnhancedPortfolioChart data={mockHistoricalData} />
+              {/* Chart with enhanced visualization */}
             </div>
           )}
         </CardContent>
@@ -674,8 +689,23 @@ export default function PortfolioPage() {
               </div>
             </CardFooter>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </TabsContent>      </Tabs>      {/* Additional info section */}
+      <div className="mt-8 mb-12">
+        <Card className="border-gray-200 shadow-sm overflow-hidden p-6">
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-blue-100 p-2 text-blue-600">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">Treasury Security</h3>
+              <p className="text-gray-600">
+                Our treasury is secured with industry-standard security practices. All transactions require
+                multi-signature verification from club officers, and we follow strict protocols for all investment activities.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }

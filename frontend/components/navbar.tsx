@@ -12,17 +12,16 @@ export default function Navbar() {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
-
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "Gallery", href: "/gallery" },
     { name: "Governance", href: "/governance" },
+    { name: "Research", href: "/research" },
     { name: "Meet The Club", href: "/meet" },
     { name: "Members", href: "/members" },
     { name: "Officers", href: "/officers" },
     { name: "Portfolio", href: "/portfolio" },
-    { name: "Whitelist", href: "/whitelist" }, // Add whitelist page to nav
   ]
 
   return (

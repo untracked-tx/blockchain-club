@@ -94,10 +94,6 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
-      console.log("[DEBUG] Contract Address:", CONTRACT_ADDRESS);
-      console.log("[DEBUG] ABI:", CONTRACT_ABI);
-      console.log("[DEBUG] Network:", await provider.getNetwork());
-
       return await contract.whitelist(address);
     } catch (error) {
       console.error("[ERROR] Failed to fetch 'whitelist' status:", error);
@@ -121,7 +117,9 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
         return;
       }
       
-      const contractRole = getContractRole(category, token);      // Check if user has already minted this role (only for Member and Officer roles)
+      const contractRole = getContractRole(category, token);
+      
+      // Check if user has already minted this role (only for Member and Officer roles)
       try {
         if (contractRole === 'Member' || contractRole === 'Officer') {
           const provider = new ethers.BrowserProvider((window as any).ethereum);
@@ -163,29 +161,27 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      
       // Determine mint args for contract
       let mintValue = ethers.parseEther("0");
-      let requireWhitelist = false;
       if (contractRole === 'Observer') {
         mintValue = ethers.parseEther("0");
-        requireWhitelist = false;
       } else if (contractRole === 'Member') {
         mintValue = ethers.parseEther("0.01");
-        requireWhitelist = true;
       } else if (contractRole === 'Supporter') {
         mintValue = ethers.parseEther("0.02");
-        requireWhitelist = false;
       } else if (contractRole === 'Officer') {
         mintValue = ethers.parseEther("0");
-        requireWhitelist = true;
       } else {
         // fallback: use category cost if present
         if (category?.cost && typeof category.cost === "string" && category.cost.match(/\d/)) {
           const match = category.cost.match(/([\d.]+)/);
           if (match) mintValue = ethers.parseEther(match[1]);
         }
-      }      // Debug log
-      console.log('[DEBUG][Mint] contractRole:', contractRole, '| value:', mintValue.toString(), '| address:', address, '| requireWhitelist:', requireWhitelist, '| category:', category);
+      }
+      
+      // Debug log
+      console.log('[DEBUG][Mint] contractRole:', contractRole, '| value:', mintValue.toString(), '| address:', address);
       
       // Validate the role before minting
       if (!isValidRole(contractRole)) {
@@ -196,36 +192,28 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
       }
 
       // Call mint with correct args and value
-      // Only pass overrides if mintValue is nonzero (ethers v6 will error if you pass { value: 0n })
-      if (typeof contract.mintToken === 'function') {
-        let tx;
-        // Convert the role string to bytes32 as required by the contract
-        const roleBytes32 = ethers.keccak256(ethers.toUtf8Bytes(contractRole));
-        console.log('[DEBUG][Mint] Role bytes32:', roleBytes32);
-        console.log('[DEBUG][Mint] Role string:', contractRole);
-        
-        // ethers.parseEther returns a bigint, but to avoid ES2020 issues, use .toString() for comparison
-        if (mintValue.toString() === '0') {
-          tx = await contract.mintToken(roleBytes32, mintValue);
-        } else {
-          tx = await contract.mintToken(roleBytes32, mintValue, { value: mintValue });
-        }
-        setStep("Transaction submitted. Waiting for confirmation...");
-        setTxHash(tx.hash);
-        await tx.wait();
+      let tx;
+      // Convert the role string to bytes32 as required by the contract
+      const roleBytes32 = ethers.keccak256(ethers.toUtf8Bytes(contractRole));
+      
+      // ethers.parseEther returns a bigint, but to avoid ES2020 issues, use .toString() for comparison
+      if (mintValue.toString() === '0') {
+        tx = await contract.mintToken(roleBytes32, mintValue);
       } else {
-        // fallback to mint(role, { value })
-        const tx = await contract.mint(contractRole, { value: mintValue });
-        setStep("Transaction submitted. Waiting for confirmation...");
-        setTxHash(tx.hash);
-        await tx.wait();
+        tx = await contract.mintToken(roleBytes32, mintValue, { value: mintValue });
       }
+      
+      setStep("Transaction submitted. Waiting for confirmation...");
+      setTxHash(tx.hash);
+      await tx.wait();
+      
       setStep("Minting complete! Waiting for Polygonscan confirmation...");
       setTimeout(() => {
         setIsPolyscanConfirmed(true);
         setStep("Mint successful!");
         setIsSuccess(true);
-      }, 7000);    } catch (err: any) {
+      }, 3000);
+    } catch (err: any) {
       // Improved error message handling with more specific messages
       let userError = err;
       
@@ -270,8 +258,6 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
     // Reset error and UI state when token changes or modal opens
     setError(null);
     setIsSuccess(false);
-    // If you use setTechnicalError elsewhere, reset it here too
-    // setTechnicalError && setTechnicalError(null);
   }, [token, isOpen]);
 
   // Eligibility check on modal open or wallet change
@@ -282,13 +268,21 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
       setUserRole("");
       setIsOfficer(false);
       setEligibilityReason("");
-      if (!isConnected || !address) return;      try {
+      
+      if (!isConnected || !address) return;
+      
+      try {
         const provider = new ethers.BrowserProvider((window as any).ethereum);
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
         const contractRole = getContractRole(category, token);
+        
         // Check whitelist
         let whitelisted = false;
-        try { whitelisted = await contract.whitelist(address); } catch {}
+        try { 
+          whitelisted = await contract.whitelist(address); 
+        } catch (e) {
+          console.error("Error checking whitelist:", e);
+        }
         setIsWhitelisted(!!whitelisted);
         
         // Check if user already owns this role/token - but only restrict for Member and Officer
@@ -303,12 +297,19 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
             hasRole = false;
             setAlreadyMinted(false);
           }
-        } catch {}
+        } catch (e) {
+          console.error("Error checking role:", e);
+        }
         setUserRole(contractRole);
         
         // Officer check
         let officer = false;
-        try { officer = await contract.hasRole && await contract.hasRole("OFFICER_ROLE", address); } catch {}
+        try { 
+          officer = OFFICER_ADDRESSES.includes(address.toLowerCase()) || 
+                   (await contract.hasRole && await contract.hasRole(ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE")), address)); 
+        } catch (e) {
+          console.error("Error checking officer status:", e);
+        }
         setIsOfficer(!!officer);
         
         // Eligibility logic per requirements
@@ -326,9 +327,11 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
           setEligibilityReason("");
         }
       } catch (e) {
-        setEligibilityReason('Could not determine eligibility.');
+        console.error("Error determining eligibility:", e);
+        setEligibilityReason('Could not determine eligibility. Please try again.');
       }
     }
+    
     if (isOpen && isConnected && address) fetchEligibility();
     else {
       setIsWhitelisted(null);
@@ -348,8 +351,9 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
   const getCostText = () => {
     if (category?.role) {
       if (category.role.toLowerCase() === "observer") return "Free"
-      if (category.role.toLowerCase() === "member") return "Free (requires university email)"
-      if (category.role.toLowerCase() === "supporter") return "0.05 ETH"
+      if (category.role.toLowerCase() === "member") return "0.01 ETH (requires whitelist)"
+      if (category.role.toLowerCase() === "supporter") return "0.02 ETH"
+      if (category.role.toLowerCase() === "officer") return "Free (requires officer role)"
       return "Free"
     }
     return category?.cost || "Free"
@@ -464,7 +468,7 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                         </Badge>
                       ) : eligibilityReason ? (
                         <Badge className={
-                          eligibilityReason.toLowerCase().includes('not whitelisted') || 
+                          eligibilityReason.toLowerCase().includes('not whitelist') || 
                           eligibilityReason.toLowerCase().includes('officer') 
                             ? "bg-yellow-100 text-yellow-800 flex items-center gap-1 px-3 py-1.5 text-sm font-medium" 
                             : "bg-red-100 text-red-800 flex items-center gap-1 px-3 py-1.5 text-sm font-medium"
@@ -557,34 +561,9 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                         <div className="flex-1 min-w-0">
                           <AlertTitle className="text-red-800 font-medium">Error</AlertTitle>
                           <AlertDescription className="text-red-700 max-h-40 overflow-y-auto">
-                            {typeof error === 'object' && (error?.reason === 'Not authorized for role' || (error?.message && error.message.includes('Not authorized for role'))) ? (
-                              <span className="font-medium block">
-                                {getContractRole(category, token) === 'OBSERVER' ? (
-                                  <>
-                                    This token should be open to all, but you received a role authorization error.<br/>
-                                    Please contact a club officer or administrator for assistance.
-                                  </>
-                                ) : (
-                                  <>
-                                    You are not authorized to mint this token.<br/>
-                                    Only wallets with the required role can mint this type of token.
-                                  </>
-                                )}
-                              </span>
-                            ) : (
-                              <span className="font-medium block">
-                                {typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.includes('already minted')
-                                  ? 'You have already minted this token'
-                                  : typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.includes('missing revert data')
-                                    ? 'Minting is not possible for this token or address. You may not be eligible.'
-                                    : typeof error === 'object' && error?.code === 'CALL_EXCEPTION' && error?.message?.toLowerCase().includes('not eligible')
-                                      ? 'You are not eligible to mint this token. Please check your role or contact a club officer.'
-                                      : (typeof error === 'string' ? error : error?.message || 'An unknown error occurred.')}
-                              </span>
-                            )}
-                            <div className="mt-2 text-xs text-red-600">
-                              Need help? Contact support with these error details.
-                            </div>
+                            {typeof error === 'object' ? 
+                              (error?.message || 'An unknown error occurred.') : 
+                              error}
                           </AlertDescription>
                         </div>
                       </div>
@@ -650,7 +629,7 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
                             : category.role === "Member"
                               ? "Requires university email verification. Grants voting rights and full access."
                               : category.role === "Supporter"
-                                ? "Requires a donation of 0.05 ETH. Grants enhanced voting power and exclusive perks."
+                                ? "Requires a donation of 0.02 ETH. Grants enhanced voting power and exclusive perks."
                                 : token.description || "Mint this token to add it to your collection."}
                         </div>
                       </div>
