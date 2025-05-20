@@ -532,10 +532,8 @@ export default function GalleryPage() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div>
-        <div className="mb-8 rounded-xl bg-purple-50 p-6"></div>
+      </div>      <div>
+        <div className="mb-8 rounded-xl bg-purple-50 p-6">
           <h2 className="mb-4 text-2xl font-bold text-gray-900 flex items-center">
             <Palette className="mr-2 h-6 w-6 text-purple-600" />
             Culture & Experience Track
