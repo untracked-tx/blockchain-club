@@ -41,7 +41,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/university-blockchain-club"
+                  href="https://github.com/untracked-tx/blockchain-club"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-gray-600 hover:text-blue-600"

@@ -1,0 +1,21 @@
+{
+  "name": "University Blockchain & Crypto Investing Club",
+  "short_name": "Blockchain Club",
+  "description": "A student-driven academic society empowering members to learn, invest, and lead in blockchain and digital assets.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#CFB87C",
+  "icons": [
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/placeholder-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

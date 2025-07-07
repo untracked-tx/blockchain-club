@@ -103,7 +103,7 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
   const [step, setStep] = useState<string>("")
   const [permissionError, setPermissionError] = useState<string | null>(null)
   const [contractConfig, setContractConfig] = useState<any>(null)
-  const clubEmail = "blockchainclub@university.edu"; // Set your club email here
+  const clubEmail = "liam.murphy@ucdenver.edu"; // Set your club email here
 
   // Token name mapping from display name to contract token type name
   const tokenNameMapping: { [key: string]: string } = {

@@ -27,6 +27,12 @@ import {
 } from "lucide-react"
 import { contracts } from "@/lib/contracts"
 
+export const metadata = {
+  title: 'Governance & Operations | University Blockchain Club',
+  description: 'Explore our transparent governance structure, smart contract architecture, and decentralized operations. Everything is on-chain, auditable, and designed for maximum transparency.',
+  keywords: 'blockchain governance, smart contracts, transparency, DAO, decentralized operations, university blockchain',
+}
+
 export default function GovernancePage() {
   const [expandedContract, setExpandedContract] = useState<string | null>(null)
   const [contractAddresses, setContractAddresses] = useState({
@@ -345,7 +351,7 @@ export default function GovernancePage() {
                     </a>
                   </Button>
                   <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50" asChild>
-                    <a href="https://github.com/blockchain-club/contracts" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/untracked-tx/blockchain-club/blob/master/contracts/BlockchainClubMembership.sol" target="_blank" rel="noopener noreferrer">
                       <Github className="mr-1 h-4 w-4" />
                       GitHub
                     </a>
@@ -422,7 +428,7 @@ export default function GovernancePage() {
                     </a>
                   </Button>
                   <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50" asChild>
-                    <a href="https://github.com/blockchain-club/contracts" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/untracked-tx/blockchain-club/blob/master/contracts/Roles.sol" target="_blank" rel="noopener noreferrer">
                       <Github className="mr-1 h-4 w-4" />
                       GitHub
                     </a>
@@ -499,7 +505,7 @@ export default function GovernancePage() {
                     </a>
                   </Button>
                   <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50" asChild>
-                    <a href="https://github.com/blockchain-club/contracts" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/untracked-tx/blockchain-club/blob/master/contracts/TreasuryRouter.sol" target="_blank" rel="noopener noreferrer">
                       <Github className="mr-1 h-4 w-4" />
                       GitHub
                     </a>
@@ -577,7 +583,7 @@ export default function GovernancePage() {
           </div>
           <div className="group">
             <Button variant="outline" className="h-auto p-6 flex-col border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-md hover:shadow-lg transition-all group-hover:scale-105" asChild>
-              <a href="https://github.com/blockchain-club/contracts" target="_blank" rel="noopener noreferrer" className="space-y-3">
+              <a href="https://github.com/untracked-tx/blockchain-club" target="_blank" rel="noopener noreferrer" className="space-y-3">
                 <div className="rounded-xl bg-gradient-to-br from-gray-700 to-slate-800 p-3 shadow-md">
                   <Github className="h-6 w-6 text-white" />
                 </div>
