@@ -5,4 +5,3 @@ export * as interfaces from "./interfaces";
 export { BlockchainClubMembership__factory } from "./BlockchainClubMembership__factory";
 export { Roles__factory } from "./Roles__factory";
 export { TreasuryRouter__factory } from "./TreasuryRouter__factory";
-export { VotingPowerStrategy__factory } from "./VotingPowerStrategy__factory";

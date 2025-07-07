@@ -14,8 +14,4 @@ export const contracts = {
     address: getContractAddress("TreasuryRouter"),
     abi: getContractAbi("TreasuryRouter"),
   },
-  voting: {
-    address: getContractAddress("VotingPowerStrategy"),
-    abi: getContractAbi("VotingPowerStrategy"),
-  },
 }

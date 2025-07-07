@@ -26,79 +26,50 @@ import type {
 export interface BlockchainClubMembershipInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "DEFAULT_ADMIN_ROLE"
-      | "OFFICER_ROLE"
-      | "SUPPORTER_PRICE"
+      | "MEMBER_TOKEN_TYPE"
+      | "OFFICER_TOKEN_TYPE"
       | "acceptOwnership"
       | "approve"
       | "balanceOf"
-      | "baseTokenURI"
-      | "burn"
-      | "editionWhitelist"
+      | "burnToken"
+      | "createTokenType"
       | "getApproved"
-      | "getRoleAdmin"
-      | "getSnapshotMetadata"
-      | "getVotingWeight"
-      | "grantRole"
-      | "hasMintedRole"
-      | "hasRole"
+      | "getMemberCount"
+      | "getOfficerCount"
       | "initialize"
-      | "invalidTokens"
-      | "invalidateToken"
       | "isApprovedForAll"
-      | "isRecoveryToken"
-      | "isTokenActive"
-      | "mintOfficerEdition"
-      | "mintRecoveryToken"
-      | "mintToken"
-      | "mintedBy"
+      | "memberStats"
+      | "mint"
       | "name"
-      | "nextTokenId"
-      | "opsWallet"
       | "owner"
       | "ownerOf"
       | "pause"
       | "paused"
       | "pendingOwner"
       | "proxiableUUID"
-      | "reissueToken"
+      | "publicMint"
       | "renounceOwnership"
-      | "renounceRole"
-      | "replacesToken"
-      | "revokeRole"
-      | "roleVotingPower"
       | "roles"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
-      | "scholarshipWallet"
       | "setApprovalForAll"
-      | "setBaseTokenURI"
-      | "setBatchWhitelist"
-      | "setEditionWhitelist"
-      | "setOpsWallet"
-      | "setRole"
-      | "setScholarshipWallet"
-      | "setSoulbound"
-      | "setTokenExpiry"
-      | "setTokenPrice"
-      | "setWhitelist"
+      | "setBaseURI"
       | "soulbound"
       | "supportsInterface"
       | "symbol"
       | "tokenByIndex"
-      | "tokenExpiry"
       | "tokenOfOwnerByIndex"
-      | "tokenPrice"
+      | "tokenTypeConfigs"
+      | "tokenTypes"
       | "tokenURI"
       | "totalSupply"
       | "transferFrom"
       | "transferOwnership"
-      | "transferWithExpiryCheck"
       | "unpause"
+      | "updateWhitelist"
       | "upgradeTo"
       | "upgradeToAndCall"
       | "whitelist"
-      | "withdraw"
   ): FunctionFragment;
 
   getEvent(
@@ -108,34 +79,24 @@ export interface BlockchainClubMembershipInterface extends Interface {
       | "ApprovalForAll"
       | "BeaconUpgraded"
       | "Initialized"
-      | "MembershipMinted"
-      | "OfficerAction"
       | "OwnershipTransferStarted"
       | "OwnershipTransferred"
       | "Paused"
-      | "RoleAdminChanged"
-      | "RoleChanged"
-      | "RoleGranted"
-      | "RoleRevoked"
-      | "TokenBurned"
-      | "TokenInvalidated"
-      | "TokenReissued"
+      | "StatsUpdated"
+      | "TokenMinted"
+      | "TokenTypeCreated"
       | "Transfer"
       | "Unpaused"
       | "Upgraded"
-      | "Withdrawn"
+      | "WhitelistUpdated"
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
+    functionFragment: "MEMBER_TOKEN_TYPE",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "OFFICER_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "SUPPORTER_PRICE",
+    functionFragment: "OFFICER_TOKEN_TYPE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -151,88 +112,50 @@ export interface BlockchainClubMembershipInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "baseTokenURI",
-    values?: undefined
+    functionFragment: "burnToken",
+    values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(
-    functionFragment: "editionWhitelist",
-    values: [string]
+    functionFragment: "createTokenType",
+    values: [
+      BytesLike,
+      string,
+      string,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getRoleAdmin",
-    values: [BytesLike]
+    functionFragment: "getMemberCount",
+    values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getSnapshotMetadata",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getVotingWeight",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "grantRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hasMintedRole",
-    values: [AddressLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "hasRole",
-    values: [BytesLike, AddressLike]
+    functionFragment: "getOfficerCount",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [string, AddressLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "invalidTokens",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "invalidateToken",
-    values: [BigNumberish]
+    values: [string, string, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "isRecoveryToken",
-    values: [BigNumberish]
+    functionFragment: "memberStats",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "isTokenActive",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintOfficerEdition",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintRecoveryToken",
-    values: [AddressLike, BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintToken",
-    values: [BytesLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "mintedBy",
-    values: [BigNumberish]
+    functionFragment: "mint",
+    values: [AddressLike, BytesLike, boolean]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "nextTokenId",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "opsWallet", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
@@ -249,30 +172,14 @@ export interface BlockchainClubMembershipInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "reissueToken",
-    values: [BigNumberish, AddressLike]
+    functionFragment: "publicMint",
+    values: [BytesLike, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "renounceRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "replacesToken",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "revokeRole",
-    values: [BytesLike, AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "roleVotingPower",
-    values: [string]
-  ): string;
-  encodeFunctionData(functionFragment: "roles", values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: "roles", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "safeTransferFrom(address,address,uint256)",
     values: [AddressLike, AddressLike, BigNumberish]
@@ -282,53 +189,10 @@ export interface BlockchainClubMembershipInterface extends Interface {
     values: [AddressLike, AddressLike, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "scholarshipWallet",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "setApprovalForAll",
     values: [AddressLike, boolean]
   ): string;
-  encodeFunctionData(
-    functionFragment: "setBaseTokenURI",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setBatchWhitelist",
-    values: [AddressLike[], boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setEditionWhitelist",
-    values: [string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOpsWallet",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setRole",
-    values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setScholarshipWallet",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setSoulbound",
-    values: [BigNumberish, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setTokenExpiry",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setTokenPrice",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setWhitelist",
-    values: [AddressLike, boolean]
-  ): string;
+  encodeFunctionData(functionFragment: "setBaseURI", values: [string]): string;
   encodeFunctionData(
     functionFragment: "soulbound",
     values: [BigNumberish]
@@ -343,16 +207,16 @@ export interface BlockchainClubMembershipInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "tokenExpiry",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenOfOwnerByIndex",
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "tokenPrice",
-    values?: undefined
+    functionFragment: "tokenTypeConfigs",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "tokenTypes",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
@@ -370,11 +234,11 @@ export interface BlockchainClubMembershipInterface extends Interface {
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "transferWithExpiryCheck",
-    values: [AddressLike, BigNumberish]
-  ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "updateWhitelist",
+    values: [AddressLike, boolean]
+  ): string;
   encodeFunctionData(
     functionFragment: "upgradeTo",
     values: [AddressLike]
@@ -387,18 +251,13 @@ export interface BlockchainClubMembershipInterface extends Interface {
     functionFragment: "whitelist",
     values: [AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
   decodeFunctionResult(
-    functionFragment: "DEFAULT_ADMIN_ROLE",
+    functionFragment: "MEMBER_TOKEN_TYPE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "OFFICER_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "SUPPORTER_PRICE",
+    functionFragment: "OFFICER_TOKEN_TYPE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -407,13 +266,9 @@ export interface BlockchainClubMembershipInterface extends Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "burnToken", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "baseTokenURI",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "editionWhitelist",
+    functionFragment: "createTokenType",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -421,60 +276,24 @@ export interface BlockchainClubMembershipInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getRoleAdmin",
+    functionFragment: "getMemberCount",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getSnapshotMetadata",
+    functionFragment: "getOfficerCount",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "getVotingWeight",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "hasMintedRole",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "invalidTokens",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "invalidateToken",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "isRecoveryToken",
+    functionFragment: "memberStats",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "isTokenActive",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "mintOfficerEdition",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "mintRecoveryToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "mintToken", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "mintedBy", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "nextTokenId",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "opsWallet", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
@@ -487,25 +306,9 @@ export interface BlockchainClubMembershipInterface extends Interface {
     functionFragment: "proxiableUUID",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "reissueToken",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "publicMint", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceRole",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "replacesToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "roleVotingPower",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "roles", data: BytesLike): Result;
@@ -518,50 +321,10 @@ export interface BlockchainClubMembershipInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "scholarshipWallet",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "setBaseTokenURI",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setBatchWhitelist",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setEditionWhitelist",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setOpsWallet",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "setRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setScholarshipWallet",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setSoulbound",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setTokenExpiry",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setTokenPrice",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setWhitelist",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "setBaseURI", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "soulbound", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
@@ -573,14 +336,14 @@ export interface BlockchainClubMembershipInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "tokenExpiry",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "tokenOfOwnerByIndex",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "tokenPrice", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenTypeConfigs",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "tokenTypes", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
@@ -594,18 +357,17 @@ export interface BlockchainClubMembershipInterface extends Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "transferWithExpiryCheck",
+    functionFragment: "updateWhitelist",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "upgradeTo", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "upgradeToAndCall",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "whitelist", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 }
 
 export namespace AdminChangedEvent {
@@ -685,37 +447,6 @@ export namespace InitializedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace MembershipMintedEvent {
-  export type InputTuple = [to: AddressLike, tokenId: BigNumberish];
-  export type OutputTuple = [to: string, tokenId: bigint];
-  export interface OutputObject {
-    to: string;
-    tokenId: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace OfficerActionEvent {
-  export type InputTuple = [
-    officer: AddressLike,
-    tokenId: BigNumberish,
-    action: string
-  ];
-  export type OutputTuple = [officer: string, tokenId: bigint, action: string];
-  export interface OutputObject {
-    officer: string;
-    tokenId: bigint;
-    action: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace OwnershipTransferStartedEvent {
   export type InputTuple = [previousOwner: AddressLike, newOwner: AddressLike];
   export type OutputTuple = [previousOwner: string, newOwner: string];
@@ -754,21 +485,17 @@ export namespace PausedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace RoleAdminChangedEvent {
+export namespace StatsUpdatedEvent {
   export type InputTuple = [
+    member: AddressLike,
     role: BytesLike,
-    previousAdminRole: BytesLike,
-    newAdminRole: BytesLike
+    tokenCount: BigNumberish
   ];
-  export type OutputTuple = [
-    role: string,
-    previousAdminRole: string,
-    newAdminRole: string
-  ];
+  export type OutputTuple = [member: string, role: string, tokenCount: bigint];
   export interface OutputObject {
+    member: string;
     role: string;
-    previousAdminRole: string;
-    newAdminRole: string;
+    tokenCount: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -776,61 +503,17 @@ export namespace RoleAdminChangedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace RoleChangedEvent {
-  export type InputTuple = [tokenId: BigNumberish, newRole: string];
-  export type OutputTuple = [tokenId: bigint, newRole: string];
-  export interface OutputObject {
-    tokenId: bigint;
-    newRole: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RoleGrantedEvent {
+export namespace TokenMintedEvent {
   export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
+    to: AddressLike,
+    tokenId: BigNumberish,
+    tokenType: BytesLike
   ];
-  export type OutputTuple = [role: string, account: string, sender: string];
+  export type OutputTuple = [to: string, tokenId: bigint, tokenType: string];
   export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace RoleRevokedEvent {
-  export type InputTuple = [
-    role: BytesLike,
-    account: AddressLike,
-    sender: AddressLike
-  ];
-  export type OutputTuple = [role: string, account: string, sender: string];
-  export interface OutputObject {
-    role: string;
-    account: string;
-    sender: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace TokenBurnedEvent {
-  export type InputTuple = [owner: AddressLike, tokenId: BigNumberish];
-  export type OutputTuple = [owner: string, tokenId: bigint];
-  export interface OutputObject {
-    owner: string;
+    to: string;
     tokenId: bigint;
+    tokenType: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -838,33 +521,13 @@ export namespace TokenBurnedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace TokenInvalidatedEvent {
-  export type InputTuple = [tokenId: BigNumberish];
-  export type OutputTuple = [tokenId: bigint];
+export namespace TokenTypeCreatedEvent {
+  export type InputTuple = [typeId: BytesLike, name: string, category: string];
+  export type OutputTuple = [typeId: string, name: string, category: string];
   export interface OutputObject {
-    tokenId: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace TokenReissuedEvent {
-  export type InputTuple = [
-    oldTokenId: BigNumberish,
-    newTokenId: BigNumberish,
-    newOwner: AddressLike
-  ];
-  export type OutputTuple = [
-    oldTokenId: bigint,
-    newTokenId: bigint,
-    newOwner: string
-  ];
-  export interface OutputObject {
-    oldTokenId: bigint;
-    newTokenId: bigint;
-    newOwner: string;
+    typeId: string;
+    name: string;
+    category: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -914,12 +577,12 @@ export namespace UpgradedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace WithdrawnEvent {
-  export type InputTuple = [recipient: AddressLike, amount: BigNumberish];
-  export type OutputTuple = [recipient: string, amount: bigint];
+export namespace WhitelistUpdatedEvent {
+  export type InputTuple = [account: AddressLike, status: boolean];
+  export type OutputTuple = [account: string, status: boolean];
   export interface OutputObject {
-    recipient: string;
-    amount: bigint;
+    account: string;
+    status: boolean;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -970,11 +633,9 @@ export interface BlockchainClubMembership extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  DEFAULT_ADMIN_ROLE: TypedContractMethod<[], [string], "view">;
+  MEMBER_TOKEN_TYPE: TypedContractMethod<[], [string], "view">;
 
-  OFFICER_ROLE: TypedContractMethod<[], [string], "view">;
-
-  SUPPORTER_PRICE: TypedContractMethod<[], [bigint], "view">;
+  OFFICER_TOKEN_TYPE: TypedContractMethod<[], [string], "view">;
 
   acceptOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
@@ -986,56 +647,30 @@ export interface BlockchainClubMembership extends BaseContract {
 
   balanceOf: TypedContractMethod<[owner: AddressLike], [bigint], "view">;
 
-  baseTokenURI: TypedContractMethod<[], [string], "view">;
+  burnToken: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
 
-  burn: TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
-
-  editionWhitelist: TypedContractMethod<[arg0: string], [boolean], "view">;
+  createTokenType: TypedContractMethod<
+    [
+      typeId: BytesLike,
+      name: string,
+      category: string,
+      startTime: BigNumberish,
+      endTime: BigNumberish,
+      maxSupply: BigNumberish,
+      mintAccess: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
-  getRoleAdmin: TypedContractMethod<[role: BytesLike], [string], "view">;
+  getMemberCount: TypedContractMethod<[], [bigint], "view">;
 
-  getSnapshotMetadata: TypedContractMethod<
-    [tokenId: BigNumberish],
-    [[bigint, string] & { votingPower: bigint; role: string }],
-    "view"
-  >;
-
-  getVotingWeight: TypedContractMethod<
-    [tokenId: BigNumberish],
-    [bigint],
-    "view"
-  >;
-
-  grantRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  hasMintedRole: TypedContractMethod<
-    [arg0: AddressLike, arg1: string],
-    [boolean],
-    "view"
-  >;
-
-  hasRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
-    "view"
-  >;
+  getOfficerCount: TypedContractMethod<[], [bigint], "view">;
 
   initialize: TypedContractMethod<
-    [baseURI: string, _opsWallet: AddressLike, _scholarshipWallet: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  invalidTokens: TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
-
-  invalidateToken: TypedContractMethod<
-    [tokenId: BigNumberish],
+    [name: string, symbol: string, rolesContract: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -1046,39 +681,26 @@ export interface BlockchainClubMembership extends BaseContract {
     "view"
   >;
 
-  isRecoveryToken: TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
-
-  isTokenActive: TypedContractMethod<
-    [tokenId: BigNumberish],
-    [boolean],
+  memberStats: TypedContractMethod<
+    [arg0: AddressLike],
+    [
+      [bigint, bigint, string, boolean] & {
+        joinDate: bigint;
+        tokenCount: bigint;
+        currentRole: string;
+        isActive: boolean;
+      }
+    ],
     "view"
   >;
 
-  mintOfficerEdition: TypedContractMethod<
-    [edition: string],
+  mint: TypedContractMethod<
+    [to: AddressLike, tokenType: BytesLike, isSoulbound: boolean],
     [void],
     "nonpayable"
   >;
-
-  mintRecoveryToken: TypedContractMethod<
-    [newOwner: AddressLike, replacedTokenId: BigNumberish, role: string],
-    [void],
-    "nonpayable"
-  >;
-
-  mintToken: TypedContractMethod<
-    [role: BytesLike, price: BigNumberish],
-    [void],
-    "payable"
-  >;
-
-  mintedBy: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
   name: TypedContractMethod<[], [string], "view">;
-
-  nextTokenId: TypedContractMethod<[], [bigint], "view">;
-
-  opsWallet: TypedContractMethod<[], [string], "view">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
@@ -1092,31 +714,15 @@ export interface BlockchainClubMembership extends BaseContract {
 
   proxiableUUID: TypedContractMethod<[], [string], "view">;
 
-  reissueToken: TypedContractMethod<
-    [oldTokenId: BigNumberish, newOwner: AddressLike],
+  publicMint: TypedContractMethod<
+    [tokenType: BytesLike, isSoulbound: boolean],
     [void],
     "nonpayable"
   >;
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
-  renounceRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  replacesToken: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
-
-  revokeRole: TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  roleVotingPower: TypedContractMethod<[arg0: string], [bigint], "view">;
-
-  roles: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  roles: TypedContractMethod<[], [string], "view">;
 
   "safeTransferFrom(address,address,uint256)": TypedContractMethod<
     [from: AddressLike, to: AddressLike, tokenId: BigNumberish],
@@ -1135,73 +741,13 @@ export interface BlockchainClubMembership extends BaseContract {
     "nonpayable"
   >;
 
-  scholarshipWallet: TypedContractMethod<[], [string], "view">;
-
   setApprovalForAll: TypedContractMethod<
     [operator: AddressLike, approved: boolean],
     [void],
     "nonpayable"
   >;
 
-  setBaseTokenURI: TypedContractMethod<
-    [newBaseURI: string],
-    [void],
-    "nonpayable"
-  >;
-
-  setBatchWhitelist: TypedContractMethod<
-    [users: AddressLike[], status: boolean],
-    [void],
-    "nonpayable"
-  >;
-
-  setEditionWhitelist: TypedContractMethod<
-    [edition: string, status: boolean],
-    [void],
-    "nonpayable"
-  >;
-
-  setOpsWallet: TypedContractMethod<
-    [_opsWallet: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  setRole: TypedContractMethod<
-    [tokenId: BigNumberish, role: string],
-    [void],
-    "nonpayable"
-  >;
-
-  setScholarshipWallet: TypedContractMethod<
-    [_scholarshipWallet: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
-  setSoulbound: TypedContractMethod<
-    [tokenId: BigNumberish, _status: boolean],
-    [void],
-    "nonpayable"
-  >;
-
-  setTokenExpiry: TypedContractMethod<
-    [tokenId: BigNumberish, expiryTimestamp: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
-  setTokenPrice: TypedContractMethod<
-    [_newPrice: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-
-  setWhitelist: TypedContractMethod<
-    [user: AddressLike, status: boolean],
-    [void],
-    "nonpayable"
-  >;
+  setBaseURI: TypedContractMethod<[newBaseURI: string], [void], "nonpayable">;
 
   soulbound: TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
 
@@ -1215,15 +761,30 @@ export interface BlockchainClubMembership extends BaseContract {
 
   tokenByIndex: TypedContractMethod<[index: BigNumberish], [bigint], "view">;
 
-  tokenExpiry: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
-
   tokenOfOwnerByIndex: TypedContractMethod<
     [owner: AddressLike, index: BigNumberish],
     [bigint],
     "view"
   >;
 
-  tokenPrice: TypedContractMethod<[], [bigint], "view">;
+  tokenTypeConfigs: TypedContractMethod<
+    [arg0: BytesLike],
+    [
+      [string, string, bigint, bigint, bigint, bigint, boolean, bigint] & {
+        name: string;
+        category: string;
+        startTime: bigint;
+        endTime: bigint;
+        maxSupply: bigint;
+        currentSupply: bigint;
+        isActive: boolean;
+        mintAccess: bigint;
+      }
+    ],
+    "view"
+  >;
+
+  tokenTypes: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
 
   tokenURI: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
@@ -1241,13 +802,13 @@ export interface BlockchainClubMembership extends BaseContract {
     "nonpayable"
   >;
 
-  transferWithExpiryCheck: TypedContractMethod<
-    [to: AddressLike, tokenId: BigNumberish],
+  unpause: TypedContractMethod<[], [void], "nonpayable">;
+
+  updateWhitelist: TypedContractMethod<
+    [account: AddressLike, status: boolean],
     [void],
     "nonpayable"
   >;
-
-  unpause: TypedContractMethod<[], [void], "nonpayable">;
 
   upgradeTo: TypedContractMethod<
     [newImplementation: AddressLike],
@@ -1263,21 +824,16 @@ export interface BlockchainClubMembership extends BaseContract {
 
   whitelist: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
 
-  withdraw: TypedContractMethod<[], [void], "nonpayable">;
-
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
   getFunction(
-    nameOrSignature: "DEFAULT_ADMIN_ROLE"
+    nameOrSignature: "MEMBER_TOKEN_TYPE"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "OFFICER_ROLE"
+    nameOrSignature: "OFFICER_TOKEN_TYPE"
   ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "SUPPORTER_PRICE"
-  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "acceptOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
@@ -1292,60 +848,39 @@ export interface BlockchainClubMembership extends BaseContract {
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[owner: AddressLike], [bigint], "view">;
   getFunction(
-    nameOrSignature: "baseTokenURI"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "burn"
+    nameOrSignature: "burnToken"
   ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "editionWhitelist"
-  ): TypedContractMethod<[arg0: string], [boolean], "view">;
+    nameOrSignature: "createTokenType"
+  ): TypedContractMethod<
+    [
+      typeId: BytesLike,
+      name: string,
+      category: string,
+      startTime: BigNumberish,
+      endTime: BigNumberish,
+      maxSupply: BigNumberish,
+      mintAccess: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
   getFunction(
-    nameOrSignature: "getRoleAdmin"
-  ): TypedContractMethod<[role: BytesLike], [string], "view">;
+    nameOrSignature: "getMemberCount"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "getSnapshotMetadata"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish],
-    [[bigint, string] & { votingPower: bigint; role: string }],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "getVotingWeight"
-  ): TypedContractMethod<[tokenId: BigNumberish], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "grantRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "hasMintedRole"
-  ): TypedContractMethod<[arg0: AddressLike, arg1: string], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "hasRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [boolean],
-    "view"
-  >;
+    nameOrSignature: "getOfficerCount"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "initialize"
   ): TypedContractMethod<
-    [baseURI: string, _opsWallet: AddressLike, _scholarshipWallet: AddressLike],
+    [name: string, symbol: string, rolesContract: AddressLike],
     [void],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "invalidTokens"
-  ): TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "invalidateToken"
-  ): TypedContractMethod<[tokenId: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "isApprovedForAll"
   ): TypedContractMethod<
@@ -1354,39 +889,28 @@ export interface BlockchainClubMembership extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "isRecoveryToken"
-  ): TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "isTokenActive"
-  ): TypedContractMethod<[tokenId: BigNumberish], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "mintOfficerEdition"
-  ): TypedContractMethod<[edition: string], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "mintRecoveryToken"
+    nameOrSignature: "memberStats"
   ): TypedContractMethod<
-    [newOwner: AddressLike, replacedTokenId: BigNumberish, role: string],
+    [arg0: AddressLike],
+    [
+      [bigint, bigint, string, boolean] & {
+        joinDate: bigint;
+        tokenCount: bigint;
+        currentRole: string;
+        isActive: boolean;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "mint"
+  ): TypedContractMethod<
+    [to: AddressLike, tokenType: BytesLike, isSoulbound: boolean],
     [void],
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "mintToken"
-  ): TypedContractMethod<
-    [role: BytesLike, price: BigNumberish],
-    [void],
-    "payable"
-  >;
-  getFunction(
-    nameOrSignature: "mintedBy"
-  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
-  getFunction(
     nameOrSignature: "name"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "nextTokenId"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "opsWallet"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "owner"
@@ -1407,9 +931,9 @@ export interface BlockchainClubMembership extends BaseContract {
     nameOrSignature: "proxiableUUID"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "reissueToken"
+    nameOrSignature: "publicMint"
   ): TypedContractMethod<
-    [oldTokenId: BigNumberish, newOwner: AddressLike],
+    [tokenType: BytesLike, isSoulbound: boolean],
     [void],
     "nonpayable"
   >;
@@ -1417,28 +941,8 @@ export interface BlockchainClubMembership extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "renounceRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "replacesToken"
-  ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "revokeRole"
-  ): TypedContractMethod<
-    [role: BytesLike, account: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "roleVotingPower"
-  ): TypedContractMethod<[arg0: string], [bigint], "view">;
-  getFunction(
     nameOrSignature: "roles"
-  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "safeTransferFrom(address,address,uint256)"
   ): TypedContractMethod<
@@ -1459,9 +963,6 @@ export interface BlockchainClubMembership extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "scholarshipWallet"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "setApprovalForAll"
   ): TypedContractMethod<
     [operator: AddressLike, approved: boolean],
@@ -1469,63 +970,8 @@ export interface BlockchainClubMembership extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "setBaseTokenURI"
+    nameOrSignature: "setBaseURI"
   ): TypedContractMethod<[newBaseURI: string], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setBatchWhitelist"
-  ): TypedContractMethod<
-    [users: AddressLike[], status: boolean],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setEditionWhitelist"
-  ): TypedContractMethod<
-    [edition: string, status: boolean],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setOpsWallet"
-  ): TypedContractMethod<[_opsWallet: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setRole"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish, role: string],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setScholarshipWallet"
-  ): TypedContractMethod<
-    [_scholarshipWallet: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setSoulbound"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish, _status: boolean],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setTokenExpiry"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish, expiryTimestamp: BigNumberish],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "setTokenPrice"
-  ): TypedContractMethod<[_newPrice: BigNumberish], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "setWhitelist"
-  ): TypedContractMethod<
-    [user: AddressLike, status: boolean],
-    [void],
-    "nonpayable"
-  >;
   getFunction(
     nameOrSignature: "soulbound"
   ): TypedContractMethod<[arg0: BigNumberish], [boolean], "view">;
@@ -1539,9 +985,6 @@ export interface BlockchainClubMembership extends BaseContract {
     nameOrSignature: "tokenByIndex"
   ): TypedContractMethod<[index: BigNumberish], [bigint], "view">;
   getFunction(
-    nameOrSignature: "tokenExpiry"
-  ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
-  getFunction(
     nameOrSignature: "tokenOfOwnerByIndex"
   ): TypedContractMethod<
     [owner: AddressLike, index: BigNumberish],
@@ -1549,8 +992,26 @@ export interface BlockchainClubMembership extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "tokenPrice"
-  ): TypedContractMethod<[], [bigint], "view">;
+    nameOrSignature: "tokenTypeConfigs"
+  ): TypedContractMethod<
+    [arg0: BytesLike],
+    [
+      [string, string, bigint, bigint, bigint, bigint, boolean, bigint] & {
+        name: string;
+        category: string;
+        startTime: bigint;
+        endTime: bigint;
+        maxSupply: bigint;
+        currentSupply: bigint;
+        isActive: boolean;
+        mintAccess: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "tokenTypes"
+  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
   getFunction(
     nameOrSignature: "tokenURI"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
@@ -1568,15 +1029,15 @@ export interface BlockchainClubMembership extends BaseContract {
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "transferWithExpiryCheck"
+    nameOrSignature: "unpause"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "updateWhitelist"
   ): TypedContractMethod<
-    [to: AddressLike, tokenId: BigNumberish],
+    [account: AddressLike, status: boolean],
     [void],
     "nonpayable"
   >;
-  getFunction(
-    nameOrSignature: "unpause"
-  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "upgradeTo"
   ): TypedContractMethod<
@@ -1594,9 +1055,6 @@ export interface BlockchainClubMembership extends BaseContract {
   getFunction(
     nameOrSignature: "whitelist"
   ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
-  getFunction(
-    nameOrSignature: "withdraw"
-  ): TypedContractMethod<[], [void], "nonpayable">;
 
   getEvent(
     key: "AdminChanged"
@@ -1634,20 +1092,6 @@ export interface BlockchainClubMembership extends BaseContract {
     InitializedEvent.OutputObject
   >;
   getEvent(
-    key: "MembershipMinted"
-  ): TypedContractEvent<
-    MembershipMintedEvent.InputTuple,
-    MembershipMintedEvent.OutputTuple,
-    MembershipMintedEvent.OutputObject
-  >;
-  getEvent(
-    key: "OfficerAction"
-  ): TypedContractEvent<
-    OfficerActionEvent.InputTuple,
-    OfficerActionEvent.OutputTuple,
-    OfficerActionEvent.OutputObject
-  >;
-  getEvent(
     key: "OwnershipTransferStarted"
   ): TypedContractEvent<
     OwnershipTransferStartedEvent.InputTuple,
@@ -1669,53 +1113,25 @@ export interface BlockchainClubMembership extends BaseContract {
     PausedEvent.OutputObject
   >;
   getEvent(
-    key: "RoleAdminChanged"
+    key: "StatsUpdated"
   ): TypedContractEvent<
-    RoleAdminChangedEvent.InputTuple,
-    RoleAdminChangedEvent.OutputTuple,
-    RoleAdminChangedEvent.OutputObject
+    StatsUpdatedEvent.InputTuple,
+    StatsUpdatedEvent.OutputTuple,
+    StatsUpdatedEvent.OutputObject
   >;
   getEvent(
-    key: "RoleChanged"
+    key: "TokenMinted"
   ): TypedContractEvent<
-    RoleChangedEvent.InputTuple,
-    RoleChangedEvent.OutputTuple,
-    RoleChangedEvent.OutputObject
+    TokenMintedEvent.InputTuple,
+    TokenMintedEvent.OutputTuple,
+    TokenMintedEvent.OutputObject
   >;
   getEvent(
-    key: "RoleGranted"
+    key: "TokenTypeCreated"
   ): TypedContractEvent<
-    RoleGrantedEvent.InputTuple,
-    RoleGrantedEvent.OutputTuple,
-    RoleGrantedEvent.OutputObject
-  >;
-  getEvent(
-    key: "RoleRevoked"
-  ): TypedContractEvent<
-    RoleRevokedEvent.InputTuple,
-    RoleRevokedEvent.OutputTuple,
-    RoleRevokedEvent.OutputObject
-  >;
-  getEvent(
-    key: "TokenBurned"
-  ): TypedContractEvent<
-    TokenBurnedEvent.InputTuple,
-    TokenBurnedEvent.OutputTuple,
-    TokenBurnedEvent.OutputObject
-  >;
-  getEvent(
-    key: "TokenInvalidated"
-  ): TypedContractEvent<
-    TokenInvalidatedEvent.InputTuple,
-    TokenInvalidatedEvent.OutputTuple,
-    TokenInvalidatedEvent.OutputObject
-  >;
-  getEvent(
-    key: "TokenReissued"
-  ): TypedContractEvent<
-    TokenReissuedEvent.InputTuple,
-    TokenReissuedEvent.OutputTuple,
-    TokenReissuedEvent.OutputObject
+    TokenTypeCreatedEvent.InputTuple,
+    TokenTypeCreatedEvent.OutputTuple,
+    TokenTypeCreatedEvent.OutputObject
   >;
   getEvent(
     key: "Transfer"
@@ -1739,11 +1155,11 @@ export interface BlockchainClubMembership extends BaseContract {
     UpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "Withdrawn"
+    key: "WhitelistUpdated"
   ): TypedContractEvent<
-    WithdrawnEvent.InputTuple,
-    WithdrawnEvent.OutputTuple,
-    WithdrawnEvent.OutputObject
+    WhitelistUpdatedEvent.InputTuple,
+    WhitelistUpdatedEvent.OutputTuple,
+    WhitelistUpdatedEvent.OutputObject
   >;
 
   filters: {
@@ -1802,28 +1218,6 @@ export interface BlockchainClubMembership extends BaseContract {
       InitializedEvent.OutputObject
     >;
 
-    "MembershipMinted(address,uint256)": TypedContractEvent<
-      MembershipMintedEvent.InputTuple,
-      MembershipMintedEvent.OutputTuple,
-      MembershipMintedEvent.OutputObject
-    >;
-    MembershipMinted: TypedContractEvent<
-      MembershipMintedEvent.InputTuple,
-      MembershipMintedEvent.OutputTuple,
-      MembershipMintedEvent.OutputObject
-    >;
-
-    "OfficerAction(address,uint256,string)": TypedContractEvent<
-      OfficerActionEvent.InputTuple,
-      OfficerActionEvent.OutputTuple,
-      OfficerActionEvent.OutputObject
-    >;
-    OfficerAction: TypedContractEvent<
-      OfficerActionEvent.InputTuple,
-      OfficerActionEvent.OutputTuple,
-      OfficerActionEvent.OutputObject
-    >;
-
     "OwnershipTransferStarted(address,address)": TypedContractEvent<
       OwnershipTransferStartedEvent.InputTuple,
       OwnershipTransferStartedEvent.OutputTuple,
@@ -1857,81 +1251,37 @@ export interface BlockchainClubMembership extends BaseContract {
       PausedEvent.OutputObject
     >;
 
-    "RoleAdminChanged(bytes32,bytes32,bytes32)": TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
+    "StatsUpdated(address,bytes32,uint256)": TypedContractEvent<
+      StatsUpdatedEvent.InputTuple,
+      StatsUpdatedEvent.OutputTuple,
+      StatsUpdatedEvent.OutputObject
     >;
-    RoleAdminChanged: TypedContractEvent<
-      RoleAdminChangedEvent.InputTuple,
-      RoleAdminChangedEvent.OutputTuple,
-      RoleAdminChangedEvent.OutputObject
-    >;
-
-    "RoleChanged(uint256,string)": TypedContractEvent<
-      RoleChangedEvent.InputTuple,
-      RoleChangedEvent.OutputTuple,
-      RoleChangedEvent.OutputObject
-    >;
-    RoleChanged: TypedContractEvent<
-      RoleChangedEvent.InputTuple,
-      RoleChangedEvent.OutputTuple,
-      RoleChangedEvent.OutputObject
+    StatsUpdated: TypedContractEvent<
+      StatsUpdatedEvent.InputTuple,
+      StatsUpdatedEvent.OutputTuple,
+      StatsUpdatedEvent.OutputObject
     >;
 
-    "RoleGranted(bytes32,address,address)": TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
+    "TokenMinted(address,uint256,bytes32)": TypedContractEvent<
+      TokenMintedEvent.InputTuple,
+      TokenMintedEvent.OutputTuple,
+      TokenMintedEvent.OutputObject
     >;
-    RoleGranted: TypedContractEvent<
-      RoleGrantedEvent.InputTuple,
-      RoleGrantedEvent.OutputTuple,
-      RoleGrantedEvent.OutputObject
-    >;
-
-    "RoleRevoked(bytes32,address,address)": TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
-    >;
-    RoleRevoked: TypedContractEvent<
-      RoleRevokedEvent.InputTuple,
-      RoleRevokedEvent.OutputTuple,
-      RoleRevokedEvent.OutputObject
+    TokenMinted: TypedContractEvent<
+      TokenMintedEvent.InputTuple,
+      TokenMintedEvent.OutputTuple,
+      TokenMintedEvent.OutputObject
     >;
 
-    "TokenBurned(address,uint256)": TypedContractEvent<
-      TokenBurnedEvent.InputTuple,
-      TokenBurnedEvent.OutputTuple,
-      TokenBurnedEvent.OutputObject
+    "TokenTypeCreated(bytes32,string,string)": TypedContractEvent<
+      TokenTypeCreatedEvent.InputTuple,
+      TokenTypeCreatedEvent.OutputTuple,
+      TokenTypeCreatedEvent.OutputObject
     >;
-    TokenBurned: TypedContractEvent<
-      TokenBurnedEvent.InputTuple,
-      TokenBurnedEvent.OutputTuple,
-      TokenBurnedEvent.OutputObject
-    >;
-
-    "TokenInvalidated(uint256)": TypedContractEvent<
-      TokenInvalidatedEvent.InputTuple,
-      TokenInvalidatedEvent.OutputTuple,
-      TokenInvalidatedEvent.OutputObject
-    >;
-    TokenInvalidated: TypedContractEvent<
-      TokenInvalidatedEvent.InputTuple,
-      TokenInvalidatedEvent.OutputTuple,
-      TokenInvalidatedEvent.OutputObject
-    >;
-
-    "TokenReissued(uint256,uint256,address)": TypedContractEvent<
-      TokenReissuedEvent.InputTuple,
-      TokenReissuedEvent.OutputTuple,
-      TokenReissuedEvent.OutputObject
-    >;
-    TokenReissued: TypedContractEvent<
-      TokenReissuedEvent.InputTuple,
-      TokenReissuedEvent.OutputTuple,
-      TokenReissuedEvent.OutputObject
+    TokenTypeCreated: TypedContractEvent<
+      TokenTypeCreatedEvent.InputTuple,
+      TokenTypeCreatedEvent.OutputTuple,
+      TokenTypeCreatedEvent.OutputObject
     >;
 
     "Transfer(address,address,uint256)": TypedContractEvent<
@@ -1967,15 +1317,15 @@ export interface BlockchainClubMembership extends BaseContract {
       UpgradedEvent.OutputObject
     >;
 
-    "Withdrawn(address,uint256)": TypedContractEvent<
-      WithdrawnEvent.InputTuple,
-      WithdrawnEvent.OutputTuple,
-      WithdrawnEvent.OutputObject
+    "WhitelistUpdated(address,bool)": TypedContractEvent<
+      WhitelistUpdatedEvent.InputTuple,
+      WhitelistUpdatedEvent.OutputTuple,
+      WhitelistUpdatedEvent.OutputObject
     >;
-    Withdrawn: TypedContractEvent<
-      WithdrawnEvent.InputTuple,
-      WithdrawnEvent.OutputTuple,
-      WithdrawnEvent.OutputObject
+    WhitelistUpdated: TypedContractEvent<
+      WhitelistUpdatedEvent.InputTuple,
+      WhitelistUpdatedEvent.OutputTuple,
+      WhitelistUpdatedEvent.OutputObject
     >;
   };
 }

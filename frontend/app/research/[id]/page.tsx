@@ -3,7 +3,8 @@
 import { useParams, useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Calendar, User, Clock, Share2, Bookmark, Download } from "lucide-react"
+import { EnhancedCard, IconWrapper, FloatingBadge } from "@/components/ui/enhanced-card"
+import { ArrowLeft, Calendar, User, Clock, Share2, Bookmark, Download, BookOpen, Star } from "lucide-react"
 import { useState } from "react"
 import Image from "next/image"
 
@@ -101,13 +102,29 @@ export default function ArticleDetail() {
   
   if (!article) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Article Not Found</h1>
-        <p className="text-gray-600 mb-8">The article you're looking for doesn't exist or has been moved.</p>
-        <Button onClick={() => router.push('/research')} variant="outline">
-          <ArrowLeft className="mr-2" size={16} />
-          Back to Research
-        </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="container mx-auto px-4 text-center">
+          <EnhancedCard variant="gradient" className="max-w-md mx-auto p-8">
+            <div className="flex justify-center mb-4">
+              <IconWrapper color="red" size="md">
+                <BookOpen className="h-5 w-5" />
+              </IconWrapper>
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-4">
+              Article Not Found
+            </h1>
+            <p className="text-gray-600 mb-8">
+              The article you're looking for doesn't exist or has been moved.
+            </p>
+            <Button 
+              onClick={() => router.push('/research')} 
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+            >
+              <ArrowLeft className="mr-2" size={16} />
+              Back to Research
+            </Button>
+          </EnhancedCard>
+        </div>
       </div>
     );
   }
@@ -120,98 +137,127 @@ export default function ArticleDetail() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-4xl">
-      {/* Navigation */}
-      <Button 
-        variant="ghost" 
-        className="mb-8 text-gray-600 hover:text-gray-900"
-        onClick={() => router.push('/research')}
-      >
-        <ArrowLeft className="mr-2" size={16} />
-        Back to Research
-      </Button>
-      
-      {/* Article header */}
-      <div className="mb-10">
-        <div className="flex flex-wrap gap-2 mb-4">
-          {article.categories.map((category) => (
-            <Badge key={category} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              {category}
-            </Badge>
-          ))}
-        </div>
-        
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-          {article.title}
-        </h1>
-        
-        <div className="flex flex-col md:flex-row md:items-center text-gray-600 gap-y-4 md:gap-x-6">
-          <div className="flex items-center">
-            <User size={18} className="mr-2" />
-            <span>{article.author}</span>
-            {article.authorTitle && (
-              <span className="text-gray-500 ml-2">| {article.authorTitle}</span>
-            )}
-          </div>
-          <div className="flex items-center">
-            <Calendar size={18} className="mr-2" />
-            <span>{formattedDate}</span>
-          </div>
-          <div className="flex items-center">
-            <Clock size={18} className="mr-2" />
-            <span>{article.readTime}</span>
-          </div>
-        </div>
-      </div>
-      
-      {/* Featured image */}
-      <div className="rounded-xl overflow-hidden mb-10 bg-gray-200">
-        <Image
-          src={article.image}
-          alt={article.title}
-          width={1200}
-          height={600}
-          className="w-full h-auto object-cover"
-        />
-      </div>
-      
-      {/* Article actions */}
-      <div className="flex justify-between items-center mb-10 p-4 bg-gray-50 rounded-lg">
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="bg-white">
-            <Share2 size={16} className="mr-2" />
-            Share
-          </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Enhanced Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-blue-600 to-indigo-700 py-16">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/30 to-blue-500/30"></div>
+        <div className="relative container mx-auto px-4">
+          {/* Navigation */}
           <Button 
-            variant="outline" 
-            size="sm" 
-            className={`${saved ? 'bg-blue-50 text-blue-700' : 'bg-white'}`}
-            onClick={() => setSaved(!saved)}
+            variant="ghost" 
+            className="mb-6 text-white/80 hover:text-white hover:bg-white/10"
+            onClick={() => router.push('/research')}
           >
-            <Bookmark size={16} className="mr-2" fill={saved ? "currentColor" : "none"} />
-            {saved ? 'Saved' : 'Save'}
+            <ArrowLeft className="mr-2" size={16} />
+            Back to Research
+          </Button>
+          
+          {/* Categories */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {article.categories.map((category) => (
+              <FloatingBadge key={category} color="blue">
+                {category}
+              </FloatingBadge>
+            ))}
+          </div>
+          
+          {/* Title */}
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            {article.title}
+          </h1>
+          
+          {/* Meta Information */}
+          <div className="flex flex-col md:flex-row md:items-center text-white/90 gap-y-3 md:gap-x-6 text-lg">
+            <div className="flex items-center">
+              <User size={20} className="mr-2" />
+              <span className="font-medium">{article.author}</span>
+              {article.authorTitle && (
+                <span className="text-white/70 ml-2">| {article.authorTitle}</span>
+              )}
+            </div>
+            <div className="flex items-center">
+              <Calendar size={20} className="mr-2" />
+              <span>{formattedDate}</span>
+            </div>
+            <div className="flex items-center">
+              <Clock size={20} className="mr-2" />
+              <span>{article.readTime}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-16 max-w-4xl">
+      
+      {/* Article Content */}
+      <EnhancedCard variant="elevated" className="mb-10">
+        {/* Featured image */}
+        <div className="rounded-xl overflow-hidden mb-8 bg-gradient-to-br from-gray-100 to-gray-200">
+          <Image
+            src={article.image}
+            alt={article.title}
+            width={1200}
+            height={600}
+            className="w-full h-auto object-cover"
+          />
+        </div>
+        
+        {/* Article actions */}
+        <div className="flex justify-between items-center mb-8 p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200/50">
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm border-blue-200 hover:bg-blue-50">
+              <Share2 size={16} className="mr-2" />
+              Share
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={`backdrop-blur-sm border-blue-200 ${saved ? 'bg-blue-100 text-blue-700' : 'bg-white/80 hover:bg-blue-50'}`}
+              onClick={() => setSaved(!saved)}
+            >
+              <Bookmark size={16} className="mr-2" fill={saved ? "currentColor" : "none"} />
+              {saved ? 'Saved' : 'Save'}
+            </Button>
+          </div>
+          <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm border-blue-200 hover:bg-blue-50">
+            <Download size={16} className="mr-2" />
+            Download PDF
           </Button>
         </div>
-        <Button variant="outline" size="sm" className="bg-white">
-          <Download size={16} className="mr-2" />
-          Download PDF
-        </Button>
-      </div>
-      
-      {/* Article content */}
-      <div 
-        className="prose prose-lg max-w-none"
-        dangerouslySetInnerHTML={{ __html: article.content }}
-      />
+        
+        {/* Article content */}
+        <div className="px-6 pb-8">
+          <div 
+            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
+        </div>
+      </EnhancedCard>
       
       {/* Author bio */}
-      <div className="mt-16 p-6 bg-gray-50 rounded-xl">
-        <h3 className="text-xl font-bold mb-2">About the Author</h3>
-        <p className="mb-4">{article.author} {article.authorTitle && `is ${article.authorTitle}`}. They specialize in blockchain research and distributed systems.</p>
-        <Button variant="outline" size="sm" className="bg-white">
-          View Profile
-        </Button>
-      </div>
+      <EnhancedCard variant="gradient" className="mb-10">
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <IconWrapper color="green" size="sm">
+              <User className="h-5 w-5" />
+            </IconWrapper>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">About the Author</h3>
+              <p className="text-gray-600">{article.author}</p>
+            </div>
+          </div>
+          <p className="text-gray-700 mb-4">
+            {article.author} {article.authorTitle && `is ${article.authorTitle}`}. 
+            They specialize in blockchain research and distributed systems, contributing to the advancement 
+            of decentralized technologies and their real-world applications.
+          </p>
+          <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
+            <Star className="h-4 w-4 mr-2" />
+            View Profile
+          </Button>
+        </div>
+      </EnhancedCard>
       
       {/* Related research */}
       <div className="mt-16">
@@ -251,6 +297,7 @@ export default function ArticleDetail() {
               </div>
             ))}
         </div>
+      </div>
       </div>
     </div>
   );

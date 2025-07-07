@@ -66,19 +66,19 @@
   @apply transition-all duration-300 hover:shadow-md hover:shadow-primary/10 hover:-translate-y-1;
 }
 
-/* RainbowKit Custom Styles */
+/* RainbowKit Custom Styles - CU Gold Theme */
 :root {
-  --rk-colors-accentColor: hsl(var(--primary));
-  --rk-colors-accentColorForeground: hsl(var(--primary-foreground));
+  --rk-colors-accentColor: #CFB87C;
+  --rk-colors-accentColorForeground: #000000;
   --rk-colors-actionButtonBorder: hsl(var(--border));
   --rk-colors-actionButtonBorderMobile: hsl(var(--border));
   --rk-colors-actionButtonSecondaryBackground: hsl(var(--secondary));
-  --rk-colors-connectButtonBackground: hsl(var(--background));
+  --rk-colors-connectButtonBackground: #CFB87C;
   --rk-colors-connectButtonBackgroundError: hsl(var(--destructive));
-  --rk-colors-connectButtonInnerBackground: hsl(var(--secondary));
-  --rk-colors-connectButtonText: hsl(var(--foreground));
+  --rk-colors-connectButtonInnerBackground: #CFB87C;
+  --rk-colors-connectButtonText: #000000;
   --rk-colors-connectButtonTextError: hsl(var(--destructive-foreground));
-  --rk-colors-connectionIndicator: hsl(var(--primary));
+  --rk-colors-connectionIndicator: #CFB87C;
   --rk-colors-error: hsl(var(--destructive));
   --rk-colors-generalBorder: hsl(var(--border));
   --rk-colors-generalBorderDim: hsl(var(--border));
@@ -94,4 +94,16 @@
   --rk-radii-menuButton: var(--radius);
   --rk-radii-modal: var(--radius);
   --rk-fonts-body: system-ui, sans-serif;
+}
+
+/* Additional RainbowKit Connect Button Customization */
+[data-testid="rk-connect-button"] {
+  background-color: #CFB87C !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  transition: background-color 0.2s ease !important;
+}
+
+[data-testid="rk-connect-button"]:hover {
+  background-color: #B8A569 !important;
 }

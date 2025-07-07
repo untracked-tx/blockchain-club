@@ -47,10 +47,12 @@ export function WagmiConfigProvider({ children }: { children: React.ReactNode })
     <WagmiConfig config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
-          theme={{
-            lightMode: lightTheme(),
-            darkMode: darkTheme(),
-          }}
+          theme={lightTheme({
+            accentColor: '#CFB87C',
+            accentColorForeground: '#000000',
+            borderRadius: 'medium',
+            fontStack: 'system',
+          })}
           coolMode
         >
           {children}

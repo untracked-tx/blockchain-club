@@ -1,12 +1,7 @@
 {
   "Roles": {
-    "address": "0x8ec72B7061dc368ffD889fa39c6B3b1480A523CC",
+    "address": "0x18251e138224C930473bE6C5Ebbfbc0A3F8C266d",
     "abi": [
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
       {
         "anonymous": false,
         "inputs": [
@@ -43,6 +38,25 @@
         "anonymous": false,
         "inputs": [
           {
+            "indexed": true,
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "votingPower",
+            "type": "uint256"
+          }
+        ],
+        "name": "CustomVotingPowerSet",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
             "indexed": false,
             "internalType": "uint8",
             "name": "version",
@@ -50,44 +64,6 @@
           }
         ],
         "name": "Initialized",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnershipTransferStarted",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnershipTransferred",
         "type": "event"
       },
       {
@@ -156,53 +132,9 @@
             "type": "address"
           },
           {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "expiresAt",
-            "type": "uint256"
-          }
-        ],
-        "name": "RoleGrantedWithExpiration",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          },
-          {
             "indexed": true,
             "internalType": "address",
             "name": "sender",
-            "type": "address"
-          }
-        ],
-        "name": "RoleRevoked",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "account",
             "type": "address"
           }
         ],
@@ -227,19 +159,32 @@
         "inputs": [
           {
             "indexed": true,
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
+            "internalType": "bytes32",
+            "name": "role",
+            "type": "bytes32"
           },
           {
             "indexed": false,
-            "internalType": "bool",
-            "name": "status",
-            "type": "bool"
+            "internalType": "uint256",
+            "name": "votingPower",
+            "type": "uint256"
           }
         ],
-        "name": "WhitelistUpdated",
+        "name": "VotingPowerSet",
         "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "ADMIN_ROLE",
+        "outputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
       },
       {
         "inputs": [],
@@ -281,44 +226,19 @@
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "SUPPORTER_ROLE",
-        "outputs": [
-          {
-            "internalType": "bytes32",
-            "name": "",
-            "type": "bytes32"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "acceptOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
         "inputs": [
           {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
             "internalType": "address",
-            "name": "account",
+            "name": "",
             "type": "address"
           }
         ],
-        "name": "canSelfGrant",
+        "name": "customVotingPower",
         "outputs": [
           {
-            "internalType": "bool",
+            "internalType": "uint256",
             "name": "",
-            "type": "bool"
+            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -346,17 +266,22 @@
       {
         "inputs": [
           {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          }
-        ],
-        "name": "getVotingPower",
-        "outputs": [
+            "internalType": "bytes32",
+            "name": "role",
+            "type": "bytes32"
+          },
           {
             "internalType": "uint256",
-            "name": "power",
+            "name": "index",
             "type": "uint256"
+          }
+        ],
+        "name": "getRoleMember",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
           }
         ],
         "stateMutability": "view",
@@ -368,6 +293,44 @@
             "internalType": "bytes32",
             "name": "role",
             "type": "bytes32"
+          }
+        ],
+        "name": "getRoleMemberCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          }
+        ],
+        "name": "getUserCurrentRole",
+        "outputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
           }
         ],
         "name": "getVotingPower",
@@ -407,17 +370,12 @@
             "type": "bytes32"
           },
           {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "expiresAt",
-            "type": "uint256"
+            "internalType": "address[]",
+            "name": "accounts",
+            "type": "address[]"
           }
         ],
-        "name": "grantRoleWithExpiration",
+        "name": "grantRoleBatch",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -460,51 +418,6 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "isWhitelisted",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "owner",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "pendingOwner",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
         "inputs": [],
         "name": "proxiableUUID",
         "outputs": [
@@ -515,13 +428,6 @@
           }
         ],
         "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "renounceOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -563,25 +469,19 @@
       {
         "inputs": [
           {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
+            "internalType": "bytes32",
+            "name": "role",
+            "type": "bytes32"
           },
           {
-            "internalType": "bytes32",
-            "name": "",
-            "type": "bytes32"
+            "internalType": "address[]",
+            "name": "accounts",
+            "type": "address[]"
           }
         ],
-        "name": "roleExpirations",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
+        "name": "revokeRoleBatch",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -606,36 +506,17 @@
       {
         "inputs": [
           {
-            "internalType": "bytes32",
-            "name": "",
-            "type": "bytes32"
-          }
-        ],
-        "name": "selfGrantableRoles",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
           },
           {
-            "internalType": "bool",
-            "name": "value",
-            "type": "bool"
+            "internalType": "uint256",
+            "name": "power",
+            "type": "uint256"
           }
         ],
-        "name": "setSelfGrantable",
+        "name": "setCustomVotingPower",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -661,24 +542,6 @@
       {
         "inputs": [
           {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bool",
-            "name": "status",
-            "type": "bool"
-          }
-        ],
-        "name": "setWhitelist",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
             "internalType": "bytes4",
             "name": "interfaceId",
             "type": "bytes4"
@@ -693,19 +556,6 @@
           }
         ],
         "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "transferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -742,13 +592,8 @@
     ]
   },
   "TreasuryRouter": {
-    "address": "0x753E062aeEAB644Ce22942815f5367106a750F4d",
+    "address": "0x7A8036d81A58B65742a48031688AD7eE968733AC",
     "abi": [
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
       {
         "anonymous": false,
         "inputs": [
@@ -779,6 +624,25 @@
           }
         ],
         "name": "BeaconUpgraded",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "EmergencyWithdrawal",
         "type": "event"
       },
       {
@@ -856,23 +720,60 @@
         "inputs": [
           {
             "indexed": true,
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
+            "internalType": "bytes32",
+            "name": "transferId",
+            "type": "bytes32"
           },
           {
             "indexed": false,
             "internalType": "uint256",
             "name": "amount",
             "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "treasury",
+            "type": "address"
           }
         ],
-        "name": "Refunded",
+        "name": "TransferExecuted",
         "type": "event"
       },
       {
         "anonymous": false,
         "inputs": [
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "transferId",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "name": "TransferQueued",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "oldTreasury",
+            "type": "address"
+          },
           {
             "indexed": true,
             "internalType": "address",
@@ -898,6 +799,19 @@
       },
       {
         "inputs": [],
+        "name": "EXECUTION_DELAY",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
         "name": "acceptOwnership",
         "outputs": [],
         "stateMutability": "nonpayable",
@@ -905,7 +819,20 @@
       },
       {
         "inputs": [],
-        "name": "claimRefund",
+        "name": "emergencyWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32[]",
+            "name": "transferIds",
+            "type": "bytes32[]"
+          }
+        ],
+        "name": "executeTransferBatch",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -914,7 +841,12 @@
         "inputs": [
           {
             "internalType": "address",
-            "name": "_treasury",
+            "name": "rolesContract",
+            "type": "address"
+          },
+          {
+            "internalType": "address payable",
+            "name": "initialTreasury",
             "type": "address"
           }
         ],
@@ -950,6 +882,35 @@
         "type": "function"
       },
       {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "name": "pendingTransfers",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "executed",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [],
         "name": "proxiableUUID",
         "outputs": [
@@ -970,25 +931,6 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "name": "refundable",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
         "inputs": [],
         "name": "renounceOwnership",
         "outputs": [],
@@ -996,21 +938,16 @@
         "type": "function"
       },
       {
-        "inputs": [
+        "inputs": [],
+        "name": "roles",
+        "outputs": [
           {
-            "internalType": "address",
-            "name": "user",
+            "internalType": "contract IRoles",
+            "name": "",
             "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
           }
         ],
-        "name": "setRefund",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
       },
       {
@@ -1031,7 +968,7 @@
         "name": "treasury",
         "outputs": [
           {
-            "internalType": "address",
+            "internalType": "address payable",
             "name": "",
             "type": "address"
           }
@@ -1042,8 +979,8 @@
       {
         "inputs": [
           {
-            "internalType": "address",
-            "name": "_newTreasury",
+            "internalType": "address payable",
+            "name": "newTreasury",
             "type": "address"
           }
         ],
@@ -1090,7 +1027,7 @@
     ]
   },
   "BlockchainClubMembership": {
-    "address": "0x426d3599e38733B6D50fE0cE0755A83BA0FbAE5E",
+    "address": "0x34B30A9937658502918f4951B33f78Bec3ded14F",
     "abi": [
       {
         "anonymous": false,
@@ -1193,50 +1130,6 @@
           {
             "indexed": true,
             "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "MembershipMinted",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "officer",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "string",
-            "name": "action",
-            "type": "string"
-          }
-        ],
-        "name": "OfficerAction",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
             "name": "previousOwner",
             "type": "address"
           },
@@ -1287,24 +1180,24 @@
         "inputs": [
           {
             "indexed": true,
+            "internalType": "address",
+            "name": "member",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "bytes32",
             "name": "role",
             "type": "bytes32"
           },
           {
-            "indexed": true,
-            "internalType": "bytes32",
-            "name": "previousAdminRole",
-            "type": "bytes32"
-          },
-          {
-            "indexed": true,
-            "internalType": "bytes32",
-            "name": "newAdminRole",
-            "type": "bytes32"
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "tokenCount",
+            "type": "uint256"
           }
         ],
-        "name": "RoleAdminChanged",
+        "name": "StatsUpdated",
         "type": "event"
       },
       {
@@ -1312,125 +1205,49 @@
         "inputs": [
           {
             "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": true,
             "internalType": "uint256",
             "name": "tokenId",
             "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "tokenType",
+            "type": "bytes32"
+          }
+        ],
+        "name": "TokenMinted",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "typeId",
+            "type": "bytes32"
           },
           {
             "indexed": false,
             "internalType": "string",
-            "name": "newRole",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "category",
             "type": "string"
           }
         ],
-        "name": "RoleChanged",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          }
-        ],
-        "name": "RoleGranted",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          }
-        ],
-        "name": "RoleRevoked",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "TokenBurned",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "TokenInvalidated",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "oldTokenId",
-            "type": "uint256"
-          },
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "newTokenId",
-            "type": "uint256"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "TokenReissued",
+        "name": "TokenTypeCreated",
         "type": "event"
       },
       {
@@ -1488,24 +1305,24 @@
         "anonymous": false,
         "inputs": [
           {
-            "indexed": false,
+            "indexed": true,
             "internalType": "address",
-            "name": "recipient",
+            "name": "account",
             "type": "address"
           },
           {
             "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
           }
         ],
-        "name": "Withdrawn",
+        "name": "WhitelistUpdated",
         "type": "event"
       },
       {
         "inputs": [],
-        "name": "DEFAULT_ADMIN_ROLE",
+        "name": "MEMBER_TOKEN_TYPE",
         "outputs": [
           {
             "internalType": "bytes32",
@@ -1518,25 +1335,12 @@
       },
       {
         "inputs": [],
-        "name": "OFFICER_ROLE",
+        "name": "OFFICER_TOKEN_TYPE",
         "outputs": [
           {
             "internalType": "bytes32",
             "name": "",
             "type": "bytes32"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "SUPPORTER_PRICE",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -1587,19 +1391,6 @@
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "baseTokenURI",
-        "outputs": [
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
         "inputs": [
           {
             "internalType": "uint256",
@@ -1607,7 +1398,7 @@
             "type": "uint256"
           }
         ],
-        "name": "burn",
+        "name": "burnToken",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1615,20 +1406,44 @@
       {
         "inputs": [
           {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "name": "editionWhitelist",
-        "outputs": [
+            "internalType": "bytes32",
+            "name": "typeId",
+            "type": "bytes32"
+          },
           {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "category",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum BlockchainClubMembership.MintAccess",
+            "name": "mintAccess",
+            "type": "uint8"
           }
         ],
-        "stateMutability": "view",
+        "name": "createTokenType",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -1651,57 +1466,8 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          }
-        ],
-        "name": "getRoleAdmin",
-        "outputs": [
-          {
-            "internalType": "bytes32",
-            "name": "",
-            "type": "bytes32"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "getSnapshotMetadata",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "votingPower",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "getVotingWeight",
+        "inputs": [],
+        "name": "getMemberCount",
         "outputs": [
           {
             "internalType": "uint256",
@@ -1713,66 +1479,13 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "grantRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "name": "hasMintedRole",
+        "inputs": [],
+        "name": "getOfficerCount",
         "outputs": [
           {
-            "internalType": "bool",
+            "internalType": "uint256",
             "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "hasRole",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
+            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -1782,53 +1495,21 @@
         "inputs": [
           {
             "internalType": "string",
-            "name": "baseURI",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
             "type": "string"
           },
           {
             "internalType": "address",
-            "name": "_opsWallet",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "_scholarshipWallet",
+            "name": "rolesContract",
             "type": "address"
           }
         ],
         "name": "initialize",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "invalidTokens",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "invalidateToken",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -1860,112 +1541,58 @@
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "isRecoveryToken",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "isTokenActive",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "string",
-            "name": "edition",
-            "type": "string"
-          }
-        ],
-        "name": "mintOfficerEdition",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
             "internalType": "address",
-            "name": "newOwner",
+            "name": "",
             "type": "address"
-          },
+          }
+        ],
+        "name": "memberStats",
+        "outputs": [
           {
             "internalType": "uint256",
-            "name": "replacedTokenId",
+            "name": "joinDate",
             "type": "uint256"
           },
           {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
-          }
-        ],
-        "name": "mintRecoveryToken",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
+            "internalType": "uint256",
+            "name": "tokenCount",
+            "type": "uint256"
+          },
           {
             "internalType": "bytes32",
-            "name": "role",
+            "name": "currentRole",
             "type": "bytes32"
           },
           {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
           }
         ],
-        "name": "mintToken",
-        "outputs": [],
-        "stateMutability": "payable",
+        "stateMutability": "view",
         "type": "function"
       },
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "mintedBy",
-        "outputs": [
-          {
             "internalType": "address",
-            "name": "",
+            "name": "to",
             "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "tokenType",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSoulbound",
+            "type": "bool"
           }
         ],
-        "stateMutability": "view",
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -1976,32 +1603,6 @@
             "internalType": "string",
             "name": "",
             "type": "string"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "nextTokenId",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "opsWallet",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
           }
         ],
         "stateMutability": "view",
@@ -2088,17 +1689,17 @@
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "oldTokenId",
-            "type": "uint256"
+            "internalType": "bytes32",
+            "name": "tokenType",
+            "type": "bytes32"
           },
           {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
+            "internalType": "bool",
+            "name": "isSoulbound",
+            "type": "bool"
           }
         ],
-        "name": "reissueToken",
+        "name": "publicMint",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -2111,93 +1712,13 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "renounceRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "replacesToken",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "bytes32",
-            "name": "role",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "revokeRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "name": "roleVotingPower",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
+        "inputs": [],
         "name": "roles",
         "outputs": [
           {
-            "internalType": "string",
+            "internalType": "contract IRoles",
             "name": "",
-            "type": "string"
+            "type": "address"
           }
         ],
         "stateMutability": "view",
@@ -2255,19 +1776,6 @@
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "scholarshipWallet",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
         "inputs": [
           {
             "internalType": "address",
@@ -2293,154 +1801,7 @@
             "type": "string"
           }
         ],
-        "name": "setBaseTokenURI",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address[]",
-            "name": "users",
-            "type": "address[]"
-          },
-          {
-            "internalType": "bool",
-            "name": "status",
-            "type": "bool"
-          }
-        ],
-        "name": "setBatchWhitelist",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "string",
-            "name": "edition",
-            "type": "string"
-          },
-          {
-            "internalType": "bool",
-            "name": "status",
-            "type": "bool"
-          }
-        ],
-        "name": "setEditionWhitelist",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_opsWallet",
-            "type": "address"
-          }
-        ],
-        "name": "setOpsWallet",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "role",
-            "type": "string"
-          }
-        ],
-        "name": "setRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_scholarshipWallet",
-            "type": "address"
-          }
-        ],
-        "name": "setScholarshipWallet",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "_status",
-            "type": "bool"
-          }
-        ],
-        "name": "setSoulbound",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "expiryTimestamp",
-            "type": "uint256"
-          }
-        ],
-        "name": "setTokenExpiry",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "_newPrice",
-            "type": "uint256"
-          }
-        ],
-        "name": "setTokenPrice",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "bool",
-            "name": "status",
-            "type": "bool"
-          }
-        ],
-        "name": "setWhitelist",
+        "name": "setBaseURI",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -2518,25 +1879,6 @@
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "tokenExpiry",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
             "internalType": "address",
             "name": "owner",
             "type": "address"
@@ -2559,13 +1901,73 @@
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "tokenPrice",
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "name": "tokenTypeConfigs",
         "outputs": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "category",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
+          },
+          {
+            "internalType": "enum BlockchainClubMembership.MintAccess",
+            "name": "mintAccess",
+            "type": "uint8"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
           {
             "internalType": "uint256",
             "name": "",
             "type": "uint256"
+          }
+        ],
+        "name": "tokenTypes",
+        "outputs": [
+          {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
           }
         ],
         "stateMutability": "view",
@@ -2640,26 +2042,26 @@
         "type": "function"
       },
       {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "transferWithExpiryCheck",
+        "inputs": [],
+        "name": "unpause",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "unpause",
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
+          }
+        ],
+        "name": "updateWhitelist",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -2712,287 +2114,6 @@
           }
         ],
         "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "withdraw",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-  },
-  "VotingPowerStrategy": {
-    "address": "0x430EDAEb952444ee3937a39c96210EEa30C97Ee1",
-    "abi": [
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "previousAdmin",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "newAdmin",
-            "type": "address"
-          }
-        ],
-        "name": "AdminChanged",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "beacon",
-            "type": "address"
-          }
-        ],
-        "name": "BeaconUpgraded",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "uint8",
-            "name": "version",
-            "type": "uint8"
-          }
-        ],
-        "name": "Initialized",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnershipTransferStarted",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnershipTransferred",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newRoles",
-            "type": "address"
-          }
-        ],
-        "name": "RolesContractSet",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "implementation",
-            "type": "address"
-          }
-        ],
-        "name": "Upgraded",
-        "type": "event"
-      },
-      {
-        "inputs": [],
-        "name": "acceptOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          }
-        ],
-        "name": "getVotingPower",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_roles",
-            "type": "address"
-          }
-        ],
-        "name": "initialize",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "owner",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "pendingOwner",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "proxiableUUID",
-        "outputs": [
-          {
-            "internalType": "bytes32",
-            "name": "",
-            "type": "bytes32"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "renounceOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "rolesContract",
-        "outputs": [
-          {
-            "internalType": "contract IRoles",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_roles",
-            "type": "address"
-          }
-        ],
-        "name": "setRolesContract",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "transferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "newImplementation",
-            "type": "address"
-          }
-        ],
-        "name": "upgradeTo",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "newImplementation",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "data",
-            "type": "bytes"
-          }
-        ],
-        "name": "upgradeToAndCall",
-        "outputs": [],
-        "stateMutability": "payable",
         "type": "function"
       }
     ]

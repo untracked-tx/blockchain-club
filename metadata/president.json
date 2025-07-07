@@ -1,0 +1,35 @@
+{
+  "name": "President Token",
+  "description": "Blockchain Club NFT: President.",
+  "image": "ipfs://bafybeih2pg25w4y4vjj67a4vyes6mtb7fbiha727wsmgyonahb4b726kn4/pres.png",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "Governance"
+    },
+    {
+      "trait_type": "Token Type",
+      "value": "President"
+    },
+    {
+      "trait_type": "Max Supply",
+      "value": "2"
+    },
+    {
+      "trait_type": "Mint Access",
+      "value": "OFFICER_ONLY"
+    },
+    {
+      "trait_type": "Role",
+      "value": "OFFICER"
+    },
+    {
+      "trait_type": "Expiration",
+      "value": "2026-07-07"
+    },
+    {
+      "trait_type": "Soulbound",
+      "value": "False"
+    }
+  ]
+}

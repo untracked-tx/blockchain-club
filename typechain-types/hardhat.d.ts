@@ -14,9 +14,17 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
+      name: "AccessControlEnumerableUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AccessControlEnumerableUpgradeable__factory>;
+    getContractFactory(
       name: "AccessControlUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AccessControlUpgradeable__factory>;
+    getContractFactory(
+      name: "IAccessControlEnumerableUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAccessControlEnumerableUpgradeable__factory>;
     getContractFactory(
       name: "IAccessControlUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -98,17 +106,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165Upgradeable__factory>;
     getContractFactory(
-      name: "Ownable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Ownable__factory>;
-    getContractFactory(
-      name: "Ownable2Step",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Ownable2Step__factory>;
-    getContractFactory(
       name: "BlockchainClubMembership",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.BlockchainClubMembership__factory>;
+    getContractFactory(
+      name: "IBlockchainClubMembership",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IBlockchainClubMembership__factory>;
     getContractFactory(
       name: "IRoles",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -118,10 +122,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ITreasuryRouter__factory>;
     getContractFactory(
-      name: "IVotingPowerStrategy",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IVotingPowerStrategy__factory>;
-    getContractFactory(
       name: "Roles",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Roles__factory>;
@@ -129,16 +129,22 @@ declare module "hardhat/types/runtime" {
       name: "TreasuryRouter",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.TreasuryRouter__factory>;
-    getContractFactory(
-      name: "VotingPowerStrategy",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.VotingPowerStrategy__factory>;
 
+    getContractAt(
+      name: "AccessControlEnumerableUpgradeable",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AccessControlEnumerableUpgradeable>;
     getContractAt(
       name: "AccessControlUpgradeable",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.AccessControlUpgradeable>;
+    getContractAt(
+      name: "IAccessControlEnumerableUpgradeable",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAccessControlEnumerableUpgradeable>;
     getContractAt(
       name: "IAccessControlUpgradeable",
       address: string | ethers.Addressable,
@@ -240,20 +246,15 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165Upgradeable>;
     getContractAt(
-      name: "Ownable",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Ownable>;
-    getContractAt(
-      name: "Ownable2Step",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Ownable2Step>;
-    getContractAt(
       name: "BlockchainClubMembership",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.BlockchainClubMembership>;
+    getContractAt(
+      name: "IBlockchainClubMembership",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IBlockchainClubMembership>;
     getContractAt(
       name: "IRoles",
       address: string | ethers.Addressable,
@@ -265,11 +266,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ITreasuryRouter>;
     getContractAt(
-      name: "IVotingPowerStrategy",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IVotingPowerStrategy>;
-    getContractAt(
       name: "Roles",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -279,16 +275,19 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.TreasuryRouter>;
-    getContractAt(
-      name: "VotingPowerStrategy",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.VotingPowerStrategy>;
 
+    deployContract(
+      name: "AccessControlEnumerableUpgradeable",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AccessControlEnumerableUpgradeable>;
     deployContract(
       name: "AccessControlUpgradeable",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AccessControlUpgradeable>;
+    deployContract(
+      name: "IAccessControlEnumerableUpgradeable",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAccessControlEnumerableUpgradeable>;
     deployContract(
       name: "IAccessControlUpgradeable",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -370,17 +369,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC165Upgradeable>;
     deployContract(
-      name: "Ownable",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Ownable>;
-    deployContract(
-      name: "Ownable2Step",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Ownable2Step>;
-    deployContract(
       name: "BlockchainClubMembership",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BlockchainClubMembership>;
+    deployContract(
+      name: "IBlockchainClubMembership",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBlockchainClubMembership>;
     deployContract(
       name: "IRoles",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -390,10 +385,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ITreasuryRouter>;
     deployContract(
-      name: "IVotingPowerStrategy",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IVotingPowerStrategy>;
-    deployContract(
       name: "Roles",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Roles>;
@@ -401,16 +392,22 @@ declare module "hardhat/types/runtime" {
       name: "TreasuryRouter",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.TreasuryRouter>;
-    deployContract(
-      name: "VotingPowerStrategy",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.VotingPowerStrategy>;
 
+    deployContract(
+      name: "AccessControlEnumerableUpgradeable",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AccessControlEnumerableUpgradeable>;
     deployContract(
       name: "AccessControlUpgradeable",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.AccessControlUpgradeable>;
+    deployContract(
+      name: "IAccessControlEnumerableUpgradeable",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAccessControlEnumerableUpgradeable>;
     deployContract(
       name: "IAccessControlUpgradeable",
       args: any[],
@@ -512,20 +509,15 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC165Upgradeable>;
     deployContract(
-      name: "Ownable",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Ownable>;
-    deployContract(
-      name: "Ownable2Step",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.Ownable2Step>;
-    deployContract(
       name: "BlockchainClubMembership",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BlockchainClubMembership>;
+    deployContract(
+      name: "IBlockchainClubMembership",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IBlockchainClubMembership>;
     deployContract(
       name: "IRoles",
       args: any[],
@@ -537,11 +529,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ITreasuryRouter>;
     deployContract(
-      name: "IVotingPowerStrategy",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IVotingPowerStrategy>;
-    deployContract(
       name: "Roles",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -551,11 +538,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.TreasuryRouter>;
-    deployContract(
-      name: "VotingPowerStrategy",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.VotingPowerStrategy>;
 
     // default types
     getContractFactory(

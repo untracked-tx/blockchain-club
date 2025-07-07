@@ -1,0 +1,35 @@
+{
+  "name": "Mint & Slurp Token",
+  "description": "Blockchain Club NFT: Mint & Slurp.",
+  "image": "ipfs://bafybeih2pg25w4y4vjj67a4vyes6mtb7fbiha727wsmgyonahb4b726kn4/mint_and_slurp.png",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "POAP"
+    },
+    {
+      "trait_type": "Token Type",
+      "value": "Mint & Slurp"
+    },
+    {
+      "trait_type": "Max Supply",
+      "value": "1000"
+    },
+    {
+      "trait_type": "Mint Access",
+      "value": "OFFICER_ONLY"
+    },
+    {
+      "trait_type": "Role",
+      "value": "None"
+    },
+    {
+      "trait_type": "Expiration",
+      "value": "2035-07-05"
+    },
+    {
+      "trait_type": "Soulbound",
+      "value": "True"
+    }
+  ]
+}

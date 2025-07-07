@@ -6,4 +6,3 @@ export type { interfaces };
 export type { BlockchainClubMembership } from "./BlockchainClubMembership";
 export type { Roles } from "./Roles";
 export type { TreasuryRouter } from "./TreasuryRouter";
-export type { VotingPowerStrategy } from "./VotingPowerStrategy";

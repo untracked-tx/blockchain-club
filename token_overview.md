@@ -1,31 +1,73 @@
-# 🎨 Blockchain Club NFT Artwork Mapping
+# 🪙 Blockchain Club Token Types Overview
 
-This chart shows how each piece of artwork is assigned to a specific NFT type within the Blockchain Club ecosystem. Each image is used only once to highlight the contract's flexibility and symbolic depth.
-
----
-
-## 🧭 Governance Track
-
-| Role       | NFT Type           | Voting Power | Assigned Artwork                          | Notes |
-|------------|--------------------|--------------|-------------------------------------------|-------|
-| Observer   | POAP / Event Token | 0            | `mint_and_slurp`, `quad`                 | Attended a workshop, speaker, or event |
-| Member     | Voting NFT         | 1 vote       | `trader`, `initiation`, `trader_chill`, `letsgetthispartystarted2k25`, `future` | Personalized membership tokens |
-| Officer    | Admin NFT          | 3–5 votes    | `officer`, `pres`, `major_key_alert`, `cfo` | Admin, key-holder, club leadership |
+A comprehensive guide to all token categories, their rules, and minting logic in the Blockchain Club ecosystem.
 
 ---
 
-## 🎭 Culture / Experience Track
+## 🧭 Governance Tokens
 
-| Token Type             | Minted By       | Cost       | Assigned Artwork     | Purpose |
-|------------------------|------------------|------------|----------------------|---------|
-| Alumni                | Anyone           | 0.005+     | `the_graduate`       | For graduating or inactive members |
-| Scholarship           | Officers         | Free       | `rhodes_scholar`     | Awarded for merit or financial aid |
-| Replacement (“Fool”)  | Officers         | N/A        | `the_fool`           | Burn-and-replace when access is lost |
-| Founder Series        | Club Wallet      | Special    | `hist_glitch`        | For founding cohort or early backers |
-| Secret Sauce Token    | Officers         | 0.01–0.03  | `secret_sauce`       | Earned from completing internal club course |
-| Gold Star Award       | Officers         | Bonus Drop | `gold_star`          | For special recognition or contribution |
-| Loyalty Token         | Officers         | Bonus Drop | `longrun`            | For milestones like 1-year membership |
-| Art Drop              | Club Wallet      | 0.03+      | `digi_art`           | Collectible + cultural fundraiser piece |
+| Token Type         | Role Granted         | Expires      | Max Supply      | Mint Access      | Notes                        |
+|--------------------|---------------------|--------------|-----------------|------------------|------------------------------|
+| Member Tokens      | MEMBER_ROLE         | 1 year       | 10 (default)    | WHITELIST_ONLY   | Whitelisted users get role   |
+| Officer Tokens     | OFFICER_ROLE        | 1 year       | 2 (default)     | OFFICER_ONLY     | Officers only                |
+
+**Examples:**  
+- Member: `trader`, `initiation`, `trader chill`, `Let's Get This Party Started`, `Custom membership`  
+- Officer: `President`, `Vice President`, `CFO`, `Treasurer`, `Major Key Alert`, `Officer`
+
+---
+
+## 🤝 Supporter Tokens
+
+| Token Type         | Role Granted | Expires | Max Supply   | Mint Access | Cost      | Notes                |
+|--------------------|--------------|---------|--------------|-------------|-----------|----------------------|
+| Supporter Tokens   | None         | Never   | Unlimited    | PUBLIC      | Optional  | Fundraising, open    |
+
+**Examples:**  
+- `The Graduate`, `Rhodes scholar`, `Digital art`
+
+---
+
+## 🏅 POAP (Proof of Attendance)
+
+| Token Type         | Role Granted | Expires | Soulbound | Mint Access           | Notes                |
+|--------------------|--------------|---------|-----------|-----------------------|----------------------|
+| POAP/Event Tokens  | None         | N/A     | Always    | OFFICER/WHITELIST_ONLY| For special events   |
+
+**Examples:**  
+- `mint & slurp`, `quad`, `secret sauce`
+
+---
+
+## 🏆 Awards & Recognition
+
+| Token Type         | Role Granted | Expires | Soulbound | Mint Access    | Notes                |
+|--------------------|--------------|---------|-----------|---------------|----------------------|
+| Awards/Recognition | None         | N/A     | Usually   | OFFICER_ONLY  | For achievements     |
+
+**Examples:**  
+- `Founders Series`, `Gold Star`, `Long run`
+
+---
+
+## 🔄 Replacement
+
+| Token Type         | Role Granted | Expires | Soulbound | Mint Access    | Notes                |
+|--------------------|--------------|---------|-----------|---------------|----------------------|
+| Replacement        | None         | N/A     | Optional  | OFFICER_ONLY  | Special use, e.g. lost access |
+
+**Examples:**  
+- `The fool`
+
+---
+
+### Key
+
+- **Soulbound:** Cannot be transferred once minted.
+- **Mint Access:**  
+  - `OFFICER_ONLY`: Only officers can mint  
+  - `WHITELIST_ONLY`: Only whitelisted users can mint  
+  - `PUBLIC`: Anyone can mint
 
 ---
 

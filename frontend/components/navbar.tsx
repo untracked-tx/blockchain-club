@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, Building2, Zap } from "lucide-react"
 import { Button } from "./ui/button"
 import ConnectWalletButton from "./connect-wallet-button"
 
@@ -13,7 +13,6 @@ export default function Navbar() {
   }
   
   const navLinks = [
-    { name: "Home", href: "/" },
     { name: "Gallery", href: "/gallery" },
     { name: "Governance", href: "/governance" },
     { name: "Research", href: "/research" },
@@ -24,23 +23,32 @@ export default function Navbar() {
   ]
 
   return (
-    <nav className="border-b border-gray-200 bg-white">
+    <nav className="border-b border-[#CFB87C]/20 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-blue-600">UBC</span>
+            <Link href="/" className="flex items-center group">
+              <div className="relative rounded-lg bg-black p-2.5 mr-3 transition-all group-hover:scale-110 shadow-lg border border-[#CFB87C]/30">
+                {/* University style building with CU Gold accent */}
+                <div className="relative">
+                  <Building2 className="h-5 w-5 text-[#CFB87C]" />
+                  <Zap className="absolute -top-1 -right-1 h-3 w-3 text-[#CFB87C]" />
+                </div>
+              </div>
+              <span className="text-xl font-bold text-[#CFB87C] whitespace-nowrap">
+                Blockchain Club
+              </span>
             </Link>
           </div>
 
           {/* Desktop navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-4">
+            <div className="ml-10 flex items-center space-x-1 whitespace-nowrap overflow-x-auto">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600"
+                  className="px-4 py-2 text-sm font-medium text-[#565A5C] hover:text-[#CFB87C] hover:bg-[#CFB87C]/5 rounded-lg transition-all duration-200 border border-transparent hover:border-[#CFB87C]/20"
                 >
                   {link.name}
                 </Link>
@@ -54,7 +62,7 @@ export default function Navbar() {
 
           {/* Mobile menu button */}
           <div className="flex md:hidden">
-            <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label="Toggle menu">
+            <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label="Toggle menu" className="hover:bg-[#CFB87C]/10 text-[#565A5C] hover:text-[#CFB87C]">
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
@@ -63,13 +71,13 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden">
-          <div className="space-y-1 px-2 pb-3 pt-2">
+        <div className="md:hidden bg-white/95 border-t border-[#CFB87C]/20 backdrop-blur-md">
+          <div className="space-y-1 px-4 pb-4 pt-2">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600"
+                className="block px-3 py-3 text-base font-medium text-[#565A5C] hover:text-[#CFB87C] hover:bg-[#CFB87C]/5 rounded-lg transition-all duration-200 border border-transparent hover:border-[#CFB87C]/20"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.name}

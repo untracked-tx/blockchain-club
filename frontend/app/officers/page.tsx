@@ -1,979 +1,1404 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Shield,
-  Award,
-  UserPlus,
-  Lock,
-  Search,
-  Users,
-  Database,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
-  Wallet,
-  FileText,
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { 
+  Shield, 
+  Award, 
+  Search, 
+  Users, 
+  RefreshCw, 
+  CheckCircle2, 
+  AlertCircle, 
   BarChart3,
-  Clock,
+  Copy,
+  Plus,
+  CheckCircle,
+  XCircle,
+  Eye
 } from "lucide-react"
-import { useContract } from "../../hooks/useContract"
-import { safeRoleBytes } from "../../lib/utils"
 import { useToast } from "../../hooks/use-toast"
 import { ethers } from "ethers"
-import ConnectWalletButton from "../../components/connect-wallet-button"
+import { contracts } from "@/lib/contracts"
+import { useContract } from "../../hooks/useContract"
 
-// Mock whitelist data
-const mockWhitelistRequests = [
-  {
-    id: "WL-001",
-    address: "0x1234...5678",
-    email: "student1@university.edu",
-    requestDate: "2023-05-01T10:30:00Z",
-    status: "pending",
-    requestedRole: "Member",
-  },
-  {
-    id: "WL-002",
-    address: "0x8765...4321",
-    email: "student2@university.edu",
-    requestDate: "2023-05-03T14:45:00Z",
-    status: "approved",
-    requestedRole: "Member",
-    approvedBy: "Alex Johnson",
-    approvedDate: "2023-05-04T09:15:00Z",
-  },
-  {
-    id: "WL-003",
-    address: "0xabcd...efgh",
-    email: "professor@university.edu",
-    requestDate: "2023-05-05T11:20:00Z",
-    status: "pending",
-    requestedRole: "Supporter",
-  },
-]
+// Extend window object for ethereum
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ethereum?: any
+  }
+}
 
-// Mock token supply data
-const mockTokenSupply = [
-  { role: "Observer", supply: 45, maxSupply: 0, active: 42 },
-  { role: "Member", supply: 28, maxSupply: 100, active: 25 },
-  { role: "Supporter", supply: 12, maxSupply: 50, active: 12 },
-  { role: "Officer", supply: 5, maxSupply: 10, active: 5 },
-]
+// Contract data interfaces
+interface MemberData {
+  address: string
+  tokenIds: number[]
+  joinDate: number
+  tokenCount: number
+  currentRole: "ADMIN_ROLE" | "OFFICER_ROLE" | "MEMBER_ROLE" | null
+  isActive: boolean
+  votingPower: number
+  customVotingPower?: number
+}
 
-// Mock user lookup data
-const mockUsers = [
-  {
-    address: "0x1234...5678",
-    email: "student1@university.edu",
-    role: "Observer",
-    tokens: 1,
-    joinDate: "2023-04-15T10:30:00Z",
-    lastActive: "2023-05-10T14:20:00Z",
-  },
-  {
-    address: "0x8765...4321",
-    email: "student2@university.edu",
-    role: "Member",
-    tokens: 2,
-    joinDate: "2023-03-22T09:15:00Z",
-    lastActive: "2023-05-11T16:45:00Z",
-  },
-  {
-    address: "0xabcd...efgh",
-    email: "professor@university.edu",
-    role: "Supporter",
-    tokens: 3,
-    joinDate: "2023-02-10T11:30:00Z",
-    lastActive: "2023-05-09T10:20:00Z",
-  },
-]
+interface ContractStats {
+  totalMembers: number
+  totalOfficers: number
+  totalSupply: number
+  whitelistedCount: number
+}
 
-// TODO: Replace all mock data (whitelist, token supply, users) with real backend or smart contract data
-// TODO: Replace simulated wallet connection and officer check with real wallet integration and officer role check
-// TODO: Implement approve/reject actions for whitelist with real contract or backend calls
-// TODO: Implement minting and token management actions with real contract calls
-// TODO: Add tooltips for each action and badge for officer-only controls
-// TODO: Add transaction status, error handling, and Etherscan links for actions
-// TODO: Replace all placeholder text with real club info as provided
+interface TokenTypeData {
+  typeId: string
+  name: string
+  category: string
+  currentSupply: number
+  maxSupply: number
+  isActive: boolean
+  mintAccess: "OFFICER_ONLY" | "WHITELIST_ONLY" | "PUBLIC"
+  startTime: number
+  endTime: number
+}
+
+interface WhitelistEntry {
+  address: string
+  isWhitelisted: boolean
+  addedBy?: string
+  addedAt?: number
+}
 
 export default function OfficersPage() {
   const [isConnected, setIsConnected] = useState(false)
-  const [isOfficer, setIsOfficer] = useState(true)
+  const [isOfficer, setIsOfficer] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("whitelist")
+  const [contractStats, setContractStats] = useState<ContractStats | null>(null)
+  const [members, setMembers] = useState<MemberData[]>([])
+  const [tokenTypes, setTokenTypes] = useState<TokenTypeData[]>([])
+  const [whitelist, setWhitelist] = useState<WhitelistEntry[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
   const [targetAddress, setTargetAddress] = useState("")
-  const { toast } = useToast();
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
-  const contract = useContract(provider);
+  const [whitelistStatus, setWhitelistStatus] = useState<boolean | null>(null)
+  const [activeTab, setActiveTab] = useState("members")
+  const { toast } = useToast()
 
-  // Wallet connect logic (RainbowKit)
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      setProvider(new ethers.BrowserProvider((window as any).ethereum));
-    }
-  }, []);
+  // Web3 and contract setup
+  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null)
+  const membershipContract = useContract(provider)
+  const [rolesContract, setRolesContract] = useState<ethers.Contract | null>(null)
 
-  // Officer check (on-chain)
+  // Role and token type management state
+  const [roleAddress, setRoleAddress] = useState("")
+  const [selectedRole, setSelectedRole] = useState<string>("")
+  const [mintAddress, setMintAddress] = useState("")
+  const [selectedTokenType, setSelectedTokenType] = useState<string>("")
+  const [isSoulbound, setIsSoulbound] = useState(false)
+
+  // Loading states for real contract calls
+  const [whitelistLoading, setWhitelistLoading] = useState(false)
+  const [roleLoading, setRoleLoading] = useState(false)
+
+  // Initialize Web3 provider and contracts
   useEffect(() => {
-    const checkOfficer = async () => {
-      if (!contract || !provider) return;
-      try {
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        const isOfficer = await contract.hasRole(safeRoleBytes("OFFICER_ROLE"), address);
-        setIsOfficer(isOfficer);
-      } catch (e) {
-        setIsOfficer(false);
+    const initializeWeb3 = async () => {
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          const web3Provider = new ethers.BrowserProvider(window.ethereum)
+          setProvider(web3Provider)
+          
+          // Check if already connected
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+          if (accounts.length > 0) {
+            setIsConnected(true)
+            await checkOfficerRole(web3Provider)
+          }
+        } catch (error) {
+          console.error("Failed to initialize Web3:", error)
+        }
       }
-    };
-    checkOfficer();
-  }, [contract, provider]);
-
-  // --- Whitelist Management State ---
-  const [whitelistAddress, setWhitelistAddress] = useState("");
-  const [whitelistStatus, setWhitelistStatus] = useState<null | boolean>(null);
-  const [whitelistLoading, setWhitelistLoading] = useState(false);
-
-  // --- Role Management State ---
-  const [roleAddress, setRoleAddress] = useState("");
-  const [roleName, setRoleName] = useState("");
-  const [roleStatus, setRoleStatus] = useState<null | boolean>(null);
-  const [roleLoading, setRoleLoading] = useState(false);
-
-  // Whitelist check/add/remove handlers
-  const handleCheckWhitelist = async () => {
-    setWhitelistLoading(true);
-    setWhitelistStatus(null);
-    try {
-      if (!contract) throw new Error("Contract not loaded");
-      const status = await contract.whitelist(whitelistAddress);
-      setWhitelistStatus(status);
-    } catch (e) {
-      toast({ title: "Error", description: "Failed to check whitelist status." });
-    } finally {
-      setWhitelistLoading(false);
-    }
-  };
-
-  const handleSetWhitelist = async (value: boolean) => {
-    setWhitelistLoading(true);
-    try {
-      if (!contract) throw new Error("Contract not loaded");
-      const tx = await contract.setWhitelist(whitelistAddress, value);
-      await tx.wait();
-      setWhitelistStatus(value);
-      toast({ title: "Success", description: value ? "Address whitelisted." : "Address removed from whitelist." });
-    } catch (e) {
-      toast({ title: "Error", description: "Transaction failed." });
-    } finally {
-      setWhitelistLoading(false);
-    }
-  };
-
-  // Role check/grant handlers
-  const handleCheckRole = async () => {
-    setRoleLoading(true);
-    setRoleStatus(null);
-    try {
-      if (!contract) throw new Error("Contract not loaded");
-      const status = await contract.hasRole(safeRoleBytes(roleName), roleAddress);
-      setRoleStatus(status);
-    } catch (e) {
-      toast({ title: "Error", description: "Failed to check role." });
-    } finally {
-      setRoleLoading(false);
-    }
-  };
-
-  const handleGrantRole = async () => {
-    setRoleLoading(true);
-    try {
-      if (!contract) throw new Error("Contract not loaded");
-      const tx = await contract.grantRole(safeRoleBytes(roleName), roleAddress);
-      await tx.wait();
-      setRoleStatus(true);
-      toast({ title: "Success", description: `Role granted to ${roleAddress}` });
-    } catch (e) {
-      toast({ title: "Error", description: "Transaction failed." });
-    } finally {
-      setRoleLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      setIsConnected(true)
       setIsLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timer)
+    }
+    
+    initializeWeb3()
   }, [])
 
-  const handleConnect = () => {
-    setIsConnected(true)
+  // Initialize roles contract when provider is available
+  useEffect(() => {
+    const initializeRolesContract = async () => {
+      if (provider) {
+        try {
+          const signer = await provider.getSigner()
+          const rolesContractInstance = new ethers.Contract(
+            contracts.roles.address,
+            contracts.roles.abi,
+            signer
+          )
+          setRolesContract(rolesContractInstance)
+        } catch (error) {
+          console.error("Failed to initialize roles contract:", error)
+        }
+      }
+    }
+    
+    initializeRolesContract()
+  }, [provider])
+
+  // Check if connected user has officer role
+  const checkOfficerRole = async (web3Provider: ethers.BrowserProvider) => {
+    try {
+      const signer = await web3Provider.getSigner()
+      const userAddress = await signer.getAddress()
+      
+      const rolesContractInstance = new ethers.Contract(
+        contracts.roles.address,
+        contracts.roles.abi,
+        signer
+      )
+      
+      // Check if user has OFFICER_ROLE
+      const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+      const hasOfficerRole = await rolesContractInstance.hasRole(officerRoleHash, userAddress)
+      
+      setIsOfficer(hasOfficerRole)
+    } catch (error) {
+      console.error("Failed to check officer role:", error)
+      setIsOfficer(false)
+    }
   }
 
-  const handleSearch = () => {
-    if (!searchQuery) {
-      setSearchResults([])
+  // Connect wallet function
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      toast({
+        title: "Error",
+        description: "Please install MetaMask to connect your wallet",
+        variant: "destructive"
+      })
       return
     }
-
-    // Simulate search
-    const results = mockUsers.filter(
-      (user) =>
-        user.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()),
-    )
-    setSearchResults(results)
-  }
-
-  const handleAction = async () => {
-    if (!targetAddress) {
-      setError("Please enter a valid wallet address")
-      return
-    }
-
-    setError("")
-    setSuccess("")
-    setIsLoading(true)
 
     try {
-      // Simulate a delay for the action
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await window.ethereum.request({ method: 'eth_requestAccounts' })
+      const web3Provider = new ethers.BrowserProvider(window.ethereum)
+      setProvider(web3Provider)
+      setIsConnected(true)
+      await checkOfficerRole(web3Provider)
+    } catch (error) {
+      console.error("Failed to connect wallet:", error)
+      toast({
+        title: "Error",
+        description: "Failed to connect wallet",
+        variant: "destructive"
+      })
+    }
+  }
 
-      // Simulate success
-      setSuccess("Action completed successfully!")
-    } catch (err) {
-      setError("Transaction failed. Please try again.")
+  // Load contract data
+  useEffect(() => {
+    if (isConnected && isOfficer && membershipContract && rolesContract) {
+      loadContractData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, isOfficer, membershipContract, rolesContract])
+
+  async function loadContractData() {
+    if (!membershipContract || !rolesContract) return
+
+    try {
+      setIsLoading(true)
+      
+      // Get real contract stats
+      const [totalMembers, totalOfficers, totalSupply] = await Promise.all([
+        membershipContract.getMemberCount(),
+        membershipContract.getOfficerCount(),
+        membershipContract.totalSupply()
+      ])
+
+      setContractStats({
+        totalMembers: Number(totalMembers),
+        totalOfficers: Number(totalOfficers),
+        totalSupply: Number(totalSupply),
+        whitelistedCount: 0 // We'll calculate this when we load whitelist entries
+      })
+
+      // Load real member data by enumerating tokens
+      await loadMemberData()
+      
+      // Load real token types from contract events or known types
+      await loadTokenTypes()
+      
+      // Load whitelist entries from events
+      await loadWhitelistEntries()
+
+    } catch (error) {
+      console.error("Failed to load contract data:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load contract data",
+        variant: "destructive"
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
+  async function loadMemberData() {
+    if (!membershipContract || !rolesContract) return
+
+    try {
+      const totalSupply = await membershipContract.totalSupply()
+      const memberData: MemberData[] = []
+
+      // Enumerate all tokens to get member data
+      for (let i = 0; i < Number(totalSupply); i++) {
+        try {
+          const tokenId = await membershipContract.tokenByIndex(i)
+          const owner = await membershipContract.ownerOf(tokenId)
+          
+          // Skip if we already have this owner
+          if (memberData.find(m => m.address.toLowerCase() === owner.toLowerCase())) {
+            continue
+          }
+
+          // Get member stats
+          const memberStats = await membershipContract.memberStats(owner)
+          const tokenCount = await membershipContract.balanceOf(owner)
+          
+          // Get current role
+          let currentRole: "ADMIN_ROLE" | "OFFICER_ROLE" | "MEMBER_ROLE" | null = null
+          const adminRoleHash = ethers.keccak256(ethers.toUtf8Bytes("ADMIN_ROLE"))
+          const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+          const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
+
+          if (await rolesContract.hasRole(adminRoleHash, owner)) {
+            currentRole = "ADMIN_ROLE"
+          } else if (await rolesContract.hasRole(officerRoleHash, owner)) {
+            currentRole = "OFFICER_ROLE"
+          } else if (await rolesContract.hasRole(memberRoleHash, owner)) {
+            currentRole = "MEMBER_ROLE"
+          }
+
+          // Get voting power
+          const votingPower = await rolesContract.getVotingPower(owner)
+          const customVotingPower = await rolesContract.customVotingPower(owner)
+
+          // Get all token IDs for this owner
+          const tokenIds: number[] = []
+          for (let j = 0; j < Number(tokenCount); j++) {
+            const tokenId = await membershipContract.tokenOfOwnerByIndex(owner, j)
+            tokenIds.push(Number(tokenId))
+          }
+
+          memberData.push({
+            address: owner,
+            tokenIds,
+            joinDate: Number(memberStats.joinDate) * 1000, // Convert to milliseconds
+            tokenCount: Number(tokenCount),
+            currentRole,
+            isActive: memberStats.isActive,
+            votingPower: Number(votingPower),
+            customVotingPower: Number(customVotingPower) > 0 ? Number(customVotingPower) : undefined
+          })
+        } catch (error) {
+          console.error(`Error loading data for token ${i}:`, error)
+        }
+      }
+
+      setMembers(memberData)
+    } catch (error) {
+      console.error("Failed to load member data:", error)
+    }
+  }
+
+  async function loadTokenTypes() {
+    if (!membershipContract) return
+
+    try {
+      // For now, let's check known token types directly since event parsing is complex
+      const knownTypes = [
+        { id: "MEMBER", name: "Club Member", category: "Membership" },
+        { id: "OFFICER", name: "Club Officer", category: "Leadership" },
+        { id: "FOUNDER", name: "Founder", category: "Special" },
+        { id: "CUSTOM_ART", name: "Digital Art Collection", category: "Collectible" },
+        { id: "SPECIAL", name: "Special Edition", category: "Limited" },
+        { id: "SUPPORTER", name: "Supporter", category: "Community" }
+      ]
+      
+      const tokenTypesData: TokenTypeData[] = []
+
+      for (const type of knownTypes) {
+        try {
+          const typeId = ethers.keccak256(ethers.toUtf8Bytes(type.id))
+          const config = await membershipContract.tokenTypeConfigs(typeId)
+          
+          if (Number(config.maxSupply) > 0) { // Only add if configured
+            tokenTypesData.push({
+              typeId: type.id,
+              name: type.name,
+              category: type.category,
+              currentSupply: Number(config.currentSupply),
+              maxSupply: Number(config.maxSupply),
+              isActive: config.isActive,
+              mintAccess: config.mintAccess === 0 ? "OFFICER_ONLY" : 
+                         config.mintAccess === 1 ? "WHITELIST_ONLY" : "PUBLIC",
+              startTime: Number(config.startTime) * 1000,
+              endTime: Number(config.endTime) * 1000
+            })
+          }
+        } catch (error) {
+          console.error(`Error checking token type ${type.id}:`, error)
+        }
+      }
+
+      setTokenTypes(tokenTypesData)
+    } catch (error) {
+      console.error("Failed to load token types:", error)
+    }
+  }
+
+  async function loadWhitelistEntries() {
+    if (!membershipContract) return
+
+    try {
+      // Since event parsing is complex, let's check whitelist status for known addresses
+      // First, get all unique addresses from members
+      const addressesToCheck = new Set<string>()
+      
+      // Add member addresses
+      members.forEach(member => addressesToCheck.add(member.address))
+      
+      // Add some additional addresses that might be whitelisted
+      const additionalAddresses = [
+        targetAddress, // Current target address if any
+      ].filter(addr => addr && ethers.isAddress(addr))
+      
+      additionalAddresses.forEach(addr => addressesToCheck.add(addr))
+
+      const whitelistEntries: WhitelistEntry[] = []
+      
+      for (const address of addressesToCheck) {
+        try {
+          const isWhitelisted = await membershipContract.whitelist(address)
+          whitelistEntries.push({
+            address,
+            isWhitelisted,
+            addedAt: Date.now() // We don't have exact timestamp without events
+          })
+        } catch (error) {
+          console.error(`Failed to check whitelist for ${address}:`, error)
+        }
+      }
+      
+      setWhitelist(whitelistEntries)
+      
+      // Update whitelist count in stats
+      const whitelistedCount = whitelistEntries.filter(entry => entry.isWhitelisted).length
+      setContractStats(prev => prev ? { ...prev, whitelistedCount } : null)
+
+    } catch (error) {
+      console.error("Failed to load whitelist entries:", error)
+    }
+  }
+
+  // Action handlers - REAL CONTRACT CALLS
+  const checkWhitelistStatus = async () => {
+    if (!targetAddress) {
+      toast({
+        title: "Error", 
+        description: "Please enter a valid address",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!membershipContract) {
+      toast({
+        title: "Error",
+        description: "Contract not connected",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setWhitelistLoading(true)
+      
+      // Validate address format
+      if (!ethers.isAddress(targetAddress)) {
+        throw new Error("Invalid address format")
+      }
+
+      // Call the whitelist function on the membership contract
+      const isWhitelisted = await membershipContract.whitelist(targetAddress)
+      setWhitelistStatus(isWhitelisted)
+      
+      toast({
+        title: "Status Checked",
+        description: `Address is ${isWhitelisted ? "whitelisted" : "not whitelisted"}`,
+      })
+    } catch (error: unknown) {
+      console.error("Failed to check whitelist status:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to check whitelist status"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setWhitelistLoading(false)
+    }
+  }
+
+  const updateWhitelist = async (address: string, status: boolean) => {
+    if (!membershipContract) {
+      toast({
+        title: "Error",
+        description: "Contract not connected",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setWhitelistLoading(true)
+      
+      // Validate address format
+      if (!ethers.isAddress(address)) {
+        throw new Error("Invalid address format")
+      }
+
+      // Call the updateWhitelist function on the membership contract
+      const tx = await membershipContract.updateWhitelist(address, status)
+      
+      toast({
+        title: "Transaction Submitted",
+        description: "Waiting for confirmation...",
+      })
+
+      // Wait for transaction confirmation
+      await tx.wait()
+      
+      // Update local state
+      setWhitelist(prev => {
+        const existingIndex = prev.findIndex(entry => entry.address.toLowerCase() === address.toLowerCase())
+        if (existingIndex >= 0) {
+          const updated = [...prev]
+          updated[existingIndex] = { ...updated[existingIndex], isWhitelisted: status, addedAt: Date.now() }
+          return updated
+        } else {
+          return [...prev, { address, isWhitelisted: status, addedAt: Date.now() }]
+        }
+      })
+
+      // Update status if this is the target address
+      if (address.toLowerCase() === targetAddress.toLowerCase()) {
+        setWhitelistStatus(status)
+      }
+
+      // Refresh whitelist entries
+      await refreshWhitelistEntries()
+      
+      toast({
+        title: "Success",
+        description: `Address ${status ? 'added to' : 'removed from'} whitelist`,
+      })
+    } catch (error: unknown) {
+      console.error("Failed to update whitelist:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to update whitelist"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setWhitelistLoading(false)
+    }
+  }
+
+  // Function to refresh whitelist entries after updates
+  const refreshWhitelistEntries = async () => {
+    if (!membershipContract) return
+
+    try {
+      const addressesToCheck = new Set<string>()
+      
+      // Add member addresses
+      members.forEach(member => addressesToCheck.add(member.address))
+      
+      // Add current target address if valid
+      if (targetAddress && ethers.isAddress(targetAddress)) {
+        addressesToCheck.add(targetAddress)
+      }
+
+      // Add existing whitelist addresses
+      whitelist.forEach(entry => addressesToCheck.add(entry.address))
+
+      const updatedWhitelistEntries: WhitelistEntry[] = []
+      
+      for (const address of addressesToCheck) {
+        try {
+          const isWhitelisted = await membershipContract.whitelist(address)
+          updatedWhitelistEntries.push({
+            address,
+            isWhitelisted,
+            addedAt: Date.now()
+          })
+        } catch (error) {
+          console.error(`Failed to check whitelist for ${address}:`, error)
+        }
+      }
+      
+      setWhitelist(updatedWhitelistEntries)
+      
+      // Update whitelist count in stats
+      const whitelistedCount = updatedWhitelistEntries.filter(entry => entry.isWhitelisted).length
+      setContractStats(prev => prev ? { ...prev, whitelistedCount } : null)
+
+    } catch (error) {
+      console.error("Failed to refresh whitelist entries:", error)
+    }
+  }
+
+  const checkUserRole = async () => {
+    if (!roleAddress || !selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please enter address and select role",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!rolesContract) {
+      toast({
+        title: "Error",
+        description: "Roles contract not connected",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setRoleLoading(true)
+      
+      // Validate address format
+      if (!ethers.isAddress(roleAddress)) {
+        throw new Error("Invalid address format")
+      }
+
+      // Get role hash based on selected role
+      const roleHash = ethers.keccak256(ethers.toUtf8Bytes(selectedRole))
+      
+      // Check if user has the role
+      const hasRole = await rolesContract.hasRole(roleHash, roleAddress)
+      
+      toast({
+        title: "Role Status",
+        description: `Address ${hasRole ? "has" : "does not have"} ${selectedRole}`,
+      })
+    } catch (error: unknown) {
+      console.error("Failed to check role:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to check role"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setRoleLoading(false)
+    }
+  }
+
+  const grantRole = async () => {
+    if (!roleAddress || !selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please enter address and select role",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!rolesContract) {
+      toast({
+        title: "Error",
+        description: "Roles contract not connected",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setRoleLoading(true)
+      
+      // Validate address format
+      if (!ethers.isAddress(roleAddress)) {
+        throw new Error("Invalid address format")
+      }
+
+      // Get role hash based on selected role
+      const roleHash = ethers.keccak256(ethers.toUtf8Bytes(selectedRole))
+      
+      // Grant the role
+      const tx = await rolesContract.grantRole(roleHash, roleAddress)
+      
+      toast({
+        title: "Transaction Submitted",
+        description: "Waiting for confirmation...",
+      })
+
+      // Wait for transaction confirmation
+      await tx.wait()
+      
+      toast({
+        title: "Success",
+        description: `Role ${selectedRole} granted to ${roleAddress.slice(0, 6)}...${roleAddress.slice(-4)}`,
+      })
+      
+      // Optionally reload contract data
+      loadContractData()
+    } catch (error: unknown) {
+      console.error("Failed to grant role:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to grant role"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setRoleLoading(false)
+    }
+  }
+
+  const revokeRole = async () => {
+    if (!roleAddress || !selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please enter address and select role",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!rolesContract) {
+      toast({
+        title: "Error",
+        description: "Roles contract not connected",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setRoleLoading(true)
+      
+      // Validate address format
+      if (!ethers.isAddress(roleAddress)) {
+        throw new Error("Invalid address format")
+      }
+
+      // Get role hash based on selected role
+      const roleHash = ethers.keccak256(ethers.toUtf8Bytes(selectedRole))
+      
+      // Revoke the role
+      const tx = await rolesContract.revokeRole(roleHash, roleAddress)
+      
+      toast({
+        title: "Transaction Submitted",
+        description: "Waiting for confirmation...",
+      })
+
+      // Wait for transaction confirmation
+      await tx.wait()
+      
+      toast({
+        title: "Success",
+        description: `Role ${selectedRole} revoked from ${roleAddress.slice(0, 6)}...${roleAddress.slice(-4)}`,
+      })
+      
+      // Optionally reload contract data
+      loadContractData()
+    } catch (error: unknown) {
+      console.error("Failed to revoke role:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to revoke role"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setRoleLoading(false)
+    }
+  }
+
+  const mintToken = async () => {
+    if (!mintAddress || !selectedTokenType) {
+      toast({
+        title: "Error",
+        description: "Please enter address and select token type",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!membershipContract) {
+      toast({
+        title: "Error",
+        description: "Contract not connected",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      // Validate address format
+      if (!ethers.isAddress(mintAddress)) {
+        throw new Error("Invalid address format")
+      }
+
+      // Convert token type to bytes32
+      const tokenTypeBytes = ethers.keccak256(ethers.toUtf8Bytes(selectedTokenType))
+      
+      // Call mint function
+      const tx = await membershipContract.mint(mintAddress, tokenTypeBytes, isSoulbound)
+      
+      toast({
+        title: "Transaction Submitted",
+        description: "Waiting for confirmation...",
+      })
+
+      await tx.wait()
+      
+      toast({
+        title: "Success",
+        description: `Token minted for ${mintAddress.slice(0, 6)}...${mintAddress.slice(-4)}`,
+      })
+      
+      loadContractData()
+    } catch (error: unknown) {
+      console.error("Failed to mint token:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to mint token"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    toast({
+      title: "Copied",
+      description: "Address copied to clipboard",
+    })
+  }
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     })
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>
-      case "approved":
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
-      case "rejected":
-        return <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+  const getRoleBadge = (role: string | null) => {
+    switch (role) {
+      case "ADMIN_ROLE":
+        return <Badge className="bg-red-100 text-red-800"><Shield className="mr-1 h-3 w-3" /> Admin</Badge>
+      case "OFFICER_ROLE":
+        return <Badge className="bg-amber-100 text-amber-800"><Award className="mr-1 h-3 w-3" /> Officer</Badge>
+      case "MEMBER_ROLE":
+        return <Badge className="bg-blue-100 text-blue-800"><Users className="mr-1 h-3 w-3" /> Member</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>
+        return <Badge className="bg-gray-100 text-gray-800">No Role</Badge>
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "Observer":
-        return (
-          <Badge className="bg-green-100 text-green-800">
-            <Users className="mr-1 h-3 w-3" /> Observer
-          </Badge>
-        )
-      case "Member":
-        return (
-          <Badge className="bg-blue-100 text-blue-800">
-            <Shield className="mr-1 h-3 w-3" /> Member
-          </Badge>
-        )
-      case "Supporter":
-        return (
-          <Badge className="bg-purple-100 text-purple-800">
-            <Wallet className="mr-1 h-3 w-3" /> Supporter
-          </Badge>
-        )
-      case "Officer":
-        return (
-          <Badge className="bg-amber-100 text-amber-800">
-            <Award className="mr-1 h-3 w-3" /> Officer
-          </Badge>
-        )
-      default:
-        return <Badge className="bg-gray-100 text-gray-800">{role}</Badge>
-    }
+  const filteredMembers = members.filter(member => 
+    member.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (member.currentRole && member.currentRole.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading officer dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader className="text-center">
+            <Shield className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <CardTitle>Connect Your Wallet</CardTitle>
+            <CardDescription>
+              Connect your wallet to access officer tools and manage club operations.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button onClick={connectWallet} className="w-full">
+              Connect Wallet
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!isOfficer) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader className="text-center">
+            <AlertCircle className="h-12 w-12 text-amber-600 mx-auto mb-4" />
+            <CardTitle>Officer Access Required</CardTitle>
+            <CardDescription>
+              This dashboard is restricted to club officers. You need an officer token to access these tools.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+              <p className="text-sm text-amber-800">
+                If you believe you should have access, please contact another officer to grant you the required permissions.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="mb-12 text-center">
-        <h1 className="mb-4 text-4xl font-bold text-gray-900">Officer Controls</h1>
-        <p className="mx-auto max-w-2xl text-lg text-gray-600">
-          Administrative tools for club officers to manage membership and governance.
-        </p>
-        {/* TODO: Add officer-only badge and info about officer responsibilities */}
+    <div className="flex flex-col">
+      {/* Enhanced Header Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 py-20 md:py-28">
+        {/* Background Elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4 text-center">
+          <div className="mx-auto max-w-4xl">
+            {/* Floating Badge */}
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
+              <Shield className="mr-2 h-4 w-4" />
+              Officer Dashboard
+            </div>
+            
+            <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
+              ⚡ Administrative Controls
+            </h1>
+            
+            <p className="mb-8 text-xl text-purple-100 leading-relaxed">
+              Manage membership, tokens, and governance for the blockchain club.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {!isConnected ? (
-        <div className="mx-auto max-w-md text-center">
-          <Card className="border-gray-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900">Connect Your Wallet</CardTitle>
-              <CardDescription className="text-gray-600">
-                You need to connect your wallet to access officer controls.
-              </CardDescription>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardFooter className="flex justify-center">
-              <Button onClick={handleConnect}>Connect Wallet</Button>
-            </CardFooter>
+            <CardContent>
+              <div className="text-2xl font-bold">{contractStats?.totalMembers || 0}</div>
+              <p className="text-xs text-muted-foreground">Active club members</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Officers</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{contractStats?.totalOfficers || 0}</div>
+              <p className="text-xs text-muted-foreground">Leadership team</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Supply</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{contractStats?.totalSupply || 0}</div>
+              <p className="text-xs text-muted-foreground">Tokens minted</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Whitelisted</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{contractStats?.whitelistedCount || 0}</div>
+              <p className="text-xs text-muted-foreground">Approved addresses</p>
+            </CardContent>
           </Card>
         </div>
-      ) : !isOfficer ? (
-        <Card className="mx-auto max-w-md border-gray-200 bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-gray-900">Access Denied</CardTitle>
-            <CardDescription className="text-gray-600">This page is only accessible to club officers.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600">
-              You need an officer token to access this page. Please contact a current officer if you believe you should
-              have access.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div>
-          {error && (
-            <Alert className="mb-6 border-destructive bg-destructive/10">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
 
-          {success && (
-            <Alert className="mb-6 border-green-500 bg-green-500/10">
-              <CheckCircle2 className="h-5 w-5 text-green-500" />
-              <AlertTitle>Success!</AlertTitle>
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
+        {/* Main Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="whitelist">Whitelist</TabsTrigger>
+            <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="roles">Roles</TabsTrigger>
+          </TabsList>
 
-          <div className="mb-8 grid gap-6 md:grid-cols-3">
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
-                  <Users className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-gray-900">Total Members</CardTitle>
-                <CardDescription className="text-gray-600">Active club membership</CardDescription>
+          <TabsContent value="members" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Club Members</CardTitle>
+                <CardDescription>
+                  View and manage all club members with their token holdings and roles.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-6 w-24" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {mockTokenSupply.reduce((acc, curr) => acc + curr.active, 0)}
-                    </span>
-                    <span className="text-sm text-gray-600">Active members</span>
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search by address or role..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 mb-2">
-                  <FileText className="h-5 w-5" />
                 </div>
-                <CardTitle className="text-gray-900">Pending Requests</CardTitle>
-                <CardDescription className="text-gray-600">Whitelist approvals needed</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-6 w-24" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {mockWhitelistRequests.filter((req) => req.status === "pending").length}
-                    </span>
-                    <span className="text-sm text-gray-600">Pending approvals</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 mb-2">
-                  <BarChart3 className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-gray-900">Token Supply</CardTitle>
-                <CardDescription className="text-gray-600">Total tokens minted</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <Skeleton className="h-6 w-24" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {mockTokenSupply.reduce((acc, curr) => acc + curr.supply, 0)}
-                    </span>
-                    <span className="text-sm text-gray-600">Tokens in circulation</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <Tabs defaultValue="whitelist" onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-6 bg-gray-100">
-              <TabsTrigger value="whitelist" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                Whitelist Management
-              </TabsTrigger>
-              <TabsTrigger value="role" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                Role Management
-              </TabsTrigger>
-              <TabsTrigger value="tokens" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                Token Supply
-              </TabsTrigger>
-              <TabsTrigger value="lookup" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                User Lookup
-              </TabsTrigger>
-              <TabsTrigger value="recovery" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                Recovery Token
-              </TabsTrigger>
-              <TabsTrigger value="admin" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                Admin Tools
-              </TabsTrigger>
-            </TabsList>
-            {/* TODO: Add tooltips or info popovers for each officer action */}
-
-            <TabsContent value="whitelist">
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardHeader>
-                  <div className="flex items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 mr-3">
-                      <UserPlus className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-gray-900">Whitelist Requests</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Review and approve membership requests
-                      </CardDescription>
-                      {/* TODO: Add eligibility check for whitelist approval (e.g., university email verification) */}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {Array(3)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div key={i} className="rounded-md border border-gray-200 p-4">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-3/4" />
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-md border border-gray-200 overflow-hidden">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              ID
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Address
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Email
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Requested Role
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Status
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {mockWhitelistRequests.map((request) => (
-                            <tr key={request.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {request.id}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{request.address}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{request.email}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {request.requestedRole}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(request.status)}</td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {request.status === "pending" ? (
-                                  <div className="flex space-x-2">
-                                    <Button size="sm" className="h-8 px-2 py-0">
-                                      Approve
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-8 px-2 py-0 border-gray-200 text-gray-700"
-                                    >
-                                      Reject
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <span className="text-gray-500">
-                                    {request.status === "approved"
-                                      ? `Approved by ${request.approvedBy}`
-                                      : "No actions available"}
-                                  </span>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3 flex justify-between">
-                  <Button variant="outline" className="border-gray-200 text-gray-700">
-                    <RefreshCw className="mr-2 h-4 w-4" /> Refresh List
-                  </Button>
-                  <Button>
-                    <UserPlus className="mr-2 h-4 w-4" /> Add Manual Entry
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              <Card className="border-gray-200 bg-white shadow-sm mb-6">
-                <CardHeader>
-                  <CardTitle>On-Chain Whitelist Management</CardTitle>
-                  <CardDescription>Check, add, or remove addresses from the on-chain whitelist.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col md:flex-row gap-4 items-end">
-                    <div className="flex-1">
-                      <Label htmlFor="whitelist-address">Wallet Address</Label>
-                      <Input id="whitelist-address" placeholder="0x..." value={whitelistAddress} onChange={e => setWhitelistAddress(e.target.value)} />
-                    </div>
-                    <Button onClick={handleCheckWhitelist} disabled={whitelistLoading || !whitelistAddress}>
-                      {whitelistLoading ? "Checking..." : "Check Status"}
-                    </Button>
-                    <Button onClick={() => handleSetWhitelist(true)} disabled={whitelistLoading || !whitelistAddress || whitelistStatus === true}>
-                      Add
-                    </Button>
-                    <Button onClick={() => handleSetWhitelist(false)} disabled={whitelistLoading || !whitelistAddress || whitelistStatus === false} variant="destructive">
-                      Remove
-                    </Button>
-                  </div>
-                  {whitelistStatus !== null && (
-                    <div className="mt-4">
-                      {whitelistStatus ? (
-                        <Badge className="bg-green-100 text-green-800">Whitelisted</Badge>
-                      ) : (
-                        <Badge className="bg-red-100 text-red-800">Not Whitelisted</Badge>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-end mt-6">
-                <Button
-                  variant="destructive"
-                  className="flex items-center"
-                  onClick={() => {
-                    window.alert(
-                      'Warning: Emergency Pause will pause all minting and membership functions for the club.\n\nAre you sure you want to continue? This action is intended for emergencies only.'
-                    );
-                  }}
-                >
-                  <AlertCircle className="mr-2 h-5 w-5" />
-                  Emergency Pause
-                </Button>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="role">
-              <Card className="border-gray-200 bg-white shadow-sm mb-6">
-                <CardHeader>
-                  <CardTitle>On-Chain Role Management</CardTitle>
-                  <CardDescription>Check or grant a role to an address on-chain.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col md:flex-row gap-4 items-end">
-                    <div className="flex-1">
-                      <Label htmlFor="role-address">Wallet Address</Label>
-                      <Input id="role-address" placeholder="0x..." value={roleAddress} onChange={e => setRoleAddress(e.target.value)} />
-                    </div>
-                    <div className="flex-1">
-                      <Label htmlFor="role-name">Role Name</Label>
-                      <Input id="role-name" placeholder="e.g. OFFICER_ROLE" value={roleName} onChange={e => setRoleName(e.target.value)} />
-                    </div>
-                    <Button onClick={handleCheckRole} disabled={roleLoading || !roleAddress || !roleName}>
-                      {roleLoading ? "Checking..." : "Check Role"}
-                    </Button>
-                    <Button onClick={handleGrantRole} disabled={roleLoading || !roleAddress || !roleName || roleStatus === true}>
-                      Grant Role
-                    </Button>
-                  </div>
-                  {roleStatus !== null && (
-                    <div className="mt-4">
-                      {roleStatus ? (
-                        <Badge className="bg-green-100 text-green-800">Role Assigned</Badge>
-                      ) : (
-                        <Badge className="bg-red-100 text-red-800">Role Not Assigned</Badge>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="tokens">
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardHeader>
-                  <div className="flex items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 mr-3">
-                      <Database className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-gray-900">Token Supply Management</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Monitor and manage the club's token supply
-                      </CardDescription>
-                      {/* TODO: Add eligibility check for minting (e.g., officer multi-sig) */}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {Array(4)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div key={i} className="rounded-md border border-gray-200 p-4">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-3/4" />
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {mockTokenSupply.map((token) => (
-                        <div key={token.role} className="rounded-md border border-gray-200 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-semibold text-gray-900">{token.role} Tokens</h3>
-                              {getRoleBadge(token.role)}
-                            </div>
-                            <Button size="sm" variant="outline" className="border-gray-200 text-gray-700">
-                              Mint New
-                            </Button>
-                          </div>
-                          <div className="grid gap-4 md:grid-cols-3">
-                            <div className="rounded-md bg-gray-50 p-3">
-                              <p className="text-sm font-medium text-gray-700">Total Supply</p>
-                              <p className="text-2xl font-bold text-gray-900">{token.supply}</p>
-                              {token.maxSupply > 0 && <p className="text-xs text-gray-600">Max: {token.maxSupply}</p>}
-                            </div>
-                            <div className="rounded-md bg-gray-50 p-3">
-                              <p className="text-sm font-medium text-gray-700">Active</p>
-                              <p className="text-2xl font-bold text-gray-900">{token.active}</p>
-                              <p className="text-xs text-gray-600">
-                                {((token.active / token.supply) * 100).toFixed(1)}% of supply
-                              </p>
-                            </div>
-                            <div className="rounded-md bg-gray-50 p-3">
-                              <p className="text-sm font-medium text-gray-700">Inactive</p>
-                              <p className="text-2xl font-bold text-gray-900">{token.supply - token.active}</p>
-                              <p className="text-xs text-gray-600">
-                                {((1 - token.active / token.supply) * 100).toFixed(1)}% of supply
-                              </p>
-                            </div>
-                          </div>
-                          {token.maxSupply > 0 && (
-                            <div className="mt-4">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm text-gray-600">Supply Cap</span>
-                                <span className="text-sm font-medium text-gray-900">
-                                  {token.supply}/{token.maxSupply}
-                                </span>
-                              </div>
-                              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
-                                <div
-                                  className="h-full bg-blue-500"
-                                  style={{
-                                    width: `${(token.supply / token.maxSupply) * 100}%`,
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                          )}
+                
+                <div className="space-y-4">
+                  {filteredMembers.map(member => (
+                    <div key={member.address} className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                            {member.address.slice(0, 6)}...{member.address.slice(-4)}
+                          </code>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => copyToClipboard(member.address)}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          {getRoleBadge(member.currentRole)}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
-                  <Button variant="outline" className="w-full border-gray-200 text-gray-700">
-                    <FileText className="mr-2 h-4 w-4" /> Export Token Report
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="lookup">
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardHeader>
-                  <div className="flex items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 mr-3">
-                      <Search className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-gray-900">User Lookup</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Search for members by address or email
-                      </CardDescription>
-                      {/* TODO: Add eligibility check for editing roles (officer only) */}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-                    <div className="relative w-full">
-                      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                      <Input
-                        placeholder="Search by address or email..."
-                        className="pl-9 border-gray-200"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                    <Button onClick={handleSearch} className="whitespace-nowrap">
-                      Search
-                    </Button>
-                  </div>
-
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {Array(2)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div key={i} className="rounded-md border border-gray-200 p-4">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-3/4" />
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                          <div>
+                            <span className="font-medium">Tokens:</span> {member.tokenCount}
                           </div>
-                        ))}
-                    </div>
-                  ) : searchResults.length > 0 ? (
-                    <div className="space-y-4">
-                      {searchResults.map((user, index) => (
-                        <div key={index} className="rounded-md border border-gray-200 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-semibold text-gray-900">{user.email}</h3>
-                              {getRoleBadge(user.role)}
-                            </div>
-                            <div className="text-sm text-gray-600">Joined: {formatDate(user.joinDate)}</div>
+                          <div>
+                            <span className="font-medium">Voting Power:</span> {member.customVotingPower || member.votingPower}
                           </div>
-                          <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Wallet Address</p>
-                              <p className="font-mono text-sm text-gray-600">{user.address}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Last Active</p>
-                              <p className="text-sm text-gray-600">{formatDate(user.lastActive)}</p>
-                            </div>
+                          <div>
+                            <span className="font-medium">Joined:</span> {formatDate(member.joinDate)}
                           </div>
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <Badge className="bg-blue-100 text-blue-800">Tokens: {user.tokens}</Badge>
-                            <Badge className="bg-green-100 text-green-800">
-                              <Clock className="mr-1 h-3 w-3" /> Active
+                          <div>
+                            <span className="font-medium">Status:</span> 
+                            <Badge variant={member.isActive ? "default" : "secondary"} className="ml-1">
+                              {member.isActive ? "Active" : "Inactive"}
                             </Badge>
                           </div>
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            <Button size="sm" variant="outline" className="border-gray-200 text-gray-700">
-                              View Details
-                            </Button>
-                            <Button size="sm" variant="outline" className="border-gray-200 text-gray-700">
-                              Edit Role
-                            </Button>
-                            <Button size="sm" variant="outline" className="border-gray-200 text-gray-700">
-                              Reset Password
-                            </Button>
+                        </div>
+                        
+                        <div className="mt-2">
+                          <span className="text-sm font-medium text-gray-600">Token IDs:</span>
+                          <div className="flex gap-1 mt-1">
+                            {member.tokenIds.map(id => (
+                              <Badge key={id} variant="outline" className="text-xs">#{id}</Badge>
+                            ))}
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  ) : searchQuery ? (
-                    <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-center">
-                      <p className="text-gray-600">No users found matching your search criteria.</p>
-                      <p className="text-sm text-gray-500 mt-1">Try a different search term.</p>
-                    </div>
-                  ) : (
-                    <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-center">
-                      <p className="text-gray-600">Enter an address or email to search for a user.</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        You can search by wallet address or university email.
-                      </p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="whitelist" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Check Whitelist Status</CardTitle>
+                  <CardDescription>
+                    Verify if an address is whitelisted for token minting.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="targetAddress">Wallet Address</Label>
+                    <Input
+                      id="targetAddress"
+                      placeholder="0x..."
+                      value={targetAddress}
+                      onChange={(e) => setTargetAddress(e.target.value)}
+                    />
+                  </div>
+                  
+                  <Button onClick={checkWhitelistStatus} className="w-full" disabled={whitelistLoading}>
+                    <Search className="mr-2 h-4 w-4" />
+                    {whitelistLoading ? "Checking..." : "Check Status"}
+                  </Button>
+                  
+                  {whitelistStatus !== null && (
+                    <Alert>
+                      {whitelistStatus ? (
+                        <CheckCircle className="h-4 w-4" />
+                      ) : (
+                        <XCircle className="h-4 w-4" />
+                      )}
+                      <AlertTitle>
+                        {whitelistStatus ? "Whitelisted" : "Not Whitelisted"}
+                      </AlertTitle>
+                      <AlertDescription>
+                        {whitelistStatus 
+                          ? "This address is approved for token minting."
+                          : "This address is not currently whitelisted."
+                        }
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {targetAddress && (
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => updateWhitelist(targetAddress, true)}
+                        variant="default"
+                        className="flex-1"
+                        disabled={whitelistLoading}
+                      >
+                        {whitelistLoading ? "Processing..." : "Add to Whitelist"}
+                      </Button>
+                      <Button 
+                        onClick={() => updateWhitelist(targetAddress, false)}
+                        variant="destructive"
+                        className="flex-1"
+                        disabled={whitelistLoading}
+                      >
+                        {whitelistLoading ? "Processing..." : "Remove from Whitelist"}
+                      </Button>
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3 flex justify-between">
-                  <Button variant="outline" className="border-gray-200 text-gray-700">
-                    <FileText className="mr-2 h-4 w-4" /> Export Member List
-                  </Button>
-                  <Button>
-                    <UserPlus className="mr-2 h-4 w-4" /> Add New Member
-                  </Button>
-                </CardFooter>
               </Card>
-            </TabsContent>
 
-            <TabsContent value="recovery">
-              <Card className="border-gray-200 bg-white shadow-sm">
+              <Card>
                 <CardHeader>
-                  <div className="flex items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 mr-3">
-                      <RefreshCw className="h-5 w-5" />
+                  <CardTitle>Whitelist Entries</CardTitle>
+                  <CardDescription>
+                    Current whitelist status for tracked addresses. Add new addresses to check their status.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <Label htmlFor="newAddress">Add Address to Check</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="newAddress"
+                        placeholder="0x..."
+                        value={targetAddress}
+                        onChange={(e) => setTargetAddress(e.target.value)}
+                      />
+                      <Button 
+                        onClick={async () => {
+                          if (targetAddress && ethers.isAddress(targetAddress)) {
+                            await refreshWhitelistEntries()
+                          }
+                        }}
+                        variant="outline"
+                        disabled={!targetAddress || !ethers.isAddress(targetAddress)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {whitelist.length === 0 ? (
+                      <p className="text-sm text-gray-500 text-center py-4">
+                        No addresses tracked yet. Add an address above to check its whitelist status.
+                      </p>
+                    ) : (
+                      whitelist.map(entry => (
+                        <div key={entry.address} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <code className="text-sm">{entry.address.slice(0, 8)}...{entry.address.slice(-6)}</code>
+                            {entry.addedAt && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Checked {formatDate(entry.addedAt)}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={entry.isWhitelisted ? "default" : "secondary"}>
+                              {entry.isWhitelisted ? "Whitelisted" : "Not Whitelisted"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateWhitelist(entry.address, !entry.isWhitelisted)}
+                              disabled={whitelistLoading}
+                            >
+                              {entry.isWhitelisted ? "Remove" : "Add"}
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tokens" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mint Tokens</CardTitle>
+                <CardDescription>
+                  Mint new tokens for whitelisted addresses or members.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="mintAddress">Recipient Address</Label>
+                    <Input
+                      id="mintAddress"
+                      placeholder="0x..."
+                      value={mintAddress}
+                      onChange={(e) => setMintAddress(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="tokenType">Token Type</Label>
+                    <Select value={selectedTokenType} onValueChange={setSelectedTokenType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select token type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {tokenTypes.filter(type => type.isActive).map(type => (
+                          <SelectItem key={type.typeId} value={type.typeId}>
+                            {type.name} ({type.currentSupply}/{type.maxSupply})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="soulbound"
+                    checked={isSoulbound}
+                    onChange={(e) => setIsSoulbound(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="soulbound">Make token soulbound (non-transferable)</Label>
+                </div>
+                
+                <Button onClick={mintToken} className="w-full">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Mint Token
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="roles" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Role Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Role Management</CardTitle>
+                  <CardDescription>
+                    Grant or revoke roles for club members.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="roleAddress">Member Address</Label>
+                    <Input
+                      id="roleAddress"
+                      placeholder="0x..."
+                      value={roleAddress}
+                      onChange={(e) => setRoleAddress(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="role">Role</Label>
+                    <Select value={selectedRole} onValueChange={setSelectedRole}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MEMBER_ROLE">Member Role</SelectItem>
+                        <SelectItem value="OFFICER_ROLE">Officer Role</SelectItem>
+                        <SelectItem value="ADMIN_ROLE">Admin Role (Use with caution)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button 
+                      onClick={checkUserRole} 
+                      variant="outline" 
+                      disabled={roleLoading || !roleAddress || !selectedRole}
+                      className="w-full"
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      {roleLoading ? "Checking..." : "Check Role Status"}
+                    </Button>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        onClick={grantRole} 
+                        disabled={roleLoading || !roleAddress || !selectedRole}
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        {roleLoading ? "Processing..." : "Grant Role"}
+                      </Button>
+                      
+                      <Button 
+                        onClick={revokeRole} 
+                        variant="destructive" 
+                        disabled={roleLoading || !roleAddress || !selectedRole}
+                      >
+                        <XCircle className="mr-2 h-4 w-4" />
+                        {roleLoading ? "Processing..." : "Revoke Role"}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>Role Hierarchy:</strong> Admin {'>'}  Officer {'>'} Member
+                      <br />
+                      <strong>Permissions:</strong> Only admins can grant/revoke officer roles. Officers can manage member roles.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Role Overview */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current Role Holders</CardTitle>
+                  <CardDescription>
+                    Overview of members and their assigned roles.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Admins */}
                     <div>
-                      <CardTitle className="text-gray-900">Simulate Recovery Token</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Simulate minting a recovery token for a member who lost access. <br/>
-                        <span className="text-xs text-muted-foreground">(In production, this would require the old token to be invalidated and a new one minted for the new address and role.)</span>
-                      </CardDescription>
+                      <h4 className="font-medium text-sm text-gray-700 mb-2">Administrators</h4>
+                      <div className="space-y-2">
+                        {members.filter(m => m.currentRole === "ADMIN_ROLE").length === 0 ? (
+                          <p className="text-sm text-gray-500">No administrators found</p>
+                        ) : (
+                          members.filter(m => m.currentRole === "ADMIN_ROLE").map(member => (
+                            <div key={member.address} className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200">
+                              <code className="text-xs">{member.address.slice(0, 8)}...{member.address.slice(-6)}</code>
+                              <Badge className="bg-red-100 text-red-800">
+                                <Shield className="mr-1 h-3 w-3" /> Admin
+                              </Badge>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="recovery-address">New Wallet Address</Label>
-                      <Input id="recovery-address" placeholder="0x..." value={targetAddress} onChange={(e) => setTargetAddress(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="replaced-token-id">Replaced Token ID</Label>
-                      <Input id="replaced-token-id" placeholder="e.g. 123" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="recovery-role">Role for Recovery Token</Label>
-                      <Input id="recovery-role" placeholder="e.g. Member, Officer, etc." />
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button onClick={handleAction} disabled={isLoading} className="w-full">
-                    {isLoading ? "Processing..." : "Simulate Issue Recovery Token"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-            <TabsContent value="admin">
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Admin Tools (Simulated)</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Simulate contract admin actions: pause/unpause, set ops/scholarship wallets, set base URI, etc.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Button variant="destructive" className="w-full" onClick={() => window.alert('Simulated: Emergency Pause triggered!')}>Emergency Pause</Button>
-                    <Button className="w-full" onClick={() => window.alert('Simulated: Set Ops Wallet!')}>Set Ops Wallet</Button>
-                    <Button className="w-full" onClick={() => window.alert('Simulated: Set Scholarship Wallet!')}>Set Scholarship Wallet</Button>
-                    <Button className="w-full" onClick={() => window.alert('Simulated: Set Base Token URI!')}>Set Base Token URI</Button>
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* --- Safe Multisig Wallet Demo --- */}
-              <Card className="border-gray-200 bg-white shadow-sm mt-8">
-                <CardHeader>
-                  <CardTitle className="text-gray-900">Safe Multisig Wallet Demo (Simulated)</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Demonstration of how club funds and admin actions could be managed with a Safe (formerly Gnosis Safe) multisig wallet.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">Safe Wallet Address</h3>
-                      <div className="font-mono text-sm text-gray-700 mb-2">0xSAFE1234...ABCD</div>
-                      <div className="text-xs text-gray-500 mb-2">(This is a simulated address. In production, this would be the club's Safe multisig wallet.)</div>
+                    {/* Officers */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-700 mb-2">Officers</h4>
+                      <div className="space-y-2">
+                        {members.filter(m => m.currentRole === "OFFICER_ROLE").length === 0 ? (
+                          <p className="text-sm text-gray-500">No officers found</p>
+                        ) : (
+                          members.filter(m => m.currentRole === "OFFICER_ROLE").map(member => (
+                            <div key={member.address} className="flex items-center justify-between p-2 bg-amber-50 rounded border border-amber-200">
+                              <code className="text-xs">{member.address.slice(0, 8)}...{member.address.slice(-6)}</code>
+                              <Badge className="bg-amber-100 text-amber-800">
+                                <Award className="mr-1 h-3 w-3" /> Officer
+                              </Badge>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
-                    <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">Signers</h3>
-                      <ul className="list-disc pl-5 text-sm text-gray-700">
-                        <li>Alex Johnson (President) - 0xA1...1111</li>
-                        <li>Jamie Lee (Treasurer) - 0xB2...2222</li>
-                        <li>Sam Patel (Secretary) - 0xC3...3333</li>
-                      </ul>
-                      <div className="text-xs text-gray-500 mt-2">(In production, these would be real officer wallet addresses.)</div>
-                    </div>
-                    <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">Simulate Multisig Action</h3>
-                      <Button className="w-full mb-2" onClick={() => window.alert('Simulated: Propose transaction to transfer funds from Safe!')}>Propose Fund Transfer</Button>
-                      <Button className="w-full mb-2" onClick={() => window.alert('Simulated: Approve transaction as signer!')}>Approve Transaction</Button>
-                      <Button className="w-full" onClick={() => window.alert('Simulated: Execute transaction (threshold met)!')}>Execute Transaction</Button>
-                    </div>
-                    <div className="rounded-md border border-gray-100 bg-gray-50 p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2">Snapshot Demo (Simulated)</h3>
-                      <div className="text-sm text-gray-700 mb-2">Demonstrate how proposals and votes could be managed via Snapshot for off-chain governance.</div>
-                      <Button className="w-full mb-2" onClick={() => window.alert('Simulated: Create new proposal on Snapshot!')}>Create Proposal</Button>
-                      <Button className="w-full" onClick={() => window.alert('Simulated: Vote on Proposal!')}>Vote on Proposal</Button>
+
+                    {/* Members */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-700 mb-2">Members ({members.filter(m => m.currentRole === "MEMBER_ROLE").length})</h4>
+                      <div className="max-h-32 overflow-y-auto space-y-1">
+                        {members.filter(m => m.currentRole === "MEMBER_ROLE").length === 0 ? (
+                          <p className="text-sm text-gray-500">No members found</p>
+                        ) : (
+                          members.filter(m => m.currentRole === "MEMBER_ROLE").slice(0, 5).map(member => (
+                            <div key={member.address} className="flex items-center justify-between p-1 text-xs">
+                              <code>{member.address.slice(0, 8)}...{member.address.slice(-6)}</code>
+                              <Badge variant="outline" className="text-xs">Member</Badge>
+                            </div>
+                          ))
+                        )}
+                        {members.filter(m => m.currentRole === "MEMBER_ROLE").length > 5 && (
+                          <p className="text-xs text-gray-500 text-center">
+                            ... and {members.filter(m => m.currentRole === "MEMBER_ROLE").length - 5} more
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
+
+                  <Button 
+                    onClick={loadContractData} 
+                    variant="outline" 
+                    className="w-full mt-4"
+                    disabled={isLoading}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    {isLoading ? "Refreshing..." : "Refresh Role Data"}
+                  </Button>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+      </div>
     </div>
   )
 }

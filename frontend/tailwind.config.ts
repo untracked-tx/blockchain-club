@@ -53,6 +53,37 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Enhanced color palette for blockchain theme
+        blockchain: {
+          primary: "#667eea",
+          secondary: "#764ba2", 
+          accent: "#f093fb",
+          success: "#4facfe",
+          warning: "#ffd89b",
+          info: "#19547b",
+        },
+        gradient: {
+          purple: {
+            from: "#667eea", 
+            to: "#764ba2"
+          },
+          orange: {
+            from: "#f093fb", 
+            to: "#f5576c"
+          }, 
+          blue: {
+            from: "#4facfe", 
+            to: "#00f2fe"
+          },
+          gold: {
+            from: "#ffd89b", 
+            to: "#19547b"
+          },
+          cyber: {
+            from: "#0f0f23", 
+            to: "#2d1b69"
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

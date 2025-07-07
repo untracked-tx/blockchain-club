@@ -14,7 +14,9 @@ import { contracts } from "../../lib/contracts";
 import { useContractRead } from "wagmi";
 import { motion, AnimatePresence } from "framer-motion";
 import { readContract } from 'wagmi/actions';
-import { useMyTokens } from "@/hooks/use-mytokens";
+import { useMyTokens, Token } from "@/hooks/use-mytokens";
+import { useVotingPower } from "@/hooks/use-voting-power";
+import OwnedNFTModal from "@/components/owned-nft-modal";
 
 const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID || "80002";
 const CONTRACT_NAME = "membership";
@@ -49,18 +51,6 @@ const mockVotingHistory = [
   },
 ]
 
-type Token = {
-  id: number;
-  name: string;
-  description: string;
-  imageUri: string;
-  votingPower: number;
-  acquired: string;
-  isDefault?: boolean;
-  type?: string;
-  tokenId?: string;
-};
-
 export default function MembersPage() {
   const { address, isConnected } = useAccount();
   const [votingHistory, setVotingHistory] = useState(mockVotingHistory)
@@ -68,7 +58,8 @@ export default function MembersPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [wrongNetwork, setWrongNetwork] = useState(false);
   const [mounted, setMounted] = useState(false); // NEW: track client mount
-  const [selectedDisplayToken, setSelectedDisplayToken] = useState<string | undefined>(undefined);
+  const [selectedModalToken, setSelectedModalToken] = useState<Token | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -82,16 +73,21 @@ export default function MembersPage() {
     args: address ? [address] : undefined,
   });
 
-  const { tokens, isLoading, error } = useMyTokens();
-
-  useEffect(() => {
-    if (tokens.length > 0 && !selectedDisplayToken) {
-      setSelectedDisplayToken(tokens[0].tokenId);
-    }
-  }, [tokens, selectedDisplayToken]);
+  const { tokens, isLoading, error } = useMyTokens(address);
+  const { votingPower, isLoading: isVotingPowerLoading } = useVotingPower(address);
 
   const handleDisplayTokenChange = (value: string) => {
-    setSelectedDisplayToken(value)
+    // This function is no longer needed but keeping for compatibility
+  }
+
+  const handleTokenClick = (token: Token) => {
+    setSelectedModalToken(token);
+    setIsModalOpen(true);
+  }
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedModalToken(null);
   }
 
   const formatDate = (dateString: string) => {
@@ -112,7 +108,21 @@ export default function MembersPage() {
   }
 
   const getTotalVotingPower = () => {
-    return tokens.reduce((total: number, token: any) => total + token.votingPower, 0)
+    // Return the actual voting power from the Roles contract, not sum of token powers
+    return votingPower;
+  }
+
+  const getMembershipLevel = () => {
+    if (votingPower >= 5) return { level: "Officer", color: "bg-purple-100 text-purple-800", icon: "⭐" };
+    if (votingPower >= 1) return { level: "Member", color: "bg-blue-100 text-blue-800", icon: "🏛️" };
+    return { level: "Guest", color: "bg-gray-100 text-gray-800", icon: "👤" };
+  }
+
+  const getEarliestTokenDate = () => {
+    if (!tokens || tokens.length === 0) return new Date().toISOString();
+    return tokens.reduce((earliest, token) => 
+      new Date(token.acquired) < new Date(earliest) ? token.acquired : earliest
+    , tokens[0].acquired);
   }
 
   const getVoteColor = (vote: string) => {
@@ -128,8 +138,18 @@ export default function MembersPage() {
     }
   }
 
-  // Utility function to map tokenId/name to correct image based on mapping.md
+  // Utility function to get token image - prefer IPFS metadata image over hardcoded paths
   function getTokenImage(token: any): string {
+    // First check if we have an IPFS imageUri from the contract metadata
+    if (token.imageUri && token.imageUri.trim() !== "") {
+      // Convert IPFS URI to HTTPS gateway if needed
+      if (token.imageUri.startsWith("ipfs://")) {
+        return token.imageUri.replace("ipfs://", "https://ipfs.io/ipfs/");
+      }
+      return token.imageUri;
+    }
+    
+    // Fallback to hardcoded images based on token name (for backwards compatibility)
     // Governance Track
     if (token.name === "Member Token") return "/trader.png"; // or rotate: /initiation.png, /trader_chill.png, /letsgetthispartystarted2k25.png, /future.png
     if (token.name === "Supporter Token") return "/abstract-gold-token-officer.png";
@@ -148,14 +168,38 @@ export default function MembersPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="mb-12 text-center">
-        <h1 className="mb-4 text-4xl font-bold text-gray-900">My Membership</h1>
-        <p className="mx-auto max-w-2xl text-lg text-gray-600">
-          View your membership tokens, voting power, and governance participation.
-        </p>
-        {/* TODO: Add a summary of your percentile vs. other members */}
+    <div className="flex flex-col">
+      {/* Enhanced Header Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 py-20 md:py-28">
+        {/* Background Elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4 text-center">
+          <div className="mx-auto max-w-4xl">
+            {/* Floating Badge */}
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
+              <Vote className="mr-2 h-4 w-4" />
+              Member Dashboard
+            </div>
+            
+            <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
+              🏛️ My Membership
+            </h1>
+            
+            <p className="mb-8 text-xl text-purple-100 leading-relaxed">
+              Your blockchain governance dashboard. View your NFT membership tokens, role-based voting power, and governance participation history.
+            </p>
+          </div>
+        </div>
       </div>
+
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
+      
+      <div className="container mx-auto px-4 py-12">
 
       {/* Hydration guard: only render wallet/token UI after client mount */}
       {!mounted ? (
@@ -183,7 +227,12 @@ export default function MembersPage() {
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-center">
-              <Button onClick={() => window.localStorage.setItem("walletConnected", "true")}>Connect Wallet</Button>
+              <Button 
+                onClick={() => window.localStorage.setItem("walletConnected", "true")}
+                className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
+              >
+                Connect Wallet
+              </Button>
             </CardFooter>
           </Card>
         </div>
@@ -213,14 +262,14 @@ export default function MembersPage() {
                 <CardDescription className="text-gray-600">Your current membership level</CardDescription>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
+                {isLoading || isVotingPowerLoading ? (
                   <Skeleton className="h-6 w-24" />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-blue-100 text-blue-800">
-                      <Shield className="mr-1 h-3 w-3" /> Member
+                    <Badge className={getMembershipLevel().color}>
+                      <Shield className="mr-1 h-3 w-3" /> {getMembershipLevel().icon} {getMembershipLevel().level}
                     </Badge>
-                    <span className="text-sm text-gray-600">Since {formatDate(tokens[0]?.acquired)}</span>
+                    <span className="text-sm text-gray-600">Since {formatDate(getEarliestTokenDate())}</span>
                   </div>
                 )}
               </CardContent>
@@ -235,12 +284,17 @@ export default function MembersPage() {
                 <CardDescription className="text-gray-600">Your influence in governance</CardDescription>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
+                {isLoading || isVotingPowerLoading ? (
                   <Skeleton className="h-6 w-24" />
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">{getTotalVotingPower()}</span>
-                    <span className="text-sm text-gray-600">From {tokens.length} tokens</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-gray-900">{getTotalVotingPower()}</span>
+                      <span className="text-sm text-gray-600">votes</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Based on your {getMembershipLevel().level.toLowerCase()} role • {tokens?.length || 0} NFT{(tokens?.length || 0) !== 1 ? 's' : ''} owned
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -285,37 +339,8 @@ export default function MembersPage() {
                   <Card className="border-gray-200 bg-white shadow-sm">
                     <CardHeader>
                       <CardTitle className="text-gray-900">My Governance Tokens</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        You have {tokens.length} tokens with a total voting power of {getTotalVotingPower()}.
-                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="mb-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                          <div className="w-full sm:w-64">
-                            <Label htmlFor="display-token" className="mb-2 block text-sm font-medium text-gray-700">
-                              Display Token
-                            </Label>
-                            <Select value={selectedDisplayToken} onValueChange={handleDisplayTokenChange}>
-                              <SelectTrigger className="border-gray-200">
-                                <SelectValue placeholder="Select token to display" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {tokens.map((token: any) => (
-                                  <SelectItem key={token.id} value={token.id.toString()}>
-                                    {token.name} (Power: {token.votingPower})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <Button className="border-gray-200 text-gray-700">
-                            Set as Default
-                          </Button>
-                          {/* TODO: Add burn, reissue, or request help actions here */}
-                        </div>
-                      </div>
-
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         <AnimatePresence>
                           {tokens.map((token: any) => (
@@ -327,48 +352,32 @@ export default function MembersPage() {
                               transition={{ duration: 0.3 }}
                             >
                               <Card
-                                className={`border-gray-200 bg-white shadow-sm overflow-hidden ${
-                                  token.id.toString() === selectedDisplayToken ? "ring-2 ring-blue-500" : ""
-                                }`}
+                                className="border-gray-200 bg-white shadow-sm overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] hover:border-blue-300"
+                                onClick={() => handleTokenClick(token)}
                               >
                                 <CardHeader className="pb-2">
-                                  <div className="flex items-center justify-between">
-                                    <CardTitle className="text-gray-900">{token.name}</CardTitle>
-                                    {token.isDefault && <Badge className="bg-blue-100 text-blue-800">Default</Badge>}
-                                  </div>
-                                  <CardDescription className="text-gray-600">{token.type}</CardDescription>
+                                  <CardTitle className="text-gray-900">{token.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                  <div className="overflow-hidden rounded-md">
+                                  <div className="overflow-hidden rounded-md relative group">
                                     <img
                                       src={getTokenImage(token)}
                                       alt={token.name}
                                       className="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
                                     />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                                      <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        Click to view details
+                                      </span>
+                                    </div>
                                   </div>
                                   <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-sm text-gray-600">Voting Power:</span>
-                                      <span className="font-medium text-gray-900">{token.votingPower}</span>
-                                    </div>
                                     <div className="flex items-center justify-between">
                                       <span className="text-sm text-gray-600">Acquired:</span>
                                       <span className="font-medium text-gray-900">{formatDate(token.acquired)}</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-sm text-gray-600">Token ID:</span>
-                                      <span className="font-mono text-xs text-gray-600">{token.tokenId}</span>
-                                    </div>
                                   </div>
                                 </CardContent>
-                                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
-                                  <Button
-                                    className="w-full border-gray-200 text-gray-700"
-                                    onClick={() => setSelectedDisplayToken(token.id.toString())}
-                                  >
-                                    {token.id.toString() === selectedDisplayToken ? "Selected" : "Select"}
-                                  </Button>
-                                </CardFooter>
                               </Card>
                             </motion.div>
                           ))}
@@ -379,16 +388,15 @@ export default function MembersPage() {
                       <Button
                         className="border-gray-200 text-gray-700"
                         onClick={() => {
-                          let url = "https://amoy.polygonscan.com/address/" + CONTRACT_ADDRESS;
-                          if (selectedDisplayToken) {
-                            url = `https://amoy.polygonscan.com/token/${CONTRACT_ADDRESS}?a=${selectedDisplayToken}`;
-                          }
-                          window.open(url, "_blank");
+                          window.open(`https://amoy.polygonscan.com/address/${CONTRACT_ADDRESS}`, "_blank");
                         }}
                       >
-                        <ExternalLink className="mr-2 h-4 w-4" /> View on Etherscan
+                        <ExternalLink className="mr-2 h-4 w-4" /> View on Polygonscan
                       </Button>
-                      <Button onClick={() => window.location.href = "/gallery"}>
+                      <Button 
+                        onClick={() => window.location.href = "/gallery"}
+                        className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
+                      >
                         <Wallet className="mr-2 h-4 w-4" /> Manage Tokens
                       </Button>
                     </CardFooter>
@@ -396,8 +404,11 @@ export default function MembersPage() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="mb-4 text-gray-600">{errorMsg ? errorMsg : "You don't own any tokens yet."}</p>
-                  <Button onClick={() => window.location.href = "/gallery"} className="bg-blue-600 text-white">
+                  <p className="mb-4 text-gray-600">{error ? `Error: ${error.message}` : "You don't own any tokens yet."}</p>
+                  <Button 
+                    onClick={() => window.location.href = "/gallery"} 
+                    className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
+                  >
                     Mint Your First Token
                   </Button>
                 </div>
@@ -472,6 +483,17 @@ export default function MembersPage() {
           </Tabs>
         </div>
       )}
+      
+      {/* Owned NFT Display Modal */}
+      {selectedModalToken && (
+        <OwnedNFTModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          token={selectedModalToken}
+        />
+      )}
+      </div>
+      </div>
     </div>
   );
 }

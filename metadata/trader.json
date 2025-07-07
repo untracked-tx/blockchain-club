@@ -1,0 +1,35 @@
+{
+  "name": "Trader Token",
+  "description": "Blockchain Club NFT: Trader.",
+  "image": "ipfs://bafybeih2pg25w4y4vjj67a4vyes6mtb7fbiha727wsmgyonahb4b726kn4/tradercard.png",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "Governance"
+    },
+    {
+      "trait_type": "Token Type",
+      "value": "Trader"
+    },
+    {
+      "trait_type": "Max Supply",
+      "value": "10"
+    },
+    {
+      "trait_type": "Mint Access",
+      "value": "WHITELIST_ONLY"
+    },
+    {
+      "trait_type": "Role",
+      "value": "MEMBER"
+    },
+    {
+      "trait_type": "Expiration",
+      "value": "2026-07-07"
+    },
+    {
+      "trait_type": "Soulbound",
+      "value": "False"
+    }
+  ]
+}

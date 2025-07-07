@@ -230,22 +230,37 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      {/* TODO: Add ETH/USD toggle on charts (see audit checklist) */}
-      {/* TODO: Annotate revenue source breakdown (dues vs. donations) */}
-      {/* TODO: Add tooltip or hover for bar/line details */}
-      {/* TODO: Gate visibility to officers only for sensitive data (future) */}
-      {/* TODO: Replace mockOrganizationalPortfolio and mockHistoricalData with real data sources */}
-      <div className="mb-12">
-        <h1 className="mb-4 text-4xl font-bold text-gray-900">Club Portfolio</h1>
-        <p className="max-w-3xl text-lg text-gray-600">
-          The Blockchain & Crypto Investing Club actively manages a real cryptocurrency portfolio as part of our mission to provide hands-on investment experience. All data below is for demonstration and educational purposes, but our club is committed to transparency, financial literacy, and real-world investing. As we grow, this page will reflect the club's actual crypto investments, managed and governed by our members.
-        </p>
-        <p className="max-w-3xl mt-2 text-lg text-blue-600 font-medium">
-          Our treasury has grown from {formatCurrency(18000)} to {formatCurrency(portfolio.totalValue)} in the past 30 days!
-        </p>
-        {/* TODO: Add officer-only badge or warning if user is not an officer */}
-      </div>
+    <div className="flex flex-col">
+      {/* Enhanced Header Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 py-20 md:py-28">
+        {/* Background Elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4 text-center">
+          <div className="mx-auto max-w-4xl">
+            {/* Floating Badge */}
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-emerald-100 backdrop-blur-sm border border-white/30">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Investment Portfolio
+            </div>
+            
+            <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
+              📊 Portfolio Dashboard
+            </h1>
+            
+            <p className="mb-8 text-xl text-emerald-100 leading-relaxed">
+              Track our club's investment performance, analyze market trends, and monitor portfolio allocations in real-time.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50">
+        <div className="container mx-auto px-4 py-12">
 
       {/* Organization Info Banner */}
       <div className="mb-8 rounded-xl bg-blue-50 p-6">
@@ -706,6 +721,8 @@ export default function PortfolioPage() {
           </div>
         </Card>
       </div>
+      </div>
+      </div>
     </div>
-  )
+  );
 }

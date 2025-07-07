@@ -1,0 +1,35 @@
+{
+  "name": "Rhodes Scholar Token",
+  "description": "Blockchain Club NFT: Rhodes Scholar.",
+  "image": "ipfs://bafybeih2pg25w4y4vjj67a4vyes6mtb7fbiha727wsmgyonahb4b726kn4/rhodes_scholar.png",
+  "attributes": [
+    {
+      "trait_type": "Category",
+      "value": "Supporter"
+    },
+    {
+      "trait_type": "Token Type",
+      "value": "Rhodes Scholar"
+    },
+    {
+      "trait_type": "Max Supply",
+      "value": "100000"
+    },
+    {
+      "trait_type": "Mint Access",
+      "value": "PUBLIC"
+    },
+    {
+      "trait_type": "Role",
+      "value": "None"
+    },
+    {
+      "trait_type": "Expiration",
+      "value": "2035-07-05"
+    },
+    {
+      "trait_type": "Soulbound",
+      "value": "False"
+    }
+  ]
+}

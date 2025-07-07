@@ -4,421 +4,292 @@ import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, AlertCircle, Info, ExternalLink, ChevronRight, Code, Copy, Wallet } from "lucide-react"
-import { ethers } from "ethers";
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { contracts } from "@/lib/contracts";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CheckCircle2, AlertCircle, Code, ChevronRight, Wallet, Mail } from "lucide-react"
+import { ethers } from "ethers"
+import { useAccount } from 'wagmi'
+import { useConnectModal } from "@rainbow-me/rainbowkit"
+import { contracts } from "@/lib/contracts"
+import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
 
-// Officer addresses (lowercase)
-const OFFICER_ADDRESSES: string[] = [
-  // Add officer wallet addresses here, all lowercase
-  '0xDA30c053156E690176574dAEe79CEB94e3C8F0cC', // Contract owner/deployer address
-  // Add other officer wallet addresses as needed
-];
-
-// Map UI/category role to contract role string
-function getContractRole(category: any, token: any): string {
-  // Prefer category.role, fallback to token.name
-  const role = (category?.role || token?.name || '').toLowerCase();
-  switch (role) {
-    case 'observer': return 'Observer';
-    case 'member': return 'Member';
-    case 'officer': return 'Officer';
-    case 'supporter': return 'Supporter';
-    default: 
-      console.warn(`[WARNING] Unsupported role: ${role}. Only Observer, Member, Officer, and Supporter are supported.`);
-      // Default to Observer for invalid roles as the safest option
-      return 'Observer';
+// Token type configurations (fallback for UI display)
+const tokenTypeConfigs = {
+  MEMBER: {
+    roleGranted: "MEMBER_ROLE",
+    expires: "1 year",
+    maxSupply: 10,
+    mintAccess: "WHITELIST_ONLY",
+    cost: "0.01 ETH",
+    soulbound: false,
+    category: "governance"
+  },
+  OFFICER: {
+    roleGranted: "OFFICER_ROLE", 
+    expires: "1 year",
+    maxSupply: 2,
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free",
+    soulbound: false,
+    category: "governance"
+  },
+  SUPPORTER: {
+    roleGranted: "None",
+    expires: "Never",
+    maxSupply: "Unlimited",
+    mintAccess: "PUBLIC",
+    cost: "Optional",
+    soulbound: false,
+    category: "culture"
+  },
+  POAP: {
+    roleGranted: "None",
+    expires: "N/A",
+    maxSupply: "Limited",
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free",
+    soulbound: true,
+    category: "culture"
+  },
+  AWARD: {
+    roleGranted: "None",
+    expires: "N/A", 
+    maxSupply: "Limited",
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free",
+    soulbound: true,
+    category: "culture"
+  },
+  REPLACEMENT: {
+    roleGranted: "None",
+    expires: "N/A",
+    maxSupply: "Limited", 
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free",
+    soulbound: false,
+    category: "utility"
   }
+};
+
+function getTokenConfig(tokenType: string) {
+  return tokenTypeConfigs[tokenType as keyof typeof tokenTypeConfigs] || tokenTypeConfigs.MEMBER;
 }
 
-// Validate that only supported roles are used
-function isValidRole(role: string): boolean {
-  const validRoles = ['Observer', 'Member', 'Officer', 'Supporter'];
-  return validRoles.includes(role);
+function getContractRole(token: any): string {
+  const tokenType = token?.tokenType || 'MEMBER';
+  const config = getTokenConfig(tokenType);
+  
+  switch (config.roleGranted) {
+    case 'MEMBER_ROLE': return 'Member';
+    case 'OFFICER_ROLE': return 'Officer';
+    case 'None': 
+    default: 
+      return tokenType;
+  }
 }
 
 interface NFTDetailModalProps {
   isOpen: boolean
   onClose: () => void
   token: any
-  category: any
+  category?: any
 }
 
-export default function NFTDetailModal({ isOpen, onClose, token, category }: NFTDetailModalProps) {
+export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<any>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
   const [step, setStep] = useState<string>("")
-  const [isPolyscanConfirmed, setIsPolyscanConfirmed] = useState(false)
-  const [isWhitelisted, setIsWhitelisted] = useState<boolean | null>(null);
-  const [alreadyMinted, setAlreadyMinted] = useState<boolean | null>(null);
-  const [userRole, setUserRole] = useState<string>("");
-  const [isOfficer, setIsOfficer] = useState<boolean>(false);
-  const [eligibilityReason, setEligibilityReason] = useState<string>("");
+  const [permissionError, setPermissionError] = useState<string | null>(null)
+  const [contractConfig, setContractConfig] = useState<any>(null)
   const clubEmail = "blockchainclub@university.edu"; // Set your club email here
 
-  // Wagmi hooks for wallet state
-  const { address, isConnected } = useAccount();
-  const { connect, connectors, status: connectStatus, error: connectError } = useConnect();
-  const { disconnect } = useDisconnect();
-  const { openConnectModal } = useConnectModal();
-
-  // Always allow minting unless explicitly restricted (future logic)
-  const isMintable = true;
-
-  // Determine mint args and price
-  const role = category?.role || token?.name || "";
-  const requireWhitelist = false; // You may want to set this based on category
-  let price = "0";
-  if (category?.cost && typeof category.cost === "string" && category.cost.match(/\d/)) {
-    // Parse cost string like "0.01" or "0.005+"
-    const match = category.cost.match(/([\d.]+)/);
-    if (match) price = match[1]; // always keep as string for parseEther
-  }
-
-  // Replace deprecated constants with centralized config
-  const CONTRACT_ADDRESS = contracts.membership.address;
-  const CONTRACT_ABI = contracts.membership.abi;
-
-  // Helper: Check if user is whitelisted (on-chain)
-  async function checkWhitelist(address: string): Promise<boolean> {
-    try {
-      if (!address) return false;
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-
-      return await contract.whitelist(address);
-    } catch (error) {
-      console.error("[ERROR] Failed to fetch 'whitelist' status:", error);
-      return false;
-    }
-  }
-
-  // Mint handler using ethers.js
-  const handleMint = async () => {
-    setError(null);
-    setIsSuccess(false);
-    setIsPolyscanConfirmed(false);
-    setTxHash(null);
-    setStep("Awaiting wallet confirmation...");
-    setIsLoading(true);
-    try {
-      if (!isConnected || !address) {
-        setError("Wallet not connected. Please connect your wallet.");
-        setStep("Wallet not connected");
-        setIsLoading(false);
-        return;
-      }
-      
-      const contractRole = getContractRole(category, token);
-      
-      // Check if user has already minted this role (only for Member and Officer roles)
-      try {
-        if (contractRole === 'Member' || contractRole === 'Officer') {
-          const provider = new ethers.BrowserProvider((window as any).ethereum);
-          const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-          const hasMinted = await contract.hasMintedRole(address, contractRole);
-          
-          if (hasMinted) {
-            setError(`You have already minted a ${contractRole} token. Each wallet can only mint one ${contractRole} token.`);
-            setStep("Error");
-            setIsLoading(false);
-            return;
-          }
-        }
-        // Note: We don't check for Observer and Supporter tokens since they can mint multiple
-      } catch (checkError) {
-        console.error("[ERROR] Failed to check if role already minted:", checkError);
-        // Continue with minting attempt - if there's an issue, the contract will reject it
-      }
-      
-      // Officer mint restriction
-      if (contractRole === 'Officer' && !OFFICER_ADDRESSES.includes(address.toLowerCase())) {
-        setError("Only officer wallets can mint this token. Not authorized for officer role.");
-        setStep('Error');
-        setIsLoading(false);
-        return;
-      }
-      
-      // Member role restriction - check whitelist
-      if (contractRole === 'Member') {
-        const isWhitelisted = await checkWhitelist(address);
-        if (!isWhitelisted) {
-          setError("You are not whitelisted for the Member role. Please contact a club officer.");
-          setStep('Error');
-          setIsLoading(false);
-          return;
-        }
-      }
-      
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      
-      // Determine mint args for contract
-      let mintValue = ethers.parseEther("0");
-      if (contractRole === 'Observer') {
-        mintValue = ethers.parseEther("0");
-      } else if (contractRole === 'Member') {
-        mintValue = ethers.parseEther("0.01");
-      } else if (contractRole === 'Supporter') {
-        mintValue = ethers.parseEther("0.02");
-      } else if (contractRole === 'Officer') {
-        mintValue = ethers.parseEther("0");
-      } else {
-        // fallback: use category cost if present
-        if (category?.cost && typeof category.cost === "string" && category.cost.match(/\d/)) {
-          const match = category.cost.match(/([\d.]+)/);
-          if (match) mintValue = ethers.parseEther(match[1]);
-        }
-      }
-      
-      // Debug log
-      console.log('[DEBUG][Mint] contractRole:', contractRole, '| value:', mintValue.toString(), '| address:', address);
-      
-      // Validate the role before minting
-      if (!isValidRole(contractRole)) {
-        setError(`Invalid role: ${contractRole}. Only Observer, Member, Officer, and Supporter are supported.`);
-        setStep("Error");
-        setIsLoading(false);
-        return;
-      }
-
-      // Call mint with correct args and value
-      let tx;
-      // Convert the role string to bytes32 as required by the contract
-      const roleBytes32 = ethers.keccak256(ethers.toUtf8Bytes(contractRole));
-      
-      // ethers.parseEther returns a bigint, but to avoid ES2020 issues, use .toString() for comparison
-      if (mintValue.toString() === '0') {
-        tx = await contract.mintToken(roleBytes32, mintValue);
-      } else {
-        tx = await contract.mintToken(roleBytes32, mintValue, { value: mintValue });
-      }
-      
-      setStep("Transaction submitted. Waiting for confirmation...");
-      setTxHash(tx.hash);
-      await tx.wait();
-      
-      setStep("Minting complete! Waiting for Polygonscan confirmation...");
-      setTimeout(() => {
-        setIsPolyscanConfirmed(true);
-        setStep("Mint successful!");
-        setIsSuccess(true);
-      }, 3000);
-    } catch (err: any) {
-      // Improved error message handling with more specific messages
-      let userError = err;
-      
-      if (err?.reason?.includes("already minted") || err?.message?.includes("already minted")) {
-        // More specific error message based on the role
-        const roleString = getContractRole(category, token);
-        userError = `You have already minted a ${roleString} token. Each wallet can only mint one ${roleString} token.`;
-      } else if (err?.reason?.includes("not whitelisted") || err?.message?.includes("not whitelisted")) {
-        userError = "You are not on the approved whitelist for this role. Please contact a club officer to request access.";
-      } else if (err?.reason?.includes("Insufficient payment") || err?.message?.includes("Insufficient payment")) {
-        // Include the expected amount if possible
-        let reqAmount = category?.cost || "the required amount";
-        userError = `Insufficient payment for this token. This membership token requires ${reqAmount}.`;
-      } else if (err?.reason?.includes("paused") || err?.message?.includes("paused")) {
-        userError = "Minting is currently paused by club administrators. Please try again later or contact an officer for assistance.";
-      } else if (err?.reason?.includes("You are not the owner of this token") || err?.message?.includes("You are not the owner of this token")) {
-        userError = "You are not the owner of this token. Only the token owner can perform this operation.";
-      } else if (err?.reason?.includes("Token does not exist") || err?.message?.includes("Token does not exist")) {
-        userError = "This token does not exist. Please check the token ID and try again.";
-      } else if (err?.code === "UNSUPPORTED_OPERATION" && err?.message?.includes("no matching fragment")) {
-        userError = "There was a technical error with the contract interaction. This might be due to a recent contract update or parameter mismatch. Please try again or contact support.";
-        console.error("[ERROR] Function signature mismatch:", err);
-        // Log additional debug info to help developers troubleshoot
-        console.debug("[DEBUG] Contract address:", CONTRACT_ADDRESS);
-        const currentContractRole = getContractRole(category, token);
-        console.debug("[DEBUG] Role bytes32:", ethers.keccak256(ethers.toUtf8Bytes(currentContractRole)));
-        console.debug("[DEBUG] Role string:", currentContractRole);
-      } else if (err?.reason?.includes("Invalid role") || err?.message?.includes("Invalid role")) {
-        userError = `Invalid role selected. Only Observer, Member, Officer, and Supporter roles are supported. The role '${getContractRole(category, token)}' is not recognized.`;
-        console.error("[ERROR] Invalid role:", err);
-      } else if (err?.reason?.includes("Not authorized for officer role") || err?.message?.includes("Not authorized for officer role")) {
-        userError = "You are not authorized to mint an Officer token. Only wallets with the Officer role can mint this type of token.";
-      }
-      setError(userError);
-      setStep("Error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // Reset error and UI state when token changes or modal opens
-    setError(null);
-    setIsSuccess(false);
-  }, [token, isOpen]);
-
-  // Eligibility check on modal open or wallet change
-  useEffect(() => {
-    async function fetchEligibility() {
-      setIsWhitelisted(null);
-      setAlreadyMinted(null);
-      setUserRole("");
-      setIsOfficer(false);
-      setEligibilityReason("");
-      
-      if (!isConnected || !address) return;
-      
-      try {
-        const provider = new ethers.BrowserProvider((window as any).ethereum);
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-        const contractRole = getContractRole(category, token);
-        
-        // Check whitelist
-        let whitelisted = false;
-        try { 
-          whitelisted = await contract.whitelist(address); 
-        } catch (e) {
-          console.error("Error checking whitelist:", e);
-        }
-        setIsWhitelisted(!!whitelisted);
-        
-        // Check if user already owns this role/token - but only restrict for Member and Officer
-        let hasRole = false;
-        try { 
-          // For Member and Officer roles, check if already minted and restrict
-          if (contractRole === 'Member' || contractRole === 'Officer') {
-            hasRole = await contract.hasMintedRole(address, contractRole);
-            setAlreadyMinted(!!hasRole);
-          } else {
-            // For Observer and Supporter, allow unlimited mints
-            hasRole = false;
-            setAlreadyMinted(false);
-          }
-        } catch (e) {
-          console.error("Error checking role:", e);
-        }
-        setUserRole(contractRole);
-        
-        // Officer check
-        let officer = false;
-        try { 
-          officer = OFFICER_ADDRESSES.includes(address.toLowerCase()) || 
-                   (await contract.hasRole && await contract.hasRole(ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE")), address)); 
-        } catch (e) {
-          console.error("Error checking officer status:", e);
-        }
-        setIsOfficer(!!officer);
-        
-        // Eligibility logic per requirements
-        if (hasRole && (contractRole === 'Member' || contractRole === 'Officer')) {
-          setEligibilityReason(`You already have a ${contractRole} token. Only one ${contractRole} token is allowed per wallet.`);
-        } else if (
-          (contractRole === 'Member') && !whitelisted
-        ) {
-          setEligibilityReason('You are not on the whitelist for the Member role. Please contact a club officer.');
-        } else if (
-          contractRole === 'Officer' && !officer
-        ) {
-          setEligibilityReason('Only wallets with the Officer role can mint an Officer token.');
-        } else {
-          setEligibilityReason("");
-        }
-      } catch (e) {
-        console.error("Error determining eligibility:", e);
-        setEligibilityReason('Could not determine eligibility. Please try again.');
-      }
-    }
+  // Token name mapping from display name to contract token type name
+  const tokenNameMapping: { [key: string]: string } = {
+    // Member tokens
+    "Trader": "Trader",
+    "Trader Chill": "Trader Chill",
+    "Let's Get This Party Started": "Let's Get This Party Started",
+    "Custom membership": "Custom Membership",
     
-    if (isOpen && isConnected && address) fetchEligibility();
-    else {
-      setIsWhitelisted(null);
-      setAlreadyMinted(null);
-      setUserRole("");
-      setIsOfficer(false);
-      setEligibilityReason("");
-    }
-  }, [isOpen, isConnected, address, token, category]);
+    // Officer tokens
+    "President": "President",
+    "Vice President": "Vice President",
+    "CFO": "CFO",
+    "Treasurer": "Treasurer",
+    "Major Key Alert": "Major Key Alert",
+    "Officer": "Officer",
+    
+    // Supporter tokens
+    "The Graduate": "The Graduate",
+    "Rhodes Scholar": "Rhodes Scholar",
+    "Digital Art": "Digital Art",
+    
+    // POAP tokens
+    "Mint & Slurp": "Mint & Slurp",
+    "Quad": "Quad",
+    "Secret Sauce": "Secret Sauce",
+    
+    // Awards
+    "Founders Series": "Founders Series",
+    "Gold Star": "Gold Star",
+    "Long Run": "Long Run"
+  }
+
+  const { address, isConnected } = useAccount()
+  const { openConnectModal } = useConnectModal()
+
+  const CONTRACT_ADDRESS = contracts.membership.address
+  const CONTRACT_ABI = contracts.membership.abi
 
   // Helper: mailto for whitelist/officer request
   function openMailTo(subject: string) {
     window.open(`mailto:${clubEmail}?subject=${encodeURIComponent(subject)}`);
   }
 
-  // Get the appropriate cost text
+  // Simple mint handler that handles errors gracefully
+  const handleMint = async () => {
+    setError(null);
+    setPermissionError(null);
+    setIsSuccess(false);
+    setTxHash(null);
+    setStep("Preparing transaction...");
+    setIsLoading(true);
+    
+    try {
+      if (!isConnected || !address) {
+        throw new Error("Please connect your wallet first.");
+      }
+      
+      // Use the actual token name instead of generic type
+      const tokenName = tokenNameMapping[token.name] || token.name || token?.tokenType || 'MEMBER';
+      
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      
+      const tokenNameBytes32 = ethers.keccak256(ethers.toUtf8Bytes(tokenName));
+      const isSoulbound = getTokenConfig(token?.tokenType || 'MEMBER').soulbound || false;
+      
+      setStep("Confirming transaction...");
+      
+      // Use publicMint for all cases - the contract handles access control
+      const tx = await contract.publicMint(tokenNameBytes32, isSoulbound);
+      
+      setStep("Transaction submitted. Waiting for confirmation...");
+      setTxHash(tx.hash);
+      await tx.wait();
+      
+      setStep("Success! Token minted successfully.");
+      setIsSuccess(true);
+    } catch (err: any) {
+      console.error("Minting error:", err);
+      
+      // Check if it's a permission-related error
+      if (err.message?.includes("execution reverted")) {
+        if (err.message?.includes("Officers only") || err.reason?.includes("Officers only")) {
+          setPermissionError("OFFICER_REQUIRED");
+          return;
+        } else if (err.message?.includes("Not whitelisted") || err.reason?.includes("Not whitelisted")) {
+          setPermissionError("WHITELIST_REQUIRED");
+          return;
+        }
+      }
+      
+      // Parse other types of errors for user-friendly messages
+      let errorMessage = "An error occurred while minting.";
+      
+      if (err.code === 4001 || err.message?.includes("User denied")) {
+        errorMessage = "Transaction was cancelled by user.";
+      } else if (err.message?.includes("Already minted") || err.reason?.includes("Already minted")) {
+        errorMessage = "You have already minted this token type.";
+      } else if (err.message?.includes("Max supply reached") || err.reason?.includes("Max supply reached")) {
+        errorMessage = "Maximum supply for this token has been reached.";
+      } else if (err.message?.includes("Token type not active") || err.reason?.includes("Token type not active")) {
+        errorMessage = "This token type is not currently available for minting.";
+      } else if (err.message?.includes("insufficient funds")) {
+        errorMessage = "Insufficient funds to complete the transaction.";
+      } else if (err.reason && !err.reason.includes("0x")) {
+        errorMessage = err.reason;
+      } else if (err.message && !err.message.includes("0x") && !err.message.includes("execution reverted")) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+      setStep("");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Reset state when modal opens/closes or token changes
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      setPermissionError(null);
+      setIsSuccess(false);
+      setStep("");
+      setTxHash(null);
+      setContractConfig(null);
+    }
+  }, [isOpen, token]);
+
   const getCostText = () => {
-    if (category?.role) {
-      if (category.role.toLowerCase() === "observer") return "Free"
-      if (category.role.toLowerCase() === "member") return "0.01 ETH (requires whitelist)"
-      if (category.role.toLowerCase() === "supporter") return "0.02 ETH"
-      if (category.role.toLowerCase() === "officer") return "Free (requires officer role)"
-      return "Free"
-    }
-    return category?.cost || "Free"
-  }
-
-  // Always render the modal, show loading/empty state if !token
-  if (!token) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 animate-pulse"></div>
-              <DialogTitle>Loading NFT Details</DialogTitle>
-            </div>
-            <DialogDescription>Please wait while we fetch the token information...</DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center py-10">
-            <div className="h-20 w-20 rounded-full border-4 border-t-transparent border-blue-500 animate-spin"></div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  // Helper: Copy address to clipboard
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+    // Use hardcoded config for now since we don't have cost info in contract
+    const config = getTokenConfig(token?.tokenType || 'MEMBER');
+    return config.cost || "Free";
   };
 
-  // Get role color for styling
   const getRoleColor = () => {
-    const role = (category?.role || '').toLowerCase();
-    switch(role) {
-      case 'observer': return 'from-sky-400 to-sky-600';
-      case 'member': return 'from-green-400 to-green-600';
-      case 'officer': return 'from-purple-400 to-purple-600';
-      case 'supporter': return 'from-amber-400 to-amber-600';
-      default: return 'from-blue-500 to-indigo-600';
+    const tokenType = token?.tokenType || 'MEMBER';
+    const config = getTokenConfig(tokenType);
+    
+    switch(config.category) {
+      case 'governance':
+        return tokenType === 'MEMBER' ? 'from-green-400 to-green-600' : 'from-purple-400 to-purple-600';
+      case 'culture':
+        return tokenType === 'SUPPORTER' ? 'from-amber-400 to-amber-600' : 'from-sky-400 to-sky-600';
+      case 'utility':
+        return 'from-gray-400 to-gray-600';
+      default: 
+        return 'from-blue-500 to-indigo-600';
     }
   };
 
-  // Get role background color for styling
   const getRoleBgColor = () => {
-    const role = (category?.role || '').toLowerCase();
-    switch(role) {
-      case 'observer': return 'bg-sky-100';
-      case 'member': return 'bg-green-100';
-      case 'officer': return 'bg-purple-100';
-      case 'supporter': return 'bg-amber-100';
-      default: return 'bg-blue-100';
+    const tokenType = token?.tokenType || 'MEMBER';
+    const config = getTokenConfig(tokenType);
+    
+    switch(config.category) {
+      case 'governance':
+        return tokenType === 'MEMBER' ? 'bg-green-100' : 'bg-purple-100';
+      case 'culture':
+        return tokenType === 'SUPPORTER' ? 'bg-amber-100' : 'bg-sky-100';
+      case 'utility':
+        return 'bg-gray-100';
+      default: 
+        return 'bg-blue-100';
     }
   };
 
-  // Get role text color for styling
   const getRoleTextColor = () => {
-    const role = (category?.role || '').toLowerCase();
-    switch(role) {
-      case 'observer': return 'text-sky-800';
-      case 'member': return 'text-green-800';
-      case 'officer': return 'text-purple-800';
-      case 'supporter': return 'text-amber-800';
-      default: return 'text-blue-800';
+    const tokenType = token?.tokenType || 'MEMBER';
+    const config = getTokenConfig(tokenType);
+    
+    switch(config.category) {
+      case 'governance':
+        return tokenType === 'MEMBER' ? 'text-green-800' : 'text-purple-800';
+      case 'culture':
+        return tokenType === 'SUPPORTER' ? 'text-amber-800' : 'text-sky-800';
+      case 'utility':
+        return 'text-gray-800';
+      default: 
+        return 'text-blue-800';
     }
   };
+
+  if (!token) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -428,405 +299,224 @@ export default function NFTDetailModal({ isOpen, onClose, token, category }: NFT
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ 
-              duration: 0.3, 
-              ease: [0.16, 1, 0.3, 1] 
-            }}
+            transition={{ duration: 0.2 }}
           >
-            <DialogContent className="max-w-3xl p-0 overflow-hidden rounded-xl bg-white shadow-xl">
-              {/* Header with gradient background */}
-              <div className={`p-6 bg-gradient-to-r ${getRoleColor()} text-white`}>
-                <DialogHeader className="space-y-1">
-                  <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+            <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl bg-white shadow-xl border-0">
+              {/* Header */}
+              <div className={`p-6 bg-gradient-to-r ${getRoleColor()} text-white relative`}>
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <div className="w-5 h-5 bg-white rounded-full"></div>
+                    </div>
                     {token.name}
-                    {category.role && (
-                      <Badge className="bg-white/20 text-white backdrop-blur-sm ml-2 text-xs">
-                        {category.role}
-                      </Badge>
-                    )}
                   </DialogTitle>
-                  <DialogDescription className="text-white/90">{token.description}</DialogDescription>
+                  <DialogDescription className="text-white/90 text-base">
+                    {token.description}
+                  </DialogDescription>
                 </DialogHeader>
               </div>
 
-              {/* Status notifications */}
-              <div className="p-6 space-y-4">
-                {/* Eligibility and status section (always at top) */}
-                {isConnected && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="mb-2"
-                  >
-                    {/* Eligibility summary badge */}
-                    <div className="flex items-center flex-wrap gap-2">
-                      {alreadyMinted && (userRole === 'Member' || userRole === 'Officer') ? (
-                        <Badge className="bg-green-100 text-green-800 flex items-center gap-1 px-3 py-1.5 text-sm font-medium">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" /> 
-                          Already Minted
-                        </Badge>
-                      ) : eligibilityReason ? (
-                        <Badge className={
-                          eligibilityReason.toLowerCase().includes('not whitelist') || 
-                          eligibilityReason.toLowerCase().includes('officer') 
-                            ? "bg-yellow-100 text-yellow-800 flex items-center gap-1 px-3 py-1.5 text-sm font-medium" 
-                            : "bg-red-100 text-red-800 flex items-center gap-1 px-3 py-1.5 text-sm font-medium"
-                        }>
-                          <AlertCircle className="h-4 w-4 mr-1" /> {eligibilityReason}
-                        </Badge>
-                      ) : null}
-                    </div>
-                  </motion.div>
+              {/* Content */}
+              <div className="p-6 space-y-6">
+                {/* Status Alerts - Simplified */}
+                {!isConnected && (
+                  <Alert className="border-l-4 border-blue-500 bg-blue-50">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-800 font-medium">
+                      Connect your wallet to mint tokens
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 {step && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <Alert className="mb-4 border-l-4 border-blue-500 bg-blue-50 rounded-lg shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-                        <AlertTitle className="text-blue-800 font-medium">Minting Status</AlertTitle>
-                      </div>
-                      <AlertDescription className="text-blue-700">{step}</AlertDescription>
-                    </Alert>
-                  </motion.div>
+                  <Alert className="border-l-4 border-blue-500 bg-blue-50">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+                      <AlertDescription className="text-blue-800 font-medium">{step}</AlertDescription>
+                    </div>
+                  </Alert>
                 )}
                 
-                {txHash && !isPolyscanConfirmed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                  >
-                    <Alert className="mb-4 border-l-4 border-blue-500 bg-blue-50 rounded-lg shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-                        <AlertTitle className="text-blue-800 font-medium">Waiting for Polygonscan</AlertTitle>
-                      </div>
-                      <AlertDescription className="text-blue-700">
-                        Your transaction was submitted and confirmed on-chain.<br />
+                {isSuccess && (
+                  <Alert className="border-l-4 border-green-500 bg-green-50">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800 font-medium">
+                      Token minted successfully!
+                      {txHash && (
                         <a 
                           href={`https://amoy.polygonscan.com/tx/${txHash}`} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="inline-flex items-center mt-2 text-blue-600 hover:text-blue-800 transition-colors"
+                          className="ml-2 underline hover:text-green-900"
                         >
-                          View on Polygonscan <ExternalLink className="ml-1 h-3 w-3" />
+                          View transaction
                         </a>
-                      </AlertDescription>
-                    </Alert>
-                  </motion.div>
-                )}
-                
-                {isSuccess && txHash && isPolyscanConfirmed && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                  >
-                    <Alert className="mb-4 border-l-4 border-green-500 bg-green-50 rounded-lg shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        <AlertTitle className="text-green-800 font-medium">Success!</AlertTitle>
-                      </div>
-                      <AlertDescription className="text-green-700">
-                        Your token has been minted successfully and is now part of your collection.
-                        <a 
-                          href={`https://amoy.polygonscan.com/tx/${txHash}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="inline-flex items-center mt-2 text-green-600 hover:text-green-800 transition-colors"
-                        >
-                          View on Polygonscan <ExternalLink className="ml-1 h-3 w-3" />
-                        </a>
-                      </AlertDescription>
-                    </Alert>
-                  </motion.div>
+                      )}
+                    </AlertDescription>
+                  </Alert>
                 )}
                 
                 {error && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="col-span-2 flex justify-center"
-                  >
-                    <Alert className="mb-4 border-l-4 border-red-500 bg-red-50 rounded-lg shadow-sm w-full">
-                      <div className="flex items-start gap-2 w-full">
-                        <AlertCircle className="h-5 w-5 text-red-500 mt-1 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <AlertTitle className="text-red-800 font-medium">Error</AlertTitle>
-                          <AlertDescription className="text-red-700 max-h-40 overflow-y-auto">
-                            {typeof error === 'object' ? 
-                              (error?.message || 'An unknown error occurred.') : 
-                              error}
-                          </AlertDescription>
-                        </div>
-                      </div>
-                    </Alert>
-                  </motion.div>
+                  <Alert className="border-l-4 border-red-500 bg-red-50">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800 font-medium">
+                      {error}
+                    </AlertDescription>
+                  </Alert>
                 )}
 
-                {/* Main content area */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* NFT Image with card styling */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="overflow-hidden rounded-xl bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-200 shadow-sm flex items-center justify-center p-4"
-                    style={{ minHeight: 280 }}
-                  >
+                {/* Main content */}
+                <div className="grid gap-6 lg:grid-cols-3">
+                  {/* Image */}
+                  <div className="lg:col-span-2 rounded-xl bg-gray-50 border border-gray-200 p-6 flex items-center justify-center">
                     <img 
                       src={token.imageUri || "/placeholder.svg"} 
                       alt={token.name} 
-                      className="max-h-64 max-w-full object-contain mx-auto rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-                      style={{ maxHeight: 256, width: "auto" }}
+                      className="max-h-80 max-w-full object-contain rounded-lg"
                     />
-                  </motion.div>
+                  </div>
 
-                  {/* NFT Details */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="space-y-5"
-                  >
-                    {/* Token Details */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                      <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2 mb-3">
-                        <span className={`h-2 w-2 rounded-full bg-gradient-to-r ${getRoleColor()}`}></span>
-                        Token Details
-                      </h3>
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-2">
-                          {category.role && (
-                            <Badge className={`${getRoleBgColor()} ${getRoleTextColor()}`}>
-                              Role: {category.role}
-                            </Badge>
-                          )}
-                          {category.type && (
-                            <Badge className="bg-purple-100 text-purple-800 font-medium">
-                              Type: {category.type}
-                            </Badge>
-                          )}
-                          {category.votingPower !== undefined && (
-                            <Badge className="bg-green-100 text-green-800 font-medium">
-                              Voting Power: {category.votingPower}x
-                            </Badge>
-                          )}
-                          <Badge className="bg-red-100 text-red-800 font-medium">
-                            Cost: {getCostText()}
+                  {/* Info and actions */}
+                  <div className="space-y-4">
+                    {/* Token info */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3">Token Info</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Type</span>
+                          <Badge className={`${getRoleBgColor()} ${getRoleTextColor()} text-xs`}>
+                            {token.tokenType}
                           </Badge>
                         </div>
-                        <div className="mt-3 text-sm text-gray-600">
-                          {category.role === "Observer"
-                            ? "Free to mint. Grants access to public events and basic resources."
-                            : category.role === "Member"
-                              ? "Requires university email verification. Grants voting rights and full access."
-                              : category.role === "Supporter"
-                                ? "Requires a donation of 0.02 ETH. Grants enhanced voting power and exclusive perks."
-                                : token.description || "Mint this token to add it to your collection."}
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-600">Cost</span>
+                          <span className="font-medium text-gray-900">{getCostText()}</span>
                         </div>
+                        {contractConfig && (
+                          <>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Supply</span>
+                              <span className="font-medium text-gray-900">
+                                {contractConfig.currentSupply}/{contractConfig.maxSupply}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Access</span>
+                              <span className="font-medium text-gray-900">
+                                {contractConfig.mintAccess === 0 ? 'Officers Only' : 
+                                 contractConfig.mintAccess === 1 ? 'Whitelist Only' : 'Public'}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                        {getTokenConfig(token?.tokenType || 'MEMBER').soulbound && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Transferable</span>
+                            <Badge className="bg-red-100 text-red-800 text-xs">Soulbound</Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Mint Action Box */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                      {!isConnected ? (
-                        <Button
-                          onClick={() => {
-                            onClose();
-                            setTimeout(() => {
-                              if (typeof openConnectModal === 'function') openConnectModal();
-                            }, 300);
-                          }}
-                          className={`w-full bg-gradient-to-r ${getRoleColor()} hover:opacity-90 text-white shadow-sm`}
+                    {/* Mint action */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+                      <Button
+                        onClick={!isConnected ? () => {
+                          onClose();
+                          setTimeout(() => {
+                            if (openConnectModal) openConnectModal();
+                          }, 300);
+                        } : handleMint}
+                        disabled={isLoading || isSuccess || !!permissionError}
+                        className={cn(
+                          "w-full rounded-lg font-medium transition-all duration-200",
+                          isSuccess
+                            ? "bg-green-500 hover:bg-green-600 text-white"
+                            : (isLoading || !!permissionError)
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed hover:bg-gray-200"
+                            : !isConnected
+                            ? `bg-gradient-to-r ${getRoleColor()} hover:opacity-90 text-white`
+                            : `bg-gradient-to-r ${getRoleColor()} hover:opacity-90 text-white`
+                        )}
+                      >
+                        {isLoading ? (
+                          <div className="flex items-center">
+                            <div className="h-4 w-4 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin mr-2"></div>
+                            Minting...
+                          </div>
+                        ) : isSuccess ? (
+                          <>
+                            <CheckCircle2 className="mr-2 h-4 w-4" /> Success!
+                          </>
+                        ) : !isConnected ? (
+                          <>
+                            <Wallet className="mr-2 h-4 w-4" /> Connect Wallet
+                          </>
+                        ) : !!permissionError ? (
+                          "Not Eligible to Mint"
+                        ) : (
+                          `Mint ${token.name}`
+                        )}
+                      </Button>
+                      
+                      {/* Email request buttons for permission errors */}
+                      {permissionError === "WHITELIST_REQUIRED" && (
+                        <Button 
+                          variant="outline" 
+                          className="w-full border-2 border-amber-300 text-amber-700 hover:bg-amber-50 transition-all duration-300 font-medium"
+                          onClick={() => openMailTo("Whitelist Request for University Blockchain Club")}
                         >
-                          <Wallet className="mr-2 h-4 w-4" /> Connect Wallet to Mint
+                          <Mail className="mr-2 h-4 w-4" />
+                          Request Whitelist Access
                         </Button>
-                      ) : (
-                        <div className="space-y-3">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div>
-                                  <Button
-                                    onClick={handleMint}
-                                    disabled={
-                                      isLoading ||
-                                      isSuccess ||
-                                      (alreadyMinted && (userRole === 'Member' || userRole === 'Officer')) ||
-                                      !!eligibilityReason
-                                    }
-                                    className={cn(
-                                      "relative w-full group overflow-hidden",
-                                      isSuccess
-                                        ? "bg-green-500 hover:bg-green-600"
-                                        : `bg-gradient-to-r ${getRoleColor()} hover:opacity-90`,
-                                      "text-white shadow-sm"
-                                    )}
-                                  >
-                                    {isLoading ? (
-                                      <div className="flex items-center">
-                                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
-                                        Minting...
-                                      </div>
-                                    ) : isSuccess ? (
-                                      <>
-                                        <CheckCircle2 className="mr-2 h-4 w-4" /> Minted Successfully!
-                                      </>
-                                    ) : alreadyMinted && (userRole === 'Member' || userRole === 'Officer') ? (
-                                      <>
-                                        <CheckCircle2 className="mr-2 h-4 w-4" /> Already Minted (Limit 1)
-                                      </>
-                                    ) : eligibilityReason ? (
-                                      <>
-                                        <AlertCircle className="mr-2 h-4 w-4" /> Not Eligible
-                                      </>
-                                    ) : (
-                                      <>
-                                        Mint {token.name}
-                                      </>
-                                    )}
-                                    <span className="absolute inset-0 rounded-md overflow-hidden">
-                                      <span className="absolute left-0 top-0 h-full w-0 bg-white/20 transition-all duration-500 group-hover:w-full"></span>
-                                    </span>
-                                  </Button>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {isSuccess
-                                  ? 'Token successfully minted!'
-                                  : alreadyMinted && (userRole === 'Member' || userRole === 'Officer')
-                                  ? 'You can only mint one of these tokens per wallet'
-                                  : eligibilityReason
-                                  ? eligibilityReason
-                                  : `Click to mint the ${token.name} token`}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          
-                          {/* Whitelist request button - only show for Member role when not whitelisted */}
-                          {isConnected && 
-                           userRole === 'Member' && 
-                           !isWhitelisted && 
-                           !alreadyMinted && (
-                            <Button 
-                              variant="outline" 
-                              className="w-full border-yellow-500 text-yellow-700 hover:bg-yellow-50 shadow-sm"
-                              onClick={() => openMailTo("Whitelist Request for University Blockchain Club")}
-                            >
-                              Request Whitelist Access <ChevronRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          )}
-                          
-                          {/* Officer role request button - only show for Officer role when not an officer */}
-                          {isConnected && 
-                           userRole === 'Officer' && 
-                           !isOfficer && 
-                           !alreadyMinted && (
-                            <Button 
-                              variant="outline" 
-                              className="w-full border-blue-500 text-blue-700 hover:bg-blue-50 shadow-sm"
-                              onClick={() => openMailTo("Officer Role Application for University Blockchain Club")}
-                            >
-                              Apply for Officer Role <ChevronRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
+                      )}
+                      
+                      {permissionError === "OFFICER_REQUIRED" && (
+                        <Button 
+                          variant="outline" 
+                          className="w-full border-2 border-blue-300 text-blue-700 hover:bg-blue-50 transition-all duration-300 font-medium"
+                          onClick={() => openMailTo("Officer Role Application for University Blockchain Club")}
+                        >
+                          <Mail className="mr-2 h-4 w-4" />
+                          Apply for Officer Role
+                        </Button>
                       )}
                     </div>
-                    
-                    {/* Transaction details (only show when there's a transaction) */}
-                    {txHash && (
-                      <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                        <h4 className="text-sm font-medium text-gray-900 flex items-center gap-2 mb-2">
-                          <Info className="h-4 w-4 text-blue-500" /> Transaction Details
-                        </h4>
-                        <div className="flex items-center justify-between gap-2 text-xs bg-gray-50 rounded-md p-2">
-                          <span className="text-gray-600">Tx Hash:</span>
-                          <div className="flex items-center gap-1">
-                            <a 
-                              href={`https://amoy.polygonscan.com/tx/${txHash}`}
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="font-mono text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                              {txHash.slice(0, 6)}...{txHash.slice(-4)}
-                            </a>
-                            <button 
-                              onClick={() => copyToClipboard(txHash)}
-                              className="text-gray-500 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100 transition-colors"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Success view */}
-                    {isSuccess && (
-                      <div className="mt-4 flex flex-col items-center gap-2">
-                        <Button
-                          className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-90 text-white shadow-sm"
-                          onClick={() => {
-                            onClose();
-                            // Optionally: route to dashboard or gallery
-                          }}
-                        >
-                          See All Tokens
-                        </Button>
-                      </div>
-                    )}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
-              
-              {/* Debug/Technical Info (collapsible, with improved styling) */}
+
+              {/* Technical details - collapsed by default */}
               <div className="bg-gray-50 border-t border-gray-200">
                 <details className="group">
-                  <summary className="p-4 cursor-pointer hover:bg-gray-100 flex items-center">
-                    <Code className="h-4 w-4 text-gray-500 mr-2" />
+                  <summary className="p-4 cursor-pointer hover:bg-gray-100 flex items-center transition-colors">
+                    <Code className="h-4 w-4 text-gray-600 mr-2" />
                     <span className="text-sm font-medium text-gray-700">Technical Details</span>
                     <ChevronRight className="ml-auto h-4 w-4 text-gray-500 transition-transform group-open:rotate-90" />
                   </summary>
-                  <div className="px-4 pb-4 text-sm grid grid-cols-2 gap-2">
-                    <div>Contract: <span className="font-mono bg-gray-100 px-1 rounded text-gray-800">{CONTRACT_ADDRESS.slice(0, 10)}...</span></div>
-                    <div className="flex items-center gap-1">
-                      Hash: {txHash && (
-                        <div className="flex items-center gap-1">
+                  <div className="px-4 pb-4 text-xs">
+                    <div className="bg-white rounded-lg p-3 space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Wallet:</span>
+                        <span className="font-mono text-gray-800">
+                          {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not connected'}
+                        </span>
+                      </div>
+                      {txHash && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Transaction:</span>
                           <a
                             href={`https://amoy.polygonscan.com/tx/${txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-mono bg-gray-100 px-1 rounded text-blue-600 hover:text-blue-800"
+                            className="font-mono text-blue-600 hover:text-blue-800"
                           >
                             {txHash.slice(0, 6)}...{txHash.slice(-4)}
                           </a>
-                          <button 
-                            onClick={() => copyToClipboard(txHash)}
-                            className="text-gray-500 hover:text-gray-700 p-1 rounded-md hover:bg-gray-100 transition-colors"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </button>
                         </div>
                       )}
                     </div>
-                    <div>Wallet: <span className="font-mono bg-gray-100 px-1 rounded text-gray-800">{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not connected'}</span></div>
-                    <div>Whitelisted: <span className={`font-mono px-1 rounded ${isWhitelisted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{String(isWhitelisted)}</span></div>
-                    <div>Officer: <span className={`font-mono px-1 rounded ${isOfficer ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{String(isOfficer)}</span></div>
-                    <div className="col-span-2">Eligibility Reason: <span className="font-mono bg-gray-100 px-1 rounded text-gray-800">{eligibilityReason || 'Eligible'}</span></div>
-                    {isConnected && (
-                      <div className="col-span-2 pt-2 border-t border-gray-200 mt-2">
-                        <div>Role as bytes32: <span className="font-mono bg-gray-100 px-1 rounded text-gray-800">{ethers.keccak256(ethers.toUtf8Bytes(getContractRole(category, token))).slice(0, 10)}...</span></div>
-                      </div>
-                    )}
                   </div>
                 </details>
               </div>
