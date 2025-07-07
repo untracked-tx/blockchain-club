@@ -18,56 +18,77 @@ const wallet = new ethers.Wallet(privateKey, provider);
 const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, wallet);
 
 const types = [
-  // Governance - Member tokens (WHITELIST_ONLY = 1)
-  { typeName: "Trader", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 365*24*3600, role: "MEMBER" },
-  { typeName: "Trader Chill", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 365*24*3600, role: "MEMBER" },
-  { typeName: "Let's Get This Party Started", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 365*24*3600, role: "MEMBER" },
-  { typeName: "Custom Membership", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 365*24*3600, role: "MEMBER" },
-
   // Governance - Officer tokens (OFFICER_ONLY = 0)
-  { typeName: "President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 365*24*3600, role: "OFFICER" },
-  { typeName: "Vice President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 365*24*3600, role: "OFFICER" },
-  { typeName: "CFO", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 365*24*3600, role: "OFFICER" },
-  { typeName: "Treasurer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 365*24*3600, role: "OFFICER" },
-  { typeName: "Major Key Alert", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 365*24*3600, role: "OFFICER" },
-  { typeName: "Officer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 365*24*3600, role: "OFFICER" },
+  { typeName: "CFO", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+  { typeName: "Major Key Alert", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+  { typeName: "Officer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+  { typeName: "President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+  { typeName: "Treasurer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+  { typeName: "Vice President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+
+  // Governance - Member tokens (WHITELIST_ONLY = 1)
+  { typeName: "Custom Membership", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
+  { typeName: "Let's Get This Party Started", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
+  { typeName: "Trader", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
+  { typeName: "Trader Chill", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
 
   // Supporter tokens (PUBLIC = 2)
-  { typeName: "The Graduate", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 10*365*24*3600, role: null },
-  { typeName: "Rhodes Scholar", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 10*365*24*3600, role: null },
-  { typeName: "Digital Art", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 10*365*24*3600, role: null },
+  { typeName: "Digital Art", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 315360000, role: null },
+  { typeName: "Rhodes Scholar", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 315360000, role: null },
+  { typeName: "The Graduate", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 315360000, role: null },
 
-  // POAPs (OFFICER_ONLY = 0)
-  { typeName: "Mint & Slurp", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true },
-  { typeName: "Quad", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true },
-  { typeName: "Secret Sauce", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true },
+  // POAPs (OFFICER_ONLY = 0, soulbound)
+  { typeName: "Mint & Slurp", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
+  { typeName: "Quad", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
+  { typeName: "Secret Sauce", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
 
-  // Awards & Recognition (OFFICER_ONLY = 0)
-  { typeName: "Founders Series", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true },
-  { typeName: "Gold Star", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true },
-  { typeName: "Long Run", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true },
+  // Awards & Recognition (OFFICER_ONLY = 0, soulbound)
+  { typeName: "Founders Series", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
+  { typeName: "Gold Star", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
+  { typeName: "Long Run", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
 
-  // Replacement (OFFICER_ONLY = 0)
-  { typeName: "The Fool", category: "Replacement", maxSupply: 100, mintAccess: 0, expiresIn: 10*365*24*3600, role: null, soulbound: true }
+  // Replacement (OFFICER_ONLY = 0, soulbound)
+  { typeName: "The Fool", category: "Replacement", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true }
 ];
 
 async function batchCreateTokenTypes(contract) {
   for (const t of types) {
     const typeId = keccak256(toUtf8Bytes(t.typeName));
+    
+    try {
+      // Check if token type already exists
+      const existingConfig = await contract.tokenTypeConfigs(typeId);
+      if (existingConfig.maxSupply > 0) {
+        console.log(`⏭️  Token type "${t.typeName}" already exists, skipping...`);
+        continue;
+      }
+    } catch (error) {
+      // Token type doesn't exist, which is fine - we'll create it
+    }
+    
     const now = Math.floor(Date.now() / 1000);
     const startTime = now;
     const endTime = now + t.expiresIn;
-    const tx = await contract.createTokenType(
-      typeId,
-      t.typeName,
-      t.category,
-      startTime,
-      endTime,
-      t.maxSupply,
-      t.mintAccess // 0: OFFICER_ONLY, 1: WHITELIST_ONLY, 2: PUBLIC
-    );
-    await tx.wait();
-    console.log(`Created token type: ${t.typeName}`);
+    
+    try {
+      const tx = await contract.createTokenType(
+        typeId,
+        t.typeName,
+        t.category,
+        startTime,
+        endTime,
+        t.maxSupply,
+        t.mintAccess // 0: OFFICER_ONLY, 1: WHITELIST_ONLY, 2: PUBLIC
+      );
+      await tx.wait();
+      console.log(`✅ Created token type: ${t.typeName}`);
+    } catch (error) {
+      if (error.message.includes("Type already exists")) {
+        console.log(`⏭️  Token type "${t.typeName}" already exists, skipping...`);
+      } else {
+        console.error(`❌ Error creating token type "${t.typeName}":`, error.message);
+      }
+    }
   }
 }
 

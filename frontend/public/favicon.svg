@@ -1,0 +1,16 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black background circle -->
+  <circle cx="16" cy="16" r="16" fill="#000000"/>
+  
+  <!-- Gold building/university icon -->
+  <rect x="8" y="12" width="3" height="12" fill="#CFB87C"/>
+  <rect x="12" y="10" width="3" height="14" fill="#CFB87C"/>
+  <rect x="16" y="8" width="3" height="16" fill="#CFB87C"/>
+  <rect x="20" y="10" width="3" height="14" fill="#CFB87C"/>
+  
+  <!-- Gold roof/triangle -->
+  <polygon points="16,6 12,10 20,10" fill="#CFB87C"/>
+  
+  <!-- Small lightning bolt for blockchain/crypto -->
+  <path d="M22 8 L25 8 L23 12 L26 12 L22 18 L24 14 L22 14 Z" fill="#CFB87C" stroke="#CFB87C" stroke-width="0.5"/>
+</svg>

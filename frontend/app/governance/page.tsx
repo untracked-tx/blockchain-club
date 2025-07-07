@@ -27,12 +27,6 @@ import {
 } from "lucide-react"
 import { contracts } from "@/lib/contracts"
 
-export const metadata = {
-  title: 'Governance & Operations | University Blockchain Club',
-  description: 'Explore our transparent governance structure, smart contract architecture, and decentralized operations. Everything is on-chain, auditable, and designed for maximum transparency.',
-  keywords: 'blockchain governance, smart contracts, transparency, DAO, decentralized operations, university blockchain',
-}
-
 export default function GovernancePage() {
   const [expandedContract, setExpandedContract] = useState<string | null>(null)
   const [contractAddresses, setContractAddresses] = useState({

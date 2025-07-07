@@ -16,13 +16,13 @@ export const metadata = {
   metadataBase: new URL('https://blockchain-club.vercel.app'),
   icons: {
     icon: [
-      { url: '/placeholder-logo.png', sizes: '32x32', type: 'image/png' },
-      { url: '/placeholder-logo.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-180.svg', sizes: '32x32', type: 'image/svg+xml' },
     ],
     apple: [
-      { url: '/placeholder-logo.png', sizes: '180x180', type: 'image/png' },
+      { url: '/favicon-180.svg', sizes: '180x180', type: 'image/svg+xml' },
     ],
-    shortcut: '/placeholder-logo.png',
+    shortcut: '/favicon.svg',
   },
   manifest: '/manifest.json',
   openGraph: {
