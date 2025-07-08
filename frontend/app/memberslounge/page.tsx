@@ -34,7 +34,7 @@ function MembersLoungeContent() {
       if (!isLoading && !isMember) {
         setAccessDenied(true)
       }
-    }, 3000) // 3 second loading screen
+    }, 6500) // 6.5 second loading screen (longer to match slower animation)
 
     return () => clearTimeout(timer)
   }, [hasSecretKey, router, isMember, isLoading])

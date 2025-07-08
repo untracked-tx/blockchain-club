@@ -7,6 +7,7 @@ export function useMembershipVerification() {
   const [isMember, setIsMember] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [membershipTier, setMembershipTier] = useState<string | null>(null)
+  const [isWalletConnected, setIsWalletConnected] = useState(false)
   
   const { address, isConnected } = useAccount()
   

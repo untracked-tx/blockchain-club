@@ -13,11 +13,13 @@ export function TerminalLoader() {
     "Checking NFT ownership...",
     "Scanning wallet permissions...", 
     "Decrypting access keys...",
+    "Validating member privileges...",
+    "Loading secure environment...",
     "ACCESS GRANTED"
   ]
 
   useEffect(() => {
-    const stepDuration = 500 // 500ms per step
+    const stepDuration = 800 // 800ms per step (slower)
     
     const interval = setInterval(() => {
       setCurrentStep(prev => {
@@ -44,7 +46,7 @@ export function TerminalLoader() {
         } else {
           clearInterval(typeInterval)
         }
-      }, 30) // 30ms per character for typing effect
+      }, 50) // 50ms per character for slower typing effect
 
       return () => clearInterval(typeInterval)
     }
@@ -78,58 +80,70 @@ export function TerminalLoader() {
                 key={index}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center space-x-2"
+                className="flex items-start space-x-2 font-mono"
               >
-                <span className="text-green-500">
-                  {index === currentStep ? ">" : "✓"}
+                <span className="text-green-500 mt-0.5">
+                  {index === currentStep && index !== steps.length - 1 ? ">" : 
+                   index === steps.length - 1 && currentStep === steps.length - 1 ? "✓" : "✓"}
                 </span>
-                <span className={`${
-                  index === currentStep 
-                    ? "text-green-400" 
-                    : index === steps.length - 1 && currentStep === steps.length - 1
-                      ? "text-green-300 font-bold animate-pulse" 
-                      : "text-gray-400"
-                }`}>
-                  {index === currentStep ? displayText : step}
-                  {index === currentStep && (
-                    <span className="animate-pulse">█</span>
+                <div className="flex-1">
+                  <span className={`${
+                    index === currentStep && index !== steps.length - 1
+                      ? "text-green-400" 
+                      : index === steps.length - 1 && currentStep === steps.length - 1
+                        ? "text-green-300 font-bold" 
+                        : "text-gray-400"
+                  }`}>
+                    {index === currentStep ? displayText : step}
+                    {index === currentStep && index !== steps.length - 1 && (
+                      <span className="animate-pulse text-green-400">█</span>
+                    )}
+                  </span>
+                  
+                  {/* Add realistic terminal output for completed steps */}
+                  {index < currentStep && index !== steps.length - 1 && (
+                    <div className="text-xs text-gray-500 mt-1 ml-4">
+                      {index === 0 && "Connection established on port 8545"}
+                      {index === 1 && "Found wallet: 0x742d...a8f2"}
+                      {index === 2 && "NFT balance: 3 tokens"}
+                      {index === 3 && "Permission level: MEMBER"}
+                      {index === 4 && "RSA-2048 decryption complete"}
+                      {index === 5 && "Member since: 2024-03-15"}
+                      {index === 6 && "Environment loaded successfully"}
+                    </div>
                   )}
-                </span>
+                </div>
               </motion.div>
             ))}
 
             {/* Success message */}
             {currentStep === steps.length - 1 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="mt-6 p-4 border border-green-500 rounded bg-green-500/10"
-              >
-                <div className="text-green-300 font-bold text-center">
-                  🎉 WELCOME TO THE MEMBERS LOUNGE 🎉
-                </div>
-                <div className="text-green-400 text-center text-sm mt-2">
-                  Redirecting to secure area...
-                </div>
-              </motion.div>
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="mt-4 text-xs text-gray-500"
+                >
+                  <div>Session authenticated at {new Date().toLocaleTimeString()}</div>
+                  <div>Loading member dashboard...</div>
+                </motion.div>
+                
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.5, duration: 0.5 }}
+                  className="mt-6 p-4 border border-green-500 rounded bg-green-500/10"
+                >
+                  <div className="text-green-300 font-bold text-center font-mono">
+                    🎉 WELCOME TO THE MEMBERS LOUNGE 🎉
+                  </div>
+                  <div className="text-green-400 text-center text-sm mt-2 font-mono">
+                    Redirecting to secure area...
+                  </div>
+                </motion.div>
+              </>
             )}
-          </div>
-
-          {/* Loading bar */}
-          <div className="mt-6">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>Loading...</span>
-              <span>{Math.round(((currentStep + 1) / steps.length) * 100)}%</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <motion.div
-                className="bg-green-500 h-2 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
           </div>
         </div>
       </div>
