@@ -4,10 +4,13 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Search, BookOpen } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
 export function ResearchHeader() {
   const [scrolled, setScrolled] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +25,23 @@ export function ResearchHeader() {
       window.removeEventListener("scroll", handleScroll)
     }
   }, [scrolled])
+
+  // Handle search functionality with secret keyword
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Check for secret keyword
+    if (searchQuery.toLowerCase().trim() === "inplainview42") {
+      // Redirect to members lounge with authorization key
+      router.push("/memberslounge?key=authorized")
+      return
+    }
+    
+    // Normal search functionality - you can implement this based on your needs
+    console.log("Searching for:", searchQuery)
+    // For now, just clear the search - you can implement actual search later
+    setSearchQuery("")
+  }
 
   return (
     <motion.div
@@ -53,14 +73,16 @@ export function ResearchHeader() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <div className="relative max-w-md w-full">
+            <form onSubmit={handleSearch} className="relative max-w-md w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 z-10" size={18} />
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search articles, topics, or authors..."
                 className="w-full pl-10 pr-4 py-3 rounded-lg shadow-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
               />
-            </div>
+            </form>
             <Link href="/research/submit">
               <Button className="bg-white text-blue-700 hover:bg-blue-50 shadow-lg whitespace-nowrap px-6">
                 Submit Research

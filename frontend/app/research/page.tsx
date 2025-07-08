@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, User, ArrowUpRight, Clock } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { ResearchHeader } from "@/components/research-header"
 
 // Mock data for research articles
@@ -97,8 +98,24 @@ const allCategories = [
 
 export default function ResearchPage() {
 	const [searchQuery, setSearchQuery] = useState("");
+	const [selectedCategory, setSelectedCategory] = useState("All");
+	const router = useRouter();
+
+	// Handle search functionality with secret keyword
+	const handleSearch = (e: React.FormEvent) => {
+		e.preventDefault()
+		
+		// Check for secret keyword
+		if (searchQuery.toLowerCase().trim() === "inplainview42") {
+			// Redirect to members lounge with authorization key
+			router.push("/memberslounge?key=authorized")
+			return
+		}
+		
+		// Normal search functionality is handled by the filter below
+	}
 	
-	// Filter articles based on search query
+	// Filter articles based on search query and category
 	const filteredArticles = researchArticles.filter(article => {
 		const matchesSearch = 
 			article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -108,7 +125,10 @@ export default function ResearchPage() {
 				category.toLowerCase().includes(searchQuery.toLowerCase())
 			);
 		
-		return matchesSearch;
+		const matchesCategory = selectedCategory === "All" || 
+			article.categories.includes(selectedCategory);
+		
+		return matchesSearch && matchesCategory;
 	});
 
 	// Get featured articles
@@ -203,7 +223,7 @@ export default function ResearchPage() {
 			{/* Search */}
 			<section className="mb-8">
 				<div className="max-w-md mx-auto">
-					<div className="relative">
+					<form onSubmit={handleSearch} className="relative">
 						<input
 							type="text"
 							placeholder="Search research articles..."
@@ -225,7 +245,7 @@ export default function ResearchPage() {
 								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
 							/>
 						</svg>
-					</div>
+					</form>
 				</div>
 			</section>
 			
