@@ -15,7 +15,7 @@
     "autoprefixer": "^10.4.21",
     "dotenv": "^16.5.0",
     "ethers": "^6.14.0",
-    "framer-motion": "^12.11.3",
+    "framer-motion": "^12.23.3",
     "lucide-react": "^0.508.0",
     "next": "^15.3.2",
     "node-fetch": "^3.3.2",
