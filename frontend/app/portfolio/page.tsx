@@ -36,7 +36,6 @@ import { MULTISIG_WALLET, getExplorerAddressUrl, getExplorerTokenUrl } from "@/l
 import { EducationalInsights } from "@/components/educational-insights"
 import { TransactionHistory } from "@/components/transaction-history"
 import { PageLoadingSkeleton, PortfolioSummarySkeleton } from "@/components/ui/loading-skeleton"
-import { PortfolioFinancialHeader } from "@/components/headers"
 
 // Helper function to get appropriate icon for each asset
 const getAssetIcon = (symbol: string) => {
@@ -169,12 +168,39 @@ export default function PortfolioPage() {
 
   return (
     <div className="flex flex-col">
-      {/* New Financial Dashboard Header */}
-      <PortfolioFinancialHeader 
-        totalValue={portfolio.totalValue}
-        dayChange={portfolio.dailyChange || 0}
-        assetsCount={portfolio.assets?.length || 0}
-      />
+      {/* Enhanced Header Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 py-20 md:py-28">
+        {/* Background Elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4 text-center">
+          <div className="mx-auto max-w-4xl">
+            {/* Floating Badge */}
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-emerald-100 backdrop-blur-sm border border-white/30">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Investment Portfolio
+            </div>
+            
+            <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
+              💰 Treasury Dashboard
+            </h1>
+            
+            <p className="mb-8 text-xl text-emerald-100 leading-relaxed">
+              Professional treasury management for the Blockchain Club. Real-time portfolio tracking, transparent reporting, and strategic investment oversight.
+            </p>
+            
+            {/* Treasurer Credit */}
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-6 py-3 text-sm font-medium text-emerald-100 backdrop-blur-sm border border-white/30">
+              <Shield className="mr-2 h-4 w-4" />
+              Managed by Club Treasurer
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50">
         <div className="container mx-auto px-4 py-12">

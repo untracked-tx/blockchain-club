@@ -8,7 +8,7 @@ import { Calendar, User, ArrowUpRight, Clock } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ResearchMagazineHeader } from "@/components/headers"
+import { ResearchHeader } from "@/components/research-header"
 
 // Mock data for research articles
 const researchArticles = [
@@ -105,13 +105,17 @@ export default function ResearchPage() {
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault()
 		
-		// Check for secret keyword
+		// Check for Members Lounge secret keyword
 		if (searchQuery.toLowerCase().trim() === "inplainview42") {
-			// Redirect to members lounge with authorization key
 			router.push("/memberslounge?key=authorized")
 			return
 		}
-		
+
+		// Check for O Club secret keyword
+		if (searchQuery.toLowerCase().trim() === "inplainview43") {
+			router.push("/oclub?key=authorized")
+			return
+		}
 		// Normal search functionality is handled by the filter below
 	}
 	
@@ -136,12 +140,33 @@ export default function ResearchPage() {
 	
 	return (
 		<div className="flex flex-col">
-			{/* New Magazine-style Header */}
-			<ResearchMagazineHeader 
-				onSearch={setSearchQuery}
-				featuredCount={featuredArticles.length}
-				totalArticles={researchArticles.length}
-			/>
+			{/* Enhanced Header Section */}
+			<section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 py-20 md:py-28">
+				{/* Background Elements */}
+				<div className="absolute inset-0 opacity-30">
+					<div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
+					<div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
+					<div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
+				</div>
+				
+				<div className="container relative mx-auto px-4 text-center">
+					<div className="mx-auto max-w-4xl">
+						{/* Floating Badge */}
+						<div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
+							<ArrowUpRight className="mr-2 h-4 w-4" />
+							Research & Analysis Hub
+						</div>
+						
+						<h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
+							🔬 Research Center
+						</h1>
+						
+						<p className="mb-8 text-xl text-purple-100 leading-relaxed">
+							Explore cutting-edge blockchain research, DeFi analysis, and market insights from our community of student researchers.
+						</p>
+					</div>
+				</div>
+			</section>
 			
 			<div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50">
 				<div className="container mx-auto px-4 py-12">

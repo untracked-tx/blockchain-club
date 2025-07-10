@@ -44,6 +44,7 @@ import { contracts } from "@/lib/contracts"
 import { useContract } from "../../hooks/useContract"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { InlineLoadingSkeleton, MemberCardSkeleton, SectionLoadingSkeleton } from "@/components/ui/loading-skeleton"
+import PolRequestsDashboard from "@/components/pol-requests-dashboard"
 
 // Extend window object for ethereum
 declare global {
@@ -1352,27 +1353,28 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
       
       <div className="container mx-auto px-4 py-12">
 
-      {/* Stats Cards - Show for everyone */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Contract Statistics</h2>
-          <Button 
-            onClick={() => {
-              if (isConnected && isOfficer) {
-                loadContractData()
-              } else {
-                loadPublicContractStats()
-              }
-            }} 
-            disabled={isLoading || publicStatsLoading}
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${(isLoading || publicStatsLoading) ? 'animate-spin' : ''}`} />
-            Refresh Data
-          </Button>
-        </div>
+      {/* Stats Cards - Only show when wallet is connected */}
+      {isConnected && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Contract Statistics</h2>
+            <Button 
+              onClick={() => {
+                if (isConnected && isOfficer) {
+                  loadContractData()
+                } else {
+                  loadPublicContractStats()
+                }
+              }} 
+              disabled={isLoading || publicStatsLoading}
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${(isLoading || publicStatsLoading) ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </div>
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <Card>
@@ -1461,6 +1463,7 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
           </Card>
         </div>
       </div>
+      )}
 
       {/* Conditional content based on connection and officer status */}
       {isConnected && isOfficer && membersLoading && publicStatsLoading ? (
@@ -1747,6 +1750,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                 )}
               </CardContent>
             </Card>
+
+            {/* POL Requests Management */}
+            <PolRequestsDashboard />
           </TabsContent>
 
           {/* Admin-Only Tools */}

@@ -115,6 +115,10 @@ const config = {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        "scroll-mono": {
+          "0%": { transform: "translateY(0%)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -123,6 +127,7 @@ const config = {
         "slide-in-right": "slide-in-right 0.6s ease-out",
         "typewriter": "typewriter 2s steps(20) infinite",
         "grid-float": "grid-float 3s ease-in-out infinite",
+        "scroll-mono": "scroll-mono 30s linear infinite",
       },
     },
   },

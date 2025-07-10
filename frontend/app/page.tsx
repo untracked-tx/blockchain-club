@@ -1,8 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Lightbulb, Users, TrendingUp, Sparkles, Target } from "lucide-react"
+import { useState } from "react"
+import { NewUserOnboarding } from "@/components/new-user-onboarding"
 
 export default function Home() {
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false)
+
   return (
     <div className="flex flex-col">
       {/* Hero Section with Enhanced Design */}
@@ -28,7 +34,14 @@ export default function Home() {
             </h1>
             
             <p className="mb-8 text-xl text-[#565A5C] leading-relaxed">
-              🚀 A student-driven academic society empowering members to <strong>learn</strong>, <strong>invest</strong>, and <strong>lead</strong> in blockchain and digital assets. 
+              <span 
+                className="cursor-pointer transition-all duration-300 hover:scale-125 hover:drop-shadow-lg inline-block"
+                onClick={() => setIsOnboardingOpen(true)}
+                title="New here? Click for onboarding!"
+              >
+                🚀
+              </span>{" "}
+              A student-driven academic society empowering members to <strong>learn</strong>, <strong>invest</strong>, and <strong>lead</strong> in blockchain and digital assets. 
               Join us for hands-on experience, real portfolio management, and a vibrant, collaborative community.
             </p>
             
@@ -140,6 +153,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* New User Onboarding Modal */}
+      <NewUserOnboarding 
+        isOpen={isOnboardingOpen} 
+        onClose={() => setIsOnboardingOpen(false)} 
+      />
     </div>
   )
 }
