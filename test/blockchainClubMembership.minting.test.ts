@@ -26,8 +26,8 @@ describe("BlockchainClubMembership", function () {
     await membership.connect(officer).createTokenType(
       typeId, "Gold Membership", "Gold", Math.floor(Date.now() / 1000) - 1000, Math.floor(Date.now() / 1000) + 1000, 10, 1 // 1 = WHITELIST
     );
-    const typeIds = await membership.tokenTypes(0);
-    const config = await membership.tokenTypeConfigs(typeIds);
+    const typeIds = await membership.getAllTokenTypeIds();
+    const config = await membership.tokenTypeConfigs(typeIds[0]);
     expect(config.name).to.equal("Gold Membership");
   });
 
@@ -38,9 +38,8 @@ describe("BlockchainClubMembership", function () {
       typeId, "Gold Membership", "Gold", Math.floor(Date.now() / 1000) - 1000, Math.floor(Date.now() / 1000) + 1000, 10, 1 // 1 = WHITELIST
     );
 
-    const mintedTypeId = await membership.tokenTypes(0);
     // Mint
-    await membership.connect(officer).mint(user.address, mintedTypeId, false);
+    await membership.connect(officer).mint(user.address, typeId, false);
     expect(await membership.ownerOf(0)).to.equal(user.address);
   });
 
@@ -50,10 +49,7 @@ describe("BlockchainClubMembership", function () {
     await membership.connect(officer).createTokenType(
       typeId, "Gold Membership", "Gold", Math.floor(Date.now() / 1000) - 1000, Math.floor(Date.now() / 1000) + 1000, 10, 1 // 1 = WHITELIST
     );
-
-    const mintedTypeId = await membership.tokenTypes(0);
-    await membership.connect(officer).mint(user.address, mintedTypeId, true);
-
+    await membership.connect(officer).mint(user.address, typeId, true);
     await expect(
       membership.connect(user).transferFrom(user.address, user.address, 0)
     ).to.be.revertedWith("Token is soulbound");
@@ -69,7 +65,7 @@ describe("BlockchainClubMembership", function () {
 
   it("should allow public mint if mintAccess is PUBLIC", async () => {
     const typeId = ethers.keccak256(ethers.toUtf8Bytes("PublicType"));
-    await membership.createTokenType(
+    await membership.connect(officer).createTokenType(
       typeId, "PublicType", "General", 0, 9999999999, 100, 2 // MintAccess.PUBLIC
     );
     await expect(membership.connect(user).publicMint(typeId, false))
@@ -122,9 +118,7 @@ describe("BlockchainClubMembership", function () {
       typeId, "InactiveType", "General", Math.floor(Date.now() / 1000) - 1000, Math.floor(Date.now() / 1000) + 1000, 10, 1
     );
     // Deactivate token type
-    const config = await membership.tokenTypeConfigs(typeId);
-    config.isActive = false;
-    // Try to mint
+    await membership.connect(officer).deactivateTokenType(typeId);
     await expect(
       membership.connect(officer).mint(user.address, typeId, false)
     ).to.be.revertedWith("Token type not active");
@@ -152,5 +146,25 @@ describe("BlockchainClubMembership", function () {
     await expect(
       membership.connect(officer).mint(user.address, typeId, false)
     ).to.be.revertedWith("Minting not started for this token type");
+  });
+
+  it("should not allow minting more than one of the same token type per user", async () => {
+    await membership.connect(officer).updateWhitelist(user.address, true);
+    const typeId = ethers.keccak256(ethers.toUtf8Bytes("UniqueType"));
+    await membership.connect(officer).createTokenType(
+      typeId, "UniqueType", "Special", Math.floor(Date.now() / 1000) - 1000, Math.floor(Date.now() / 1000) + 1000, 10, 1
+    );
+    // First mint should succeed
+    await membership.connect(officer).mint(user.address, typeId, false);
+    // Second mint of the same type should fail
+    await expect(
+      membership.connect(officer).mint(user.address, typeId, false)
+    ).to.be.revertedWith("Wallet already owns a token of this type");
+    // Mint a different type should succeed
+    const typeId2 = ethers.keccak256(ethers.toUtf8Bytes("AnotherType"));
+    await membership.connect(officer).createTokenType(
+      typeId2, "AnotherType", "Special", Math.floor(Date.now() / 1000) - 1000, Math.floor(Date.now() / 1000) + 1000, 10, 1
+    );
+    await membership.connect(officer).mint(user.address, typeId2, false);
   });
 });

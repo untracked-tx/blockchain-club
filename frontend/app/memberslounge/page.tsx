@@ -3,17 +3,20 @@
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Shield, Users, Crown, Star, Lock, Calendar, FileText, Zap } from "lucide-react"
+import { Shield, Users, Crown, Star, Lock, Calendar, FileText, Zap, X } from "lucide-react"
 import { useAccount } from "wagmi"
 import { TerminalLoader } from "@/components/terminal-loader"
 import { useMembershipVerification } from "@/hooks/use-membership-verification"
 import { useMyTokens } from "@/hooks/use-mytokens"
+import { RealtimeChat } from "@/components/realtime-chat"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 function MembersLoungeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showLoader, setShowLoader] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
+  const [showChat, setShowChat] = useState(false)
   
   // Check if user came through the secret entrance
   const hasSecretKey = searchParams.get('key') === 'authorized'
@@ -136,24 +139,27 @@ function MembersLoungeContent() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
-      {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-900/80 via-purple-900/80 to-black/80 backdrop-blur-sm py-20 border-b border-gray-800/50">
-        <div className="container relative mx-auto px-4 text-center z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="mx-auto max-w-4xl"
-          >
+      {/* Enhanced Header Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 py-20 md:py-28">
+        {/* Background Elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4 text-center">
+          <div className="mx-auto max-w-4xl">
+            {/* Floating Badge */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="mb-6 inline-flex items-center rounded-full bg-green-500/20 px-6 py-3 text-sm font-medium text-green-300 backdrop-blur-sm border border-green-500/30 shadow-lg shadow-green-500/10"
+              className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30"
             >
               <Shield className="mr-2 h-4 w-4" />
               Members Only Area
-              <div className="ml-2 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="ml-2 w-2 h-2 bg-purple-300 rounded-full animate-pulse"></div>
             </motion.div>
             
             <motion.h1 
@@ -162,14 +168,14 @@ function MembersLoungeContent() {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl"
             >
-              🏛️ <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-400">Members</span> Lounge
+              ✨ Members Lounge
             </motion.h1>
             
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
-              className="mb-8 text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto"
+              className="mb-8 text-xl text-purple-100 leading-relaxed"
             >
               Welcome to the exclusive members area. Access to premium resources, private discussions, and insider insights reserved for verified club members.
             </motion.p>
@@ -179,44 +185,47 @@ function MembersLoungeContent() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 0.6 }}
-                className="inline-flex items-center bg-gradient-to-r from-purple-600/20 to-pink-600/20 px-8 py-4 rounded-xl border border-purple-500/30 backdrop-blur-sm shadow-xl shadow-purple-500/10"
+                className="mb-6 inline-flex items-center rounded-full bg-white/20 px-6 py-3 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30"
               >
-                <Crown className="w-6 h-6 text-yellow-400 mr-3" />
-                <span className="text-white font-semibold text-lg">
-                  {membershipTier} Member
-                </span>
-                <div className="ml-3 px-3 py-1 bg-yellow-400/20 rounded-full text-yellow-300 text-sm font-medium">
-                  VIP Access
-                </div>
+                <Crown className="mr-2 h-4 w-4 text-yellow-300" />
+                {membershipTier} Member • VIP Access
               </motion.div>
             )}
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Content */}
       <div className="container relative mx-auto px-4 py-16 z-10">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           
-          {/* Internal Chat */}
+          {/* Live Member Chat */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="group bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-green-500/50 hover:bg-gray-800/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1"
+            className="md:col-span-2 lg:col-span-3 bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-green-500/50 transition-all duration-300"
           >
-            <div className="flex items-center mb-4">
-              <div className="p-3 bg-green-400/20 rounded-lg mr-4 group-hover:bg-green-400/30 transition-colors">
+            <div className="flex items-center mb-6">
+              <div className="p-3 bg-green-400/20 rounded-lg mr-4">
                 <Users className="w-6 h-6 text-green-400" />
               </div>
-              <h3 className="text-xl font-bold text-white">Internal Chat</h3>
+              <div>
+                <h3 className="text-xl font-bold text-white">Live Member Chat</h3>
+                <p className="text-gray-400 text-sm">Connect with fellow members in real-time</p>
+              </div>
+              <div className="ml-auto flex items-center">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+                <span className="text-green-400 text-sm font-medium">Live</span>
+              </div>
             </div>
-            <p className="text-gray-300 mb-6 leading-relaxed">
-              Connect with fellow members in real-time. Casual forum for socializing, Q&A, sharing ideas, and keeping up with everyone in the community.
-            </p>
-            <button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
-              Join Chat
-            </button>
+            
+            <div className="h-96 bg-gray-900/50 rounded-lg border border-gray-700/50">
+              <RealtimeChat 
+                roomName="members-lounge"
+                username={address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Anonymous'}
+              />
+            </div>
           </motion.div>
 
           {/* Upcoming Events */}

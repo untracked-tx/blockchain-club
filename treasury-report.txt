@@ -1,0 +1,301 @@
+'solc --version' running
+'solc contracts/TreasuryRouter.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --base-path . --include-path node_modules --allow-paths .,C:\Users\lmur2\blockchain-club\contracts' running
+Compilation warnings/errors on contracts/TreasuryRouter.sol:
+Warning: Unreachable code.
+  --> @openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:58:9:
+   |
+58 |         _nonReentrantAfter();
+   |         ^^^^^^^^^^^^^^^^^^^^
+
+
+INFO:Detectors:
+TreasuryRouter.depositERC20(address,uint256,string) (contracts/TreasuryRouter.sol#155-176) ignores return value by IERC20Upgradeable(token).transferFrom(msg.sender,address(this),amount) (contracts/TreasuryRouter.sol#158)
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#223-234) ignores return value by IERC20Upgradeable(transfer.token).transfer(treasury,transfer.amount) (contracts/TreasuryRouter.sol#230)
+TreasuryRouter.cancelERC20Transfer(bytes32,string) (contracts/TreasuryRouter.sol#297-304) ignores return value by IERC20Upgradeable(transfer.token).transfer(transfer.from,transfer.amount) (contracts/TreasuryRouter.sol#301)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unchecked-transfer
+INFO:Detectors:
+TreasuryRouter (contracts/TreasuryRouter.sol#13-352) is an upgradeable contract that does not protect its initialize functions: TreasuryRouter.initialize(address,address) (contracts/TreasuryRouter.sol#97-110). Anyone can delete the contract with: UUPSUpgradeable.upgradeTo(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#74-77)UUPSUpgradeable.upgradeToAndCall(address,bytes) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#89-92)Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unprotected-upgradeable-contract
+INFO:Detectors:
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#202-220) uses a dangerous strict equality:
+	- _pendingTransferIds[i] == transferId (contracts/TreasuryRouter.sol#214)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+Reentrancy in TreasuryRouter.cancelERC20Transfer(bytes32,string) (contracts/TreasuryRouter.sol#297-304):
+	External calls:
+	- IERC20Upgradeable(transfer.token).transfer(transfer.from,transfer.amount) (contracts/TreasuryRouter.sol#301)
+	State variables written after the call(s):
+	- delete pendingERC20Transfers[transferId] (contracts/TreasuryRouter.sol#303)
+	TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#57) can be used in cross function reentrancies:
+	- TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#57)
+Reentrancy in TreasuryRouter.cancelNFTTransfer(bytes32,string) (contracts/TreasuryRouter.sol#305-312):
+	External calls:
+	- IERC721Upgradeable(transfer.token).safeTransferFrom(address(this),transfer.from,transfer.tokenId) (contracts/TreasuryRouter.sol#309)
+	State variables written after the call(s):
+	- delete pendingNFTTransfers[transferId] (contracts/TreasuryRouter.sol#311)
+	TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#68) can be used in cross function reentrancies:
+	- TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#68)
+Reentrancy in TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#223-234):
+	External calls:
+	- IERC20Upgradeable(transfer.token).transfer(treasury,transfer.amount) (contracts/TreasuryRouter.sol#230)
+	State variables written after the call(s):
+	- delete pendingERC20Transfers[transferId] (contracts/TreasuryRouter.sol#233)
+	TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#57) can be used in cross function reentrancies:
+	- TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#57)
+Reentrancy in TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#237-247):
+	External calls:
+	- IERC721Upgradeable(transfer.token).safeTransferFrom(address(this),treasury,transfer.tokenId) (contracts/TreasuryRouter.sol#243)
+	State variables written after the call(s):
+	- delete pendingNFTTransfers[transferId] (contracts/TreasuryRouter.sol#246)
+	TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#68) can be used in cross function reentrancies:
+	- TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#68)
+Reentrancy in TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#202-220):
+	External calls:
+	- treasury.sendValue(transfer.amount) (contracts/TreasuryRouter.sol#208)
+	State variables written after the call(s):
+	- delete pendingTransfers[transferId] (contracts/TreasuryRouter.sol#211)
+	TreasuryRouter.pendingTransfers (contracts/TreasuryRouter.sol#41) can be used in cross function reentrancies:
+	- TreasuryRouter.pendingTransfers (contracts/TreasuryRouter.sol#41)
+	- TreasuryRouter.receive() (contracts/TreasuryRouter.sol#134-152)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+ERC1967UpgradeUpgradeable._upgradeToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#65-70) ignores return value by AddressUpgradeable.functionDelegateCall(newImplementation,data) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#68)
+ERC1967UpgradeUpgradeable._upgradeBeaconToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#156-162) ignores return value by AddressUpgradeable.functionDelegateCall(IBeaconUpgradeable(newBeacon).implementation(),data) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#160)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+Ownable2StepUpgradeable.transferOwnership(address).newOwner (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#42) lacks a zero-check on :
+		- _pendingOwner = newOwner (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#43)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#223-234) has external calls inside a loop: IERC20Upgradeable(transfer.token).transfer(treasury,transfer.amount) (contracts/TreasuryRouter.sol#230)
+	Calls stack containing the loop:
+		TreasuryRouter.executeERC20TransferBatch(bytes32[])
+TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#237-247) has external calls inside a loop: IERC721Upgradeable(transfer.token).safeTransferFrom(address(this),treasury,transfer.tokenId) (contracts/TreasuryRouter.sol#243)
+	Calls stack containing the loop:
+		TreasuryRouter.executeNFTTransferBatch(bytes32[])
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in TreasuryRouter.depositERC20(address,uint256,string) (contracts/TreasuryRouter.sol#155-176):
+	External calls:
+	- IERC20Upgradeable(token).transferFrom(msg.sender,address(this),amount) (contracts/TreasuryRouter.sol#158)
+	State variables written after the call(s):
+	- pendingERC20Transfers[transferId] = PendingERC20Transfer({token:token,from:msg.sender,amount:amount,timestamp:block.timestamp,executed:false,metadata:metadata}) (contracts/TreasuryRouter.sol#165-172)
+	- transferNonce ++ (contracts/TreasuryRouter.sol#163)
+Reentrancy in TreasuryRouter.depositNFT(address,uint256,string) (contracts/TreasuryRouter.sol#179-199):
+	External calls:
+	- IERC721Upgradeable(token).safeTransferFrom(msg.sender,address(this),tokenId) (contracts/TreasuryRouter.sol#181)
+	State variables written after the call(s):
+	- pendingNFTTransfers[transferId] = PendingNFTTransfer({token:token,from:msg.sender,tokenId:tokenId,timestamp:block.timestamp,executed:false,metadata:metadata}) (contracts/TreasuryRouter.sol#188-195)
+	- transferNonce ++ (contracts/TreasuryRouter.sol#186)
+Reentrancy in TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#202-220):
+	External calls:
+	- treasury.sendValue(transfer.amount) (contracts/TreasuryRouter.sol#208)
+	State variables written after the call(s):
+	- _pendingTransferIds[i] = _pendingTransferIds[_pendingTransferIds.length - 1] (contracts/TreasuryRouter.sol#215)
+	- _pendingTransferIds.pop() (contracts/TreasuryRouter.sol#216)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#202-220) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(transfer.amount > 0,Transfer does not exist) (contracts/TreasuryRouter.sol#204)
+	- require(bool,string)(! transfer.executed,Transfer already executed) (contracts/TreasuryRouter.sol#205)
+	- require(bool,string)(block.timestamp >= transfer.timestamp + EXECUTION_DELAY,Delay not elapsed) (contracts/TreasuryRouter.sol#206)
+	- i < _pendingTransferIds.length (contracts/TreasuryRouter.sol#213)
+	- _pendingTransferIds[i] == transferId (contracts/TreasuryRouter.sol#214)
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#223-234) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(transfer.amount > 0,Transfer does not exist) (contracts/TreasuryRouter.sol#225)
+	- require(bool,string)(! transfer.executed,Already executed) (contracts/TreasuryRouter.sol#226)
+	- require(bool,string)(block.timestamp >= transfer.timestamp + EXECUTION_DELAY,Delay not elapsed) (contracts/TreasuryRouter.sol#227)
+TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#237-247) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(! transfer.executed,Already executed) (contracts/TreasuryRouter.sol#239)
+	- require(bool,string)(block.timestamp >= transfer.timestamp + EXECUTION_DELAY,Delay not elapsed) (contracts/TreasuryRouter.sol#240)
+TreasuryRouter.cancelTransfer(bytes32,string) (contracts/TreasuryRouter.sol#287-296) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(transfer.amount > 0 && ! transfer.executed,Not pending) (contracts/TreasuryRouter.sol#289)
+TreasuryRouter.cancelERC20Transfer(bytes32,string) (contracts/TreasuryRouter.sol#297-304) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(transfer.amount > 0 && ! transfer.executed,Not pending) (contracts/TreasuryRouter.sol#299)
+TreasuryRouter.cancelNFTTransfer(bytes32,string) (contracts/TreasuryRouter.sol#305-312) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(! transfer.executed,Not pending) (contracts/TreasuryRouter.sol#307)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+AddressUpgradeable._revert(bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#231-243) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#236-239)
+StorageSlotUpgradeable.getAddressSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#62-67) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#64-66)
+StorageSlotUpgradeable.getBooleanSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#72-77) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#74-76)
+StorageSlotUpgradeable.getBytes32Slot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#82-87) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#84-86)
+StorageSlotUpgradeable.getUint256Slot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#92-97) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#94-96)
+StorageSlotUpgradeable.getStringSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#102-107) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#104-106)
+StorageSlotUpgradeable.getStringSlot(string) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#112-117) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#114-116)
+StorageSlotUpgradeable.getBytesSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#122-127) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#124-126)
+StorageSlotUpgradeable.getBytesSlot(bytes) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#132-137) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#134-136)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+4 different versions of Solidity are used:
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#5)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol#4)
+	- Version constraint ^0.8.2 is used by:
+		-^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#4)
+		-^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4)
+	- Version constraint ^0.8.1 is used by:
+		-^0.8.1 (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#4)
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (contracts/TreasuryRouter.sol#2)
+		-^0.8.20 (contracts/interfaces/IRoles.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#202-220) has costly operations inside a loop:
+	- delete pendingTransfers[transferId] (contracts/TreasuryRouter.sol#211)
+	Calls stack containing the loop:
+		TreasuryRouter.executeTransferBatch(bytes32[])
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#202-220) has costly operations inside a loop:
+	- _pendingTransferIds.pop() (contracts/TreasuryRouter.sol#216)
+	Calls stack containing the loop:
+		TreasuryRouter.executeTransferBatch(bytes32[])
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#223-234) has costly operations inside a loop:
+	- delete pendingERC20Transfers[transferId] (contracts/TreasuryRouter.sol#233)
+	Calls stack containing the loop:
+		TreasuryRouter.executeERC20TransferBatch(bytes32[])
+TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#237-247) has costly operations inside a loop:
+	- delete pendingNFTTransfers[transferId] (contracts/TreasuryRouter.sol#246)
+	Calls stack containing the loop:
+		TreasuryRouter.executeNFTTransferBatch(bytes32[])
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
+INFO:Detectors:
+ContextUpgradeable.__Context_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#18-19) is never used and should be removed
+ContextUpgradeable.__Context_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#21-22) is never used and should be removed
+ContextUpgradeable._contextSuffixLength() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#31-33) is never used and should be removed
+ContextUpgradeable._msgData() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#27-29) is never used and should be removed
+ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#30-31) is never used and should be removed
+ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#33-34) is never used and should be removed
+ERC1967UpgradeUpgradeable._changeAdmin(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#120-123) is never used and should be removed
+ERC1967UpgradeUpgradeable._getAdmin() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#103-105) is never used and should be removed
+ERC1967UpgradeUpgradeable._getBeacon() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#134-136) is never used and should be removed
+ERC1967UpgradeUpgradeable._setAdmin(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#110-113) is never used and should be removed
+ERC1967UpgradeUpgradeable._setBeacon(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#141-148) is never used and should be removed
+ERC1967UpgradeUpgradeable._upgradeBeaconToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#156-162) is never used and should be removed
+Initializable._disableInitializers() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#145-151) is never used and should be removed
+Initializable._getInitializedVersion() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#156-158) is never used and should be removed
+Initializable._isInitializing() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#163-165) is never used and should be removed
+Ownable2StepUpgradeable.__Ownable2Step_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#29-30) is never used and should be removed
+OwnableUpgradeable.__Ownable_init() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#29-31) is never used and should be removed
+ReentrancyGuardUpgradeable._reentrancyGuardEntered() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#79-81) is never used and should be removed
+UUPSUpgradeable.__UUPSUpgradeable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#51-52) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+INFO:Detectors:
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#5)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol#4)
+Version constraint ^0.8.2 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#4)
+	- ^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4)
+Version constraint ^0.8.1 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.1 (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#4)
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.20 (contracts/TreasuryRouter.sol#2)
+	- ^0.8.20 (contracts/interfaces/IRoles.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in AddressUpgradeable.sendValue(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#64-69):
+	- (success,None) = recipient.call{value: amount}() (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#67)
+Low level call in AddressUpgradeable.functionCallWithValue(address,bytes,uint256,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#128-137):
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#135)
+Low level call in AddressUpgradeable.functionStaticCall(address,bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#155-162):
+	- (success,returndata) = target.staticcall(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#160)
+Low level call in AddressUpgradeable.functionDelegateCall(address,bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#180-187):
+	- (success,returndata) = target.delegatecall(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#185)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Function Ownable2StepUpgradeable.__Ownable2Step_init() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#25-27) is not in mixedCase
+Function Ownable2StepUpgradeable.__Ownable2Step_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#29-30) is not in mixedCase
+Variable Ownable2StepUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#70) is not in mixedCase
+Function OwnableUpgradeable.__Ownable_init() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#29-31) is not in mixedCase
+Function OwnableUpgradeable.__Ownable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#33-35) is not in mixedCase
+Variable OwnableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#94) is not in mixedCase
+Function ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#30-31) is not in mixedCase
+Function ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#33-34) is not in mixedCase
+Variable ERC1967UpgradeUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#169) is not in mixedCase
+Function UUPSUpgradeable.__UUPSUpgradeable_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#48-49) is not in mixedCase
+Function UUPSUpgradeable.__UUPSUpgradeable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#51-52) is not in mixedCase
+Variable UUPSUpgradeable.__self (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#24) is not in mixedCase
+Variable UUPSUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#111) is not in mixedCase
+Function ReentrancyGuardUpgradeable.__ReentrancyGuard_init() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#40-42) is not in mixedCase
+Function ReentrancyGuardUpgradeable.__ReentrancyGuard_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#44-46) is not in mixedCase
+Variable ReentrancyGuardUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#88) is not in mixedCase
+Function ContextUpgradeable.__Context_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#18-19) is not in mixedCase
+Function ContextUpgradeable.__Context_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#21-22) is not in mixedCase
+Variable ContextUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#40) is not in mixedCase
+Variable TreasuryRouter.__gap (contracts/TreasuryRouter.sol#351) is not in mixedCase
+Function IRoles.ADMIN_ROLE() (contracts/interfaces/IRoles.sol#6) is not in mixedCase
+Function IRoles.OFFICER_ROLE() (contracts/interfaces/IRoles.sol#7) is not in mixedCase
+Function IRoles.MEMBER_ROLE() (contracts/interfaces/IRoles.sol#8) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+TreasuryRouter.__gap (contracts/TreasuryRouter.sol#351) is never used in TreasuryRouter (contracts/TreasuryRouter.sol#13-352)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-state-variable
+INFO:Slither:contracts/TreasuryRouter.sol analyzed (17 contracts with 100 detectors), 89 result(s) found

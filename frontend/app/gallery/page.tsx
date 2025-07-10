@@ -465,7 +465,7 @@ export default function GalleryPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
       {/* Enhanced Header Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-600 py-20 md:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-600 py-20 md:py-28">
         {/* Background Elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
@@ -476,7 +476,7 @@ export default function GalleryPage() {
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl">
             {/* Floating Badge */}
-            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-blue-100 backdrop-blur-sm border border-white/30">
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
               <Sparkles className="mr-2 h-4 w-4" />
               NFT Membership Collection
             </div>
@@ -485,13 +485,13 @@ export default function GalleryPage() {
               🎨 Membership Gallery
             </h1>
             
-            <p className="mb-8 text-xl text-blue-100 leading-relaxed">
+            <p className="mb-8 text-xl text-purple-100 leading-relaxed">
               Discover our unique NFT collection! Each membership token represents different roles and privileges within our blockchain community. 
               Choose your path and join the future of decentralized education.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Enhanced Content Section */}
       <div className="container mx-auto px-4 py-12">

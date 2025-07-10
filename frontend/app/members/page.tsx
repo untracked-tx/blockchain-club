@@ -17,6 +17,7 @@ import { readContract } from 'wagmi/actions';
 import { useMyTokens, Token } from "@/hooks/use-mytokens";
 import { useVotingPower } from "@/hooks/use-voting-power";
 import OwnedNFTModal from "@/components/owned-nft-modal";
+import { InlineLoadingSkeleton, TokenCardSkeleton, SectionLoadingSkeleton, PageLoadingSkeleton } from "@/components/ui/loading-skeleton"
 
 const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID || "80002";
 const CONTRACT_NAME = "membership";
@@ -76,6 +77,25 @@ export default function MembersPage() {
   const { tokens, isLoading, error } = useMyTokens(address);
   const { votingPower, isLoading: isVotingPowerLoading } = useVotingPower(address);
 
+  // Show loading state when data is still loading and we're connected
+  const showFullLoading = mounted && isConnected && !wrongNetwork && (isLoading || isVotingPowerLoading)
+
+  // Show full page loading for consistent experience
+  if (showFullLoading) {
+    return (
+      <PageLoadingSkeleton 
+        title="My Membership" 
+        showStats={true}
+        showContent={true}
+        showBanner={true}
+        bannerGradient="from-blue-600 via-purple-600 to-indigo-600"
+        bannerIcon={Vote}
+        bannerBadgeText="Member Dashboard"
+        className="bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50"
+      />
+    )
+  }
+
   const handleDisplayTokenChange = (value: string) => {
     // This function is no longer needed but keeping for compatibility
   }
@@ -116,13 +136,6 @@ export default function MembersPage() {
     if (votingPower >= 5) return { level: "Officer", color: "bg-purple-100 text-purple-800", icon: "⭐" };
     if (votingPower >= 1) return { level: "Member", color: "bg-blue-100 text-blue-800", icon: "🏛️" };
     return { level: "Guest", color: "bg-gray-100 text-gray-800", icon: "👤" };
-  }
-
-  const getEarliestTokenDate = () => {
-    if (!tokens || tokens.length === 0) return new Date().toISOString();
-    return tokens.reduce((earliest, token) => 
-      new Date(token.acquired) < new Date(earliest) ? token.acquired : earliest
-    , tokens[0].acquired);
   }
 
   const getVoteColor = (vote: string) => {
@@ -170,7 +183,7 @@ export default function MembersPage() {
   return (
     <div className="flex flex-col">
       {/* Enhanced Header Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 py-20 md:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 py-20 md:py-28">
         {/* Background Elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
@@ -181,7 +194,7 @@ export default function MembersPage() {
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl">
             {/* Floating Badge */}
-            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-blue-100 backdrop-blur-sm border border-white/30">
               <Vote className="mr-2 h-4 w-4" />
               Member Dashboard
             </div>
@@ -190,12 +203,12 @@ export default function MembersPage() {
               🏛️ My Membership
             </h1>
             
-            <p className="mb-8 text-xl text-purple-100 leading-relaxed">
+            <p className="mb-8 text-xl text-blue-100 leading-relaxed">
               Your blockchain governance dashboard. View your NFT membership tokens, role-based voting power, and governance participation history.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-blue-50">
       
@@ -263,13 +276,12 @@ export default function MembersPage() {
               </CardHeader>
               <CardContent>
                 {isLoading || isVotingPowerLoading ? (
-                  <Skeleton className="h-6 w-24" />
+                  <InlineLoadingSkeleton className="h-6 w-24" />
                 ) : (
                   <div className="flex items-center gap-2">
                     <Badge className={getMembershipLevel().color}>
                       <Shield className="mr-1 h-3 w-3" /> {getMembershipLevel().icon} {getMembershipLevel().level}
                     </Badge>
-                    <span className="text-sm text-gray-600">Since {formatDate(getEarliestTokenDate())}</span>
                   </div>
                 )}
               </CardContent>
@@ -285,7 +297,7 @@ export default function MembersPage() {
               </CardHeader>
               <CardContent>
                 {isLoading || isVotingPowerLoading ? (
-                  <Skeleton className="h-6 w-24" />
+                  <InlineLoadingSkeleton className="h-6 w-24" />
                 ) : (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -310,7 +322,7 @@ export default function MembersPage() {
               </CardHeader>
               <CardContent>
                 {isLoading ? (
-                  <Skeleton className="h-6 w-24" />
+                  <InlineLoadingSkeleton className="h-6 w-24" />
                 ) : (
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold text-gray-900">{votingHistory.length}</span>
@@ -333,12 +345,12 @@ export default function MembersPage() {
 
             <TabsContent value="tokens">
               {isLoading ? (
-                <Skeleton className="h-48 w-full" />
+                <TokenCardSkeleton count={6} />
               ) : tokens.length > 0 ? (
                 <div className="mb-6">
                   <Card className="border-gray-200 bg-white shadow-sm">
                     <CardHeader>
-                      <CardTitle className="text-gray-900">My Governance Tokens</CardTitle>
+                      <CardTitle className="text-gray-900">My Tokens</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -373,9 +385,15 @@ export default function MembersPage() {
                                   </div>
                                   <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-sm text-gray-600">Acquired:</span>
-                                      <span className="font-medium text-gray-900">{formatDate(token.acquired)}</span>
+                                      <span className="text-sm text-gray-600">Token ID:</span>
+                                      <span className="font-medium text-gray-900">{token.id}</span>
                                     </div>
+                                    {token.expires && (
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">Expires:</span>
+                                        <span className="font-medium text-gray-900">{formatDate(token.expires)}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 </CardContent>
                               </Card>

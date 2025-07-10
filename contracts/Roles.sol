@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgrad
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract Roles is 
+    Initializable,
     AccessControlEnumerableUpgradeable, 
     UUPSUpgradeable {
     
@@ -24,7 +25,7 @@ contract Roles is
     event CustomVotingPowerSet(address indexed account, uint256 votingPower);
 
     // Initialization
-    function initialize(address admin) public initializer {
+    function initialize(address admin) public initializer onlyRole(ADMIN_ROLE) {
         __AccessControlEnumerable_init();
         __UUPSUpgradeable_init();
         
@@ -96,7 +97,4 @@ contract Roles is
     function _authorizeUpgrade(address newImplementation) internal override onlyRole(ADMIN_ROLE) {
         // Authorization logic handled by onlyRole modifier
     }
-    
-    // Storage gap for future upgrades
-    uint256[48] private __gap;
 }

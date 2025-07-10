@@ -8,12 +8,18 @@ import { useAccount } from "wagmi"
 import { TerminalLoader } from "@/components/terminal-loader"
 import { useMembershipVerification } from "@/hooks/use-membership-verification"
 import { useMyTokens } from "@/hooks/use-mytokens"
+import { ethers } from "ethers"
+import { contracts } from "@/lib/contracts"
 
 function OfficersClubContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showLoader, setShowLoader] = useState(true)
   const [accessDenied, setAccessDenied] = useState(false)
+  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null)
+  const [rolesContract, setRolesContract] = useState<ethers.Contract | null>(null)
+  const [isOfficer, setIsOfficer] = useState(false)
+  const [isOfficerLoading, setIsOfficerLoading] = useState(true)
   
   // Check if user came through the secret entrance
   const hasSecretKey = searchParams.get('key') === 'MesshallMischief'
@@ -27,13 +33,59 @@ function OfficersClubContent() {
   // Get token data
   const { tokens } = useMyTokens(address)
 
+  // Initialize Web3 provider and roles contract
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).ethereum) {
+      const web3Provider = new ethers.BrowserProvider((window as any).ethereum)
+      setProvider(web3Provider)
+    }
+  }, [])
+
+  useEffect(() => {
+    const initRolesContract = async () => {
+      if (provider) {
+        const signer = await provider.getSigner()
+        setRolesContract(new ethers.Contract(
+          contracts.roles.address,
+          contracts.roles.abi,
+          signer
+        ))
+      }
+    }
+    initRolesContract()
+  }, [provider])
+
+  // Check officer role
+  useEffect(() => {
+    const checkOfficerRole = async () => {
+      if (!rolesContract || !address) {
+        setIsOfficer(false)
+        setIsOfficerLoading(false)
+        return
+      }
+      setIsOfficerLoading(true)
+      try {
+        const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+        const adminRoleHash = ethers.ZeroHash
+        const hasOfficerRole = await rolesContract.hasRole(officerRoleHash, address)
+        const hasAdminRole = await rolesContract.hasRole(adminRoleHash, address)
+        setIsOfficer(hasOfficerRole || hasAdminRole)
+      } catch (e) {
+        setIsOfficer(false)
+      } finally {
+        setIsOfficerLoading(false)
+      }
+    }
+    checkOfficerRole()
+  }, [rolesContract, address])
+
   // Handle terminal completion
   const handleTerminalComplete = () => {
     setShowLoader(false)
     
     // Always check membership after loader completes
     // This creates the effect of the terminal "crashing" into access denied
-    if (!isLoading && (!isMember || !membershipTier || !['officer', 'admin', 'president', 'founder'].includes(membershipTier.toLowerCase()))) {
+    if (!isOfficerLoading && !isOfficer) {
       setAccessDenied(true)
     }
   }
@@ -47,16 +99,13 @@ function OfficersClubContent() {
   }, [hasSecretKey, router])
 
   // Show terminal loader
-  if (showLoader) {
+  if (showLoader || isOfficerLoading) {
     // Check if user should fail authentication
-    const shouldFail = !isLoading && (!isMember || !membershipTier || !['officer', 'admin', 'president', 'founder'].includes(membershipTier.toLowerCase()))
+    const shouldFail = !isOfficer && !isOfficerLoading
     
     return (
       <TerminalLoader 
         onComplete={handleTerminalComplete}
-        membershipTier={membershipTier || undefined}
-        nftBalance={tokens.length}
-        walletAddress={address}
         isOfficersClub={true}
         shouldFailAuth={shouldFail}
       />
@@ -64,7 +113,7 @@ function OfficersClubContent() {
   }
 
   // Show access denied if not an officer
-  if (accessDenied || (!isLoading && (!isMember || !membershipTier || !['officer', 'admin', 'president', 'founder'].includes(membershipTier.toLowerCase())))) {
+  if (accessDenied || !isOfficer) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-orange-900 flex items-center justify-center relative overflow-hidden">
         {/* Animated background */}

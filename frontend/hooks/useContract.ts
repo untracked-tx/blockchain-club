@@ -8,7 +8,7 @@ export function useContract(provider: ethers.BrowserProvider | null) {
   useEffect(() => {
     const initializeContract = async () => {
       if (!provider) {
-        console.log("[DEBUG] Provider is null. Contract instance cannot be initialized.");
+        // Provider not ready yet - this is normal during initial load
         setContract(null);
         return;
       }

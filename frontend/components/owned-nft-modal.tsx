@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { useState, useEffect, useRef } from "react"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ExternalLink } from "lucide-react"
+import { ExternalLink, X, ZoomIn, ZoomOut } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface OwnedNFTModalProps {
@@ -19,6 +19,8 @@ interface OwnedNFTModalProps {
 export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalProps) {
   const [metadata, setMetadata] = useState<any>(null);
   const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   if (!token) return null;
 
@@ -112,8 +114,6 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
     }
   };
 
-
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <AnimatePresence>
@@ -125,6 +125,7 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
             transition={{ duration: 0.3 }}
           >
             <DialogContent className="max-w-5xl p-0 overflow-hidden rounded-2xl bg-white shadow-2xl border-0">
+              <DialogTitle className="sr-only">{token.name} NFT Details</DialogTitle>
               <div className="flex flex-col lg:flex-row">
                 {/* Left side - Artwork */}
                 <div className="lg:w-3/5 bg-gradient-to-br from-slate-50 to-gray-100 p-8 flex items-center justify-center min-h-[500px]">
@@ -135,15 +136,19 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
                       transition={{ delay: 0.2 }}
                       className="rounded-xl overflow-hidden shadow-xl bg-white p-3"
                     >
-                      <img
-                        src={token.imageUri || "/placeholder.svg"}
-                        alt={token.name}
-                        className="w-full h-auto rounded-lg"
-                        onLoad={handleImageLoad}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg";
-                        }}
-                      />
+                      <div className="relative">
+                        <img
+                          ref={imgRef}
+                          src={token.imageUri || "/placeholder.svg"}
+                          alt={token.name}
+                          className="w-full h-auto rounded-lg cursor-zoom-in"
+                          onClick={() => setZoomOpen(true)}
+                          onLoad={handleImageLoad}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "/placeholder.svg";
+                          }}
+                        />
+                      </div>
                     </motion.div>
                     
 
@@ -184,17 +189,15 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
                               <span className="text-gray-900 font-semibold">{attr.value}</span>
                             </div>
                           ))}
-                          <div className="flex justify-between items-center py-1 border-t border-gray-200 pt-3 mt-3">
-                            <span className="text-gray-600 font-medium">Acquired</span>
-                            <span className="text-gray-900 font-semibold">{formatDate(token.acquired)}</span>
-                          </div>
+                          {token.expires && (
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-gray-600 font-medium">Expiration</span>
+                              <span className="text-gray-900 font-semibold">{formatDate(token.expires)}</span>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-3 text-sm">
-                          <div className="flex justify-between items-center py-1">
-                            <span className="text-gray-600 font-medium">Acquired</span>
-                            <span className="text-gray-900 font-semibold">{formatDate(token.acquired)}</span>
-                          </div>
                         </div>
                       )}
                     </div>
@@ -218,6 +221,69 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Zoom Modal with Magnifier */}
+      <Dialog open={zoomOpen} onOpenChange={() => setZoomOpen(false)}>
+        <DialogContent className="flex flex-col items-center justify-center bg-black/90 max-w-3xl p-0">
+          <button
+            className="absolute top-4 right-4 z-10 text-white hover:text-gray-300"
+            onClick={() => setZoomOpen(false)}
+            aria-label="Close zoom"
+          >
+            <X size={28} />
+          </button>
+          <MagnifierImage imageUrl={token.imageUri || "/placeholder.svg"} alt={token.name} />
+        </DialogContent>
+      </Dialog>
     </Dialog>
+  );
+}
+
+// MagnifierImage component
+function MagnifierImage({ imageUrl, alt }: { imageUrl: string, alt: string }) {
+  const [showMagnifier, setShowMagnifier] = useState(false);
+  const [magnifierPos, setMagnifierPos] = useState({ x: 0, y: 0 });
+  const magnifierSize = 220; // px (slightly larger)
+  const zoom = 1.75;
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  return (
+    <div className="relative flex items-center justify-center w-full h-full p-6">
+      <img
+        ref={imgRef}
+        src={imageUrl}
+        alt={alt}
+        className="max-h-[70vh] max-w-full rounded-lg bg-black select-none"
+        style={{ cursor: showMagnifier ? 'none' : 'zoom-in' }}
+        draggable={false}
+        onMouseEnter={() => setShowMagnifier(true)}
+        onMouseLeave={() => setShowMagnifier(false)}
+        onMouseMove={e => {
+          const { left, top } = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - left;
+          const y = e.clientY - top;
+          setMagnifierPos({ x, y });
+        }}
+      />
+      {showMagnifier && imgRef.current && (
+        <div
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: `${magnifierPos.y - magnifierSize / 2}px`,
+            left: `${magnifierPos.x - magnifierSize / 2}px`,
+            width: `${magnifierSize}px`,
+            height: `${magnifierSize}px`,
+            borderRadius: '50%',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+            border: '2px solid #fff',
+            background: `url('${imageUrl}') no-repeat`,
+            backgroundSize: `${imgRef.current.width * zoom}px ${imgRef.current.height * zoom}px`,
+            backgroundPosition: `-${magnifierPos.x * zoom - magnifierSize / 2}px -${magnifierPos.y * zoom - magnifierSize / 2}px`,
+            zIndex: 10,
+          }}
+        />
+      )}
+    </div>
   );
 }

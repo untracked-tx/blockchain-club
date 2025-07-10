@@ -21,185 +21,123 @@ import {
   Info,
   Shield,
   BarChart3,
+  AlertTriangle,
+  Zap,
+  Coins,
+  Gem,
+  Hexagon,
+  CircleDot,
 } from "lucide-react"
 import { PortfolioDistribution } from "@/components/portfolio-distribution"
 import CryptoTicker from "@/components/optimized-crypto-ticker"
-import { EnhancedPortfolioChart } from "@/components/fixed-enhanced-chart"
+import LightCryptoTicker from "@/components/light-crypto-ticker"
+import { useWalletPortfolio } from "@/hooks/use-wallet-portfolio"
+import { MULTISIG_WALLET, getExplorerAddressUrl, getExplorerTokenUrl } from "@/lib/multichain-wallet-service"
+import { EducationalInsights } from "@/components/educational-insights"
+import { TransactionHistory } from "@/components/transaction-history"
+import { PageLoadingSkeleton, PortfolioSummarySkeleton } from "@/components/ui/loading-skeleton"
+import { PortfolioFinancialHeader } from "@/components/headers"
 
-// Mock organizational portfolio data
-const mockOrganizationalPortfolio = {  totalValue: 38750.65,
-  dailyChange: 1842.18,
-  dailyChangePercentage: 4.98,
-  weeklyChange: 5256.92,
-  weeklyChangePercentage: 15.7,
-  monthlyChange: 15245.67,
-  monthlyChangePercentage: 64.83,
-  assets: [
-    {
-      id: "bitcoin",
-      name: "Bitcoin",
-      symbol: "BTC",
-      amount: 0.485,
-      value: 19750.45,
-      price: 40722.16,
-      change24h: 5.8,
-      color: "#F7931A",
-    },
-    {
-      id: "ethereum",
-      name: "Ethereum",
-      symbol: "ETH",
-      amount: 5.75,
-      value: 12325.87,
-      price: 2143.63,
-      change24h: 4.5,
-      color: "#627EEA",
-    },
-    {
-      id: "solana",
-      name: "Solana",
-      symbol: "SOL",
-      amount: 62.8,
-      value: 4850.12,
-      price: 77.23,
-      change24h: 8.2,
-      color: "#00FFA3",
-    },
-    {
-      id: "cardano",
-      name: "Cardano",
-      symbol: "ADA",
-      amount: 3250,
-      value: 1137.5,
-      price: 0.35,
-      change24h: -0.8,
-      color: "#0033AD",
-    },
-    {
-      id: "polkadot",
-      name: "Polkadot",
-      symbol: "DOT",
-      amount: 242.5,
-      value: 452.5,
-      price: 1.87,
-      change24h: 1.2,
-      color: "#E6007A",
-    },
-    {
-      id: "usdc",
-      name: "USD Coin",
-      symbol: "USDC",
-      amount: 234.21,
-      value: 234.21,
-      price: 1.0,
-      change24h: 0.0,
-      color: "#2775CA",
-    },
-  ],
-  // Last 5 transactions for transparency
-  recentTransactions: [
-    {
-      id: "tx-001",
-      type: "buy",
-      asset: "Bitcoin",
-      symbol: "BTC",
-      amount: 0.05,
-      price: 36420.75,
-      value: 1821.04,
-      timestamp: "2023-05-10T14:30:00Z",
-      purpose: "Treasury diversification",
-    },
-    {
-      id: "tx-002",
-      type: "sell",
-      asset: "Ethereum",
-      symbol: "ETH",
-      amount: 1.25,
-      price: 1720.32,
-      value: 2150.4,
-      timestamp: "2023-05-08T09:15:00Z",
-      purpose: "Event funding",
-    },
-    {
-      id: "tx-003",
-      type: "buy",
-      asset: "Solana",
-      symbol: "SOL",
-      amount: 15.0,
-      price: 62.18,
-      value: 932.7,
-      timestamp: "2023-05-05T16:45:00Z",
-      purpose: "Treasury diversification",
-    },
-    {
-      id: "tx-004",
-      type: "buy",
-      asset: "USD Coin",
-      symbol: "USDC",
-      amount: 150.0,
-      price: 1.0,
-      value: 150.0,
-      timestamp: "2023-05-03T11:20:00Z",
-      purpose: "Stablecoin reserve",
-    },
-    {
-      id: "tx-005",
-      type: "sell",
-      asset: "Bitcoin",
-      symbol: "BTC",
-      amount: 0.02,
-      price: 35250.5,
-      value: 705.01,
-      timestamp: "2023-04-28T13:10:00Z",
-      purpose: "Workshop expenses",
-    },
-  ],
+// Helper function to get appropriate icon for each asset
+const getAssetIcon = (symbol: string) => {
+  switch (symbol.toUpperCase()) {
+    case 'BTC':
+    case 'WBTC':
+      return Bitcoin
+    case 'ETH':
+      return Gem // Diamond/gem icon for Ethereum
+    case 'MATIC':
+    case 'POL':
+      return Hexagon // Polygon-like shape for MATIC/POL
+    case 'USDC':
+    case 'USDT':
+    case 'DAI':
+      return DollarSign // Dollar sign for stablecoins
+    default:
+      return Coins // Generic crypto icon
+  }
 }
 
-// Mock historical data for chart (30 days) with significant performance growth
-const mockHistoricalData = Array.from({ length: 30 }, (_, i) => {
-  const date = new Date()
-  date.setDate(date.getDate() - (29 - i))
-
-  // Starting value around 18,000
-  const startValue = 18000
-
-  // Create an exponential growth curve
-  // This will increase more dramatically towards the end
-  const growthFactor = 1.04 + (i > 20 ? 0.02 : 0)
-  const baseGrowth = startValue * Math.pow(growthFactor, i / 3.5)
-  
-  // Add some market volatility
-  const dayVolatility = Math.sin(i * 0.7) * 600
-  
-  // Add a larger spike for days 15-20 to show a significant event
-  const eventSpike = (i >= 15 && i <= 20) ? (i - 14) * 800 : 0
-  
-  // Some market dips in specific ranges
-  const dip = (i >= 5 && i <= 7) ? -1200 : 0
-  
-  // Combine all factors
-  const value = baseGrowth + dayVolatility + eventSpike + dip
-  
-  return {
-    date: date.toISOString().split("T")[0],
-    value: Math.round(value),
-  }
-})
+// Helper function to format currency
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value)
+}
 
 export default function PortfolioPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [portfolio, setPortfolio] = useState(mockOrganizationalPortfolio)
-  const [timeframe, setTimeframe] = useState("1m")
+  const { portfolio, isLoading, error, refetch, lastUpdated } = useWalletPortfolio()
 
-  useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
+  const handleRefresh = async () => {
+    console.log('🔄 User requested portfolio refresh')
+    await refetch()
+  }
 
-    return () => clearTimeout(timer)
-  }, [])
+  // Show loading state
+  if (isLoading) {
+    return (
+      <PageLoadingSkeleton 
+        title="Treasury Dashboard" 
+        showStats={true}
+        showContent={true}
+        showBanner={true}
+        bannerGradient="from-green-600 via-emerald-600 to-teal-600"
+        bannerIcon={TrendingUp}
+        bannerBadgeText="Investment Portfolio"
+        className="bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50"
+      />
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+                Error Loading Portfolio
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button onClick={handleRefresh} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Show empty state if no portfolio data
+  if (!portfolio) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>No Portfolio Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Unable to load portfolio data. The wallet may be empty or there may be a connection issue.
+              </p>
+              <Button onClick={handleRefresh} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reload
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -231,33 +169,12 @@ export default function PortfolioPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Enhanced Header Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600 py-20 md:py-28">
-        {/* Background Elements */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
-        </div>
-        
-        <div className="container relative mx-auto px-4 text-center">
-          <div className="mx-auto max-w-4xl">
-            {/* Floating Badge */}
-            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-emerald-100 backdrop-blur-sm border border-white/30">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Investment Portfolio
-            </div>
-            
-            <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              📊 Portfolio Dashboard
-            </h1>
-            
-            <p className="mb-8 text-xl text-emerald-100 leading-relaxed">
-              Track our club's investment performance, analyze market trends, and monitor portfolio allocations in real-time.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* New Financial Dashboard Header */}
+      <PortfolioFinancialHeader 
+        totalValue={portfolio.totalValue}
+        dayChange={portfolio.dailyChange || 0}
+        assetsCount={portfolio.assets?.length || 0}
+      />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50">
         <div className="container mx-auto px-4 py-12">
@@ -270,15 +187,18 @@ export default function PortfolioPage() {
           </div>
           <div>
             <h3 className="mb-2 text-lg font-semibold text-gray-900">About Our Treasury</h3>
+            <p className="text-gray-600 mb-4">
+              The club maintains a diversified cryptocurrency treasury to fund events, workshops, club activities, and strategic investments in blockchain projects. Our treasury serves as both an operational fund and an educational investment vehicle, allowing members to learn about crypto markets, DeFi protocols, and portfolio management through hands-on experience.
+            </p>
             <p className="text-gray-600">
-              The club maintains a diversified cryptocurrency treasury to fund events, workshops, and club activities. Treasury decisions and investments are made through governance votes by members holding voting tokens. All transactions require multi-signature approval from at least 3 officers, ensuring security and transparency for our crypto investing activities.
+              Our treasury prioritizes investments in blockchain projects that advance environmental sustainability and social impact. We focus on proof-of-stake networks, carbon-neutral protocols, and projects that support financial inclusion and community empowerment. Treasury decisions and investments are made through governance votes by members holding voting tokens, with all decisions guided by ESG principles.
             </p>
           </div>
         </div>      </div>
 
       {/* Live Crypto Ticker */}
       <div className="mb-8">
-        <CryptoTicker />
+        <LightCryptoTicker />
       </div>
 
       {/* Portfolio Summary */}
@@ -387,81 +307,287 @@ export default function PortfolioPage() {
         </Card>
       </div>
 
-      {/* Portfolio Chart */}
-      <Card className="mb-8 border-gray-200 bg-white shadow-sm">
-        <CardHeader>
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">            <div>
-              <CardTitle className="text-gray-900">Treasury Performance</CardTitle>
-              <CardDescription className="text-gray-600">Historical growth from {formatCurrency(18000)} to {formatCurrency(portfolio.totalValue)}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* TODO: Add ETH/USD toggle here */}
-              <Select value={timeframe} onValueChange={setTimeframe}>
-                <SelectTrigger className="w-[120px] border-gray-200">
-                  <SelectValue placeholder="Timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1d">1 Day</SelectItem>
-                  <SelectItem value="1w">1 Week</SelectItem>
-                  <SelectItem value="1m">1 Month</SelectItem>
-                  <SelectItem value="3m">3 Months</SelectItem>
-                  <SelectItem value="1y">1 Year</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="h-[300px] w-full">
-              <Skeleton className="h-full w-full" />
-            </div>          ) : (            <div className="h-[350px] w-full">
-              <EnhancedPortfolioChart data={mockHistoricalData} />
-              {/* Chart with enhanced visualization */}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       <Tabs defaultValue="assets" className="mb-8">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
-          <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-            Treasury Assets
+        <TabsList className="grid w-full grid-cols-6 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+          <TabsTrigger 
+            value="assets" 
+            className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 data-[state=active]:shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200"
+          >
+            <Coins className="h-4 w-4" />
+            All Assets
           </TabsTrigger>
-          <TabsTrigger value="distribution" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-            Asset Allocation
+          <TabsTrigger 
+            value="tokens" 
+            className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 data-[state=active]:shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200"
+          >
+            <CircleDot className="h-4 w-4" />
+            Tokens
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-            Recent Transactions
+          <TabsTrigger 
+            value="chains" 
+            className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 data-[state=active]:shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200"
+          >
+            <Zap className="h-4 w-4" />
+            By Chain
+          </TabsTrigger>
+          <TabsTrigger 
+            value="distribution" 
+            className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 data-[state=active]:shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Allocation
+          </TabsTrigger>
+          <TabsTrigger 
+            value="nfts" 
+            className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 data-[state=active]:shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200"
+          >
+            <Gem className="h-4 w-4" />
+            Digital Assets
+          </TabsTrigger>
+          <TabsTrigger 
+            value="wallet" 
+            className="flex items-center gap-2 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:border-blue-200 data-[state=active]:shadow-sm text-gray-600 hover:text-gray-900 transition-all duration-200"
+          >
+            <Shield className="h-4 w-4" />
+            Wallet Info
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="assets">
-          <Card className="border-gray-200 bg-white shadow-sm">
-            <CardHeader>
+        <TabsContent value="tokens">
+          <Card className="border-gray-200 bg-white shadow-lg">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-gray-900">Treasury Assets</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Cryptocurrencies held in the club's multi-signature wallet
-                  </CardDescription>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <CircleDot className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 text-xl">Token Holdings</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      {portfolio.assets.filter(asset => asset.contractAddress).length} ERC-20 and fungible tokens across all chains
+                    </CardDescription>
+                  </div>
                 </div>
-                <a
-                  href="https://etherscan.io/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center"
-                >
-                  <Button variant="outline">
-                    <ExternalLink className="mr-2 h-4 w-4" /> View on Etherscan
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="px-3 py-1 text-sm bg-purple-50 text-purple-700 border-purple-200">
+                    {portfolio.assets.filter(asset => asset.contractAddress).length} Tokens
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // CSV Export functionality for tokens only
+                      const tokenAssets = portfolio.assets.filter(asset => asset.contractAddress);
+                      const csvData = tokenAssets.map(token => ({
+                        'Token Name': token.name,
+                        'Symbol': token.symbol,
+                        'Chain': token.chain,
+                        'Contract Address': token.contractAddress,
+                        'Balance': token.amount.toString(),
+                        'Price (USD)': token.price.toFixed(2),
+                        '24h Change (%)': token.change24h.toFixed(2),
+                        'Value (USD)': token.value.toFixed(2),
+                        'Portfolio %': ((token.value / portfolio.totalValue) * 100).toFixed(2)
+                      }));
+                      
+                      const headers = Object.keys(csvData[0]).join(',');
+                      const rows = csvData.map(row => Object.values(row).join(','));
+                      const csvContent = [headers, ...rows].join('\n');
+                      
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `blockchain-club-token-holdings-${new Date().toISOString().split('T')[0]}.csv`;
+                      link.click();
+                      window.URL.revokeObjectURL(url);
+                    }}
+                    className="border-purple-200 text-purple-700 hover:bg-purple-50"
+                  >
+                    <Download className="mr-2 h-4 w-4" /> 
+                    Export Tokens CSV
                   </Button>
-                </a>
+                </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Token
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Chain
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Contract Address
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Balance
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Value & Share
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {portfolio.assets.filter(asset => asset.contractAddress).map((token, index) => (
+                      <tr key={token.id} className={`hover:bg-gray-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div
+                              className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center shadow-sm"
+                              style={{ backgroundColor: `${token.color}20`, border: `2px solid ${token.color}30` }}
+                            >
+                              {(() => {
+                                const IconComponent = getAssetIcon(token.symbol)
+                                return <IconComponent className="h-5 w-5" style={{ color: token.color }} />
+                              })()}
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-semibold text-gray-900">{token.name}</div>
+                              <div className="text-sm text-gray-500 font-medium">{token.symbol}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge variant="outline" className="text-xs font-medium bg-indigo-50 text-indigo-700 border-indigo-200">
+                            {token.chain}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded max-w-[120px] truncate">
+                              {token.contractAddress!.slice(0, 8)}...{token.contractAddress!.slice(-6)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 hover:bg-purple-50"
+                              asChild
+                            >
+                              <a
+                                href={getExplorerTokenUrl(token.contractAddress!, token.chain.toLowerCase())}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="View token contract"
+                              >
+                                <ExternalLink className="h-3 w-3 text-purple-600" />
+                              </a>
+                            </Button>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {token.amount.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+                          </div>
+                          <div className="text-xs text-gray-500">{token.symbol}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-semibold text-gray-900">{formatCurrency(token.price)}</div>
+                          <div className={`text-xs font-medium ${token.change24h >= 0 ? "text-green-600" : "text-red-600"}`}>
+                            {token.change24h >= 0 ? "+" : ""}{token.change24h.toFixed(2)}% (24h)
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-semibold text-gray-900">{formatCurrency(token.value)}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="text-xs text-gray-500">
+                              {token.percentageOfPortfolio?.toFixed(1) || ((token.value / portfolio.totalValue) * 100).toFixed(1)}% of portfolio
+                            </div>
+                            <div 
+                              className="w-2 h-2 rounded-full" 
+                              style={{ backgroundColor: token.color }}
+                              title={`${token.name} allocation`}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+            <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center text-sm text-gray-600">
+                  <CircleDot className="mr-2 h-4 w-4 text-purple-600" />
+                  <span>ERC-20 and fungible token contracts only</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  Token Value: <span className="font-semibold text-gray-900">
+                    {formatCurrency(portfolio.assets.filter(asset => asset.contractAddress).reduce((sum, token) => sum + token.value, 0))}
+                  </span>
+                </div>
+              </div>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="assets">
+          <Card className="border-gray-200 bg-white shadow-lg">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Coins className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 text-xl">Treasury Assets</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      {portfolio.assets.length} cryptocurrencies • {formatCurrency(portfolio.totalValue)} total value
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="px-3 py-1 text-sm bg-green-50 text-green-700 border-green-200">
+                    {portfolio.assets.length} Assets
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // CSV Export functionality
+                      const csvData = portfolio.assets.map(asset => ({
+                        'Asset Name': asset.name,
+                        'Symbol': asset.symbol,
+                        'Chain': asset.chain,
+                        'Contract Address': asset.contractAddress || 'Native Token',
+                        'Price (USD)': asset.price.toFixed(2),
+                        '24h Change (%)': asset.change24h.toFixed(2),
+                        'Holdings': asset.amount.toString(),
+                        'Value (USD)': asset.value.toFixed(2),
+                        'Portfolio %': ((asset.value / portfolio.totalValue) * 100).toFixed(2)
+                      }));
+                      
+                      const headers = Object.keys(csvData[0]).join(',');
+                      const rows = csvData.map(row => Object.values(row).join(','));
+                      const csvContent = [headers, ...rows].join('\n');
+                      
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `blockchain-club-treasury-assets-${new Date().toISOString().split('T')[0]}.csv`;
+                      link.click();
+                      window.URL.revokeObjectURL(url);
+                    }}
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  >
+                    <Download className="mr-2 h-4 w-4" /> 
+                    Export CSV
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
               {isLoading ? (
-                <div className="space-y-4">
+                <div className="space-y-4 p-6">
                   {Array(5)
                     .fill(0)
                     .map((_, i) => (
@@ -472,84 +598,119 @@ export default function PortfolioPage() {
                     ))}
                 </div>
               ) : (
-                <div className="rounded-md border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           Asset
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          Chain
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          Contract / Type
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           Price
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          24h
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          24h Change
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                           Holdings
                         </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Value
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                          Value & Allocation
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {portfolio.assets.map((asset) => (
-                        <tr key={asset.id}>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                      {portfolio.assets.map((asset, index) => (
+                        <tr key={asset.id} className={`hover:bg-gray-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div
-                                className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center"
-                                style={{ backgroundColor: `${asset.color}20` }}
+                                className="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center shadow-sm"
+                                style={{ backgroundColor: `${asset.color}20`, border: `2px solid ${asset.color}30` }}
                               >
-                                {asset.symbol === "BTC" ? (
-                                  <Bitcoin className="h-4 w-4" style={{ color: asset.color }} />
-                                ) : (
-                                  <DollarSign className="h-4 w-4" style={{ color: asset.color }} />
-                                )}
+                                {(() => {
+                                  const IconComponent = getAssetIcon(asset.symbol)
+                                  return <IconComponent className="h-5 w-5" style={{ color: asset.color }} />
+                                })()}
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{asset.name}</div>
-                                <div className="text-sm text-gray-500">{asset.symbol}</div>
+                                <div className="text-sm font-semibold text-gray-900">{asset.name}</div>
+                                <div className="text-sm text-gray-500 font-medium">{asset.symbol}</div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{formatCurrency(asset.price)}</div>
+                            <Badge variant="outline" className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">
+                              {asset.chain}
+                            </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div
-                              className={`text-sm font-medium ${
-                                asset.change24h >= 0 ? "text-green-600" : "text-red-600"
-                              }`}
-                            >
+                            <div className="text-sm text-gray-900">
+                              {asset.contractAddress ? (
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {asset.contractAddress.slice(0, 6)}...{asset.contractAddress.slice(-4)}
+                                  </span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-blue-50"
+                                    asChild
+                                  >
+                                    <a
+                                      href={getExplorerTokenUrl(asset.contractAddress!, asset.chain.toLowerCase())}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      title="View contract on explorer"
+                                    >
+                                      <ExternalLink className="h-3 w-3 text-blue-600" />
+                                    </a>
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-green-700 text-xs font-medium bg-green-100 px-2 py-1 rounded">Native Token</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-semibold text-gray-900">{formatCurrency(asset.price)}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`flex items-center text-sm font-semibold ${
+                              asset.change24h >= 0 ? "text-green-600" : "text-red-600"
+                            }`}>
+                              {asset.change24h >= 0 ? (
+                                <ArrowUpRight className="mr-1 h-4 w-4" />
+                              ) : (
+                                <ArrowDownRight className="mr-1 h-4 w-4" />
+                              )}
                               {formatPercentage(asset.change24h)}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">
-                              {asset.amount} {asset.symbol}
+                            <div className="text-sm font-medium text-gray-900">
+                              {asset.amount.toLocaleString(undefined, { maximumFractionDigits: 6 })} {asset.symbol}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{formatCurrency(asset.value)}</div>
-                            <div className="text-xs text-gray-500">
-                              {((asset.value / portfolio.totalValue) * 100).toFixed(1)}% of treasury
+                            <div className="text-sm font-semibold text-gray-900">{formatCurrency(asset.value)}</div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="text-xs text-gray-500">
+                                {((asset.value / portfolio.totalValue) * 100).toFixed(1)}% of treasury
+                              </div>
+                              <div 
+                                className="w-2 h-2 rounded-full" 
+                                style={{ backgroundColor: asset.color }}
+                                title={`${asset.name} allocation`}
+                              />
                             </div>
                           </td>
                         </tr>
@@ -559,152 +720,588 @@ export default function PortfolioPage() {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3 flex justify-between">
-              <Button variant="outline" className="border-gray-200 text-gray-700">
-                <Download className="mr-2 h-4 w-4" /> Export CSV
-              </Button>
-              <div className="flex items-center text-sm text-gray-600">
-                <Shield className="mr-2 h-4 w-4 text-blue-600" />
-                <span>Secured by multi-signature wallet (3/5 officers required)</span>
+            <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center text-sm text-gray-600">
+                  <BarChart3 className="mr-2 h-4 w-4 text-blue-600" />
+                  <span>Real-time portfolio tracking and professional treasury management</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-600">
+                    Total: <span className="font-semibold text-gray-900">{formatCurrency(portfolio.totalValue)}</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    asChild
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                  >
+                    <a
+                      href={getExplorerAddressUrl(MULTISIG_WALLET, 'ethereum')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" /> 
+                      View Wallet
+                    </a>
+                  </Button>
+                </div>
               </div>
             </CardFooter>
           </Card>
         </TabsContent>
 
-        <TabsContent value="distribution">
-          <Card className="border-gray-200 bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-gray-900">Asset Allocation</CardTitle>
-              <CardDescription className="text-gray-600">Distribution of treasury assets by percentage</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="h-[300px] w-full">
-                  <Skeleton className="h-full w-full" />
+        <TabsContent value="chains">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Zap className="h-5 w-5 text-yellow-600" />
                 </div>
-              ) : (
-                <div className="grid gap-8 md:grid-cols-2">
-                  <div className="flex items-center justify-center">
-                    <div className="h-[300px] w-[300px]">
-                      <PortfolioDistribution assets={portfolio.assets} />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">Chain Breakdown</h3>
+                  <p className="text-sm text-gray-600">Assets distributed across different blockchain networks</p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // CSV Export functionality for chain breakdown
+                  const csvData = portfolio.chainBreakdown?.flatMap(chain => {
+                    const chainAssets = [];
+                    if (chain.nativeAsset) {
+                      chainAssets.push({
+                        'Chain': chain.chainName,
+                        'Asset Name': chain.nativeAsset.name,
+                        'Symbol': chain.nativeAsset.symbol,
+                        'Type': 'Native Token',
+                        'Contract Address': 'N/A',
+                        'Balance': chain.nativeAsset.amount.toString(),
+                        'Value (USD)': chain.nativeAsset.value.toFixed(2),
+                        'Chain Total (USD)': chain.totalValue.toFixed(2),
+                        'Chain %': ((chain.totalValue / portfolio.totalValue) * 100).toFixed(2)
+                      });
+                    }
+                    chain.tokens.forEach(token => {
+                      chainAssets.push({
+                        'Chain': chain.chainName,
+                        'Asset Name': token.name,
+                        'Symbol': token.symbol,
+                        'Type': 'Token Contract',
+                        'Contract Address': token.contractAddress || 'N/A',
+                        'Balance': token.amount.toString(),
+                        'Value (USD)': token.value.toFixed(2),
+                        'Chain Total (USD)': chain.totalValue.toFixed(2),
+                        'Chain %': ((chain.totalValue / portfolio.totalValue) * 100).toFixed(2)
+                      });
+                    });
+                    return chainAssets;
+                  }) || [];
+                  
+                  const headers = Object.keys(csvData[0] || {}).join(',');
+                  const rows = csvData.map(row => Object.values(row).join(','));
+                  const csvContent = [headers, ...rows].join('\n');
+                  
+                  const blob = new Blob([csvContent], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `blockchain-club-chain-breakdown-${new Date().toISOString().split('T')[0]}.csv`;
+                  link.click();
+                  window.URL.revokeObjectURL(url);
+                }}
+                className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+              >
+                <Download className="mr-2 h-4 w-4" /> 
+                Export Chain Data
+              </Button>
+            </div>
+
+            {portfolio.chainBreakdown && portfolio.chainBreakdown.length > 0 ? (
+              portfolio.chainBreakdown.map((chain, index) => (
+                <Card key={chain.chainName} className="border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-200">
+                  <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-orange-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+                          style={{ 
+                            backgroundColor: (chain.nativeAsset?.color || chain.tokens[0]?.color || '#6B7280') + '20',
+                            border: `2px solid ${chain.nativeAsset?.color || chain.tokens[0]?.color || '#6B7280'}30`
+                          }}
+                        >
+                          <Zap className="h-5 w-5" style={{ color: chain.nativeAsset?.color || chain.tokens[0]?.color || '#6B7280' }} />
+                        </div>
+                        <div>
+                          <CardTitle className="text-gray-900 text-lg flex items-center gap-2">
+                            {chain.chainName}
+                          </CardTitle>
+                          <CardDescription className="text-gray-600">
+                            {chain.tokens.length + (chain.nativeAsset ? 1 : 0)} assets • {formatCurrency(chain.totalValue)} total value
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className="px-3 py-1 text-sm bg-yellow-50 text-yellow-700 border-yellow-200">
+                          {((chain.totalValue / portfolio.totalValue) * 100).toFixed(1)}% of portfolio
+                        </Badge>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-gray-900">{formatCurrency(chain.totalValue)}</div>
+                          <div className="text-xs text-gray-500">Chain Total</div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <div className="space-y-4">
-                      {portfolio.assets.map((asset) => (
-                        <div key={asset.id} className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="h-4 w-4 rounded-full mr-2" style={{ backgroundColor: asset.color }}></div>
-                            <span className="text-sm font-medium text-gray-900">
-                              {asset.name} ({asset.symbol})
-                            </span>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-3">
+                      {chain.nativeAsset && (
+                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+                              style={{ backgroundColor: `${chain.nativeAsset.color}20`, border: `2px solid ${chain.nativeAsset.color}30` }}
+                            >
+                              {(() => {
+                                const IconComponent = getAssetIcon(chain.nativeAsset.symbol)
+                                return <IconComponent className="h-5 w-5" style={{ color: chain.nativeAsset.color }} />
+                              })()}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-sm text-gray-900">{chain.nativeAsset.name}</div>
+                              <div className="text-xs text-green-700 font-medium bg-green-100 px-2 py-1 rounded">Native Token</div>
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            {((asset.value / portfolio.totalValue) * 100).toFixed(1)}%
+                          <div className="text-right">
+                            <div className="font-semibold text-sm text-gray-900">{formatCurrency(chain.nativeAsset.value)}</div>
+                            <div className="text-xs text-gray-500">
+                              {chain.nativeAsset.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {chain.nativeAsset.symbol}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {chain.tokens.map((token, tokenIndex) => (
+                        <div key={token.id} className={`flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150 ${tokenIndex % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+                              style={{ backgroundColor: `${token.color}20`, border: `2px solid ${token.color}30` }}
+                            >
+                              {(() => {
+                                const IconComponent = getAssetIcon(token.symbol)
+                                return <IconComponent className="h-5 w-5" style={{ color: token.color }} />
+                              })()}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-sm text-gray-900">{token.name}</div>
+                              <div className="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+                                {token.contractAddress ? 
+                                  `${token.contractAddress.slice(0, 6)}...${token.contractAddress.slice(-4)}` : 
+                                  'Native Token'
+                                }
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold text-sm text-gray-900">{formatCurrency(token.value)}</div>
+                            <div className="text-xs text-gray-500">
+                              {token.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {token.symbol}
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 rounded-md bg-blue-50 p-4">
-                      <h4 className="mb-2 text-sm font-medium text-blue-800">Treasury Policy</h4>
-                      <p className="text-sm text-blue-700">
-                        Our treasury maintains a diversified portfolio with a target allocation of 40% BTC, 30% ETH, 20%
-                        altcoins, and 10% stablecoins. Rebalancing occurs quarterly through governance votes.
-                      </p>
-                      {/* TODO: Annotate revenue source breakdown here */}
+                  </CardContent>
+                  <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-yellow-50 to-orange-50 px-6 py-3">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <div 
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{ backgroundColor: chain.nativeAsset?.color || chain.tokens[0]?.color || '#6B7280' }}
+                        />
+                        <span>{chain.tokens.length + (chain.nativeAsset ? 1 : 0)} assets on {chain.chainName}</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Chain Value: <span className="font-semibold text-gray-900">{formatCurrency(chain.totalValue)}</span>
+                      </div>
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardContent className="text-center py-12">
+                  <Zap className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Chain Data Available</h3>
+                  <p className="text-gray-600">Multichain data is being loaded or there are no assets to display.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="distribution">
+          <Card className="border-gray-200 bg-white shadow-lg">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <BarChart3 className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 text-xl">Asset Allocation</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Distribution and allocation strategy across {portfolio.assets.length} treasury assets
+                    </CardDescription>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    // CSV Export functionality for asset allocation
+                    const csvData = portfolio.assets.map(asset => ({
+                      'Asset Name': asset.name,
+                      'Symbol': asset.symbol,
+                      'Chain': asset.chain,
+                      'Asset Type': asset.contractAddress ? 'Token Contract' : 'Native Token',
+                      'Value (USD)': asset.value.toFixed(2),
+                      'Portfolio Allocation (%)': ((asset.value / portfolio.totalValue) * 100).toFixed(2),
+                      'Holdings': asset.amount.toString(),
+                      'Current Price (USD)': asset.price.toFixed(2),
+                      '24h Change (%)': asset.change24h.toFixed(2)
+                    }));
+                    
+                    const headers = Object.keys(csvData[0]).join(',');
+                    const rows = csvData.map(row => Object.values(row).join(','));
+                    const csvContent = [headers, ...rows].join('\n');
+                    
+                    const blob = new Blob([csvContent], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `blockchain-club-allocation-analysis-${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                  }}
+                  className="border-green-200 text-green-700 hover:bg-green-50"
+                >
+                  <Download className="mr-2 h-4 w-4" /> 
+                  Export Allocation
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {isLoading ? (
+                <div className="h-[400px] w-full">
+                  <Skeleton className="h-full w-full" />
+                </div>
+              ) : (
+                <div className="grid gap-8 lg:grid-cols-2">
+                  {/* Chart Section */}
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="h-[320px] w-[320px] mb-4">
+                      <PortfolioDistribution assets={portfolio.assets} />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600 mb-1">Total Treasury Value</div>
+                      <div className="text-2xl font-bold text-gray-900">{formatCurrency(portfolio.totalValue)}</div>
+                    </div>
+                  </div>
+                  
+                  {/* Asset Breakdown Section */}
+                  <div className="flex flex-col justify-center">
+                    <div className="mb-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Portfolio Breakdown</h4>
+                      <div className="space-y-3 max-h-[280px] overflow-y-auto">
+                        {portfolio.assets
+                          .sort((a, b) => b.value - a.value) // Sort by value descending
+                          .map((asset, index) => (
+                          <div key={asset.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-150">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <div className="h-4 w-4 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: asset.color }}></div>
+                                <span className="text-xs text-gray-500 font-medium">#{index + 1}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                                  style={{ backgroundColor: `${asset.color}20` }}
+                                >
+                                  {(() => {
+                                    const IconComponent = getAssetIcon(asset.symbol)
+                                    return <IconComponent className="h-4 w-4" style={{ color: asset.color }} />
+                                  })()}
+                                </div>
+                                <div>
+                                  <span className="text-sm font-semibold text-gray-900">{asset.name}</span>
+                                  <div className="text-xs text-gray-500">{asset.symbol} • {asset.chain}</div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-semibold text-gray-900">
+                                {((asset.value / portfolio.totalValue) * 100).toFixed(1)}%
+                              </div>
+                              <div className="text-xs text-gray-500">{formatCurrency(asset.value)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Treasury Policy Section */}
+                    <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border border-blue-200">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Shield className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="mb-2 text-sm font-semibold text-blue-800">Treasury Investment Policy</h4>
+                          <p className="text-sm text-blue-700 leading-relaxed">
+                            Our treasury prioritizes investments in blockchain projects that advance environmental sustainability and social impact. We focus on proof-of-stake networks, carbon-neutral protocols, and projects that support financial inclusion and community empowerment. Investment decisions are guided by ESG principles and approved through member governance.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
             </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="transactions">
-          <Card className="border-gray-200 bg-white shadow-sm">
-            <CardHeader>
-              <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 mr-3">
-                  <Clock className="h-5 w-5" />
+            <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center text-sm text-gray-600">
+                  <BarChart3 className="mr-2 h-4 w-4 text-green-600" />
+                  <span>Allocation updated in real-time based on market prices</span>
                 </div>
-                <div>
-                  <CardTitle className="text-gray-900">Recent Transactions</CardTitle>
-                  <CardDescription className="text-gray-600">
-                    Latest treasury transactions for complete transparency
-                  </CardDescription>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-600">
+                    Assets: <span className="font-semibold text-gray-900">{portfolio.assets.length}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Chains: <span className="font-semibold text-gray-900">{portfolio.chainBreakdown?.length || 0}</span>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-4">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, i) => (
-                      <div key={i} className="rounded-md border border-gray-200 p-4">
-                        <Skeleton className="h-6 w-full mb-2" />
-                        <Skeleton className="h-4 w-3/4" />
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {portfolio.recentTransactions.map((tx) => (
-                    <div key={tx.id} className="rounded-md border border-gray-200 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            className={tx.type === "buy" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}
-                          >
-                            {tx.type === "buy" ? "Buy" : "Sell"}
-                          </Badge>
-                          <span className="font-medium text-gray-900">
-                            {tx.amount} {tx.symbol}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {formatDate(tx.timestamp)} at {formatTime(tx.timestamp)}
-                        </div>
-                      </div>
-                      <div className="grid gap-4 md:grid-cols-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Asset</p>
-                          <p className="text-sm text-gray-900">{tx.asset}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Price</p>
-                          <p className="text-sm text-gray-900">{formatCurrency(tx.price)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Total Value</p>
-                          <p className="text-sm text-gray-900">{formatCurrency(tx.value)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-700">Purpose</p>
-                          <p className="text-sm text-gray-900">{tx.purpose}</p>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex justify-end">
-                        <Button variant="outline" size="sm" className="h-8 border-gray-200 text-gray-700">
-                          <ExternalLink className="mr-1 h-3 w-3" /> View on Etherscan
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3 flex justify-between">
-              <Button variant="outline" className="border-gray-200 text-gray-700">
-                <Download className="mr-2 h-4 w-4" /> Export Transaction History
-              </Button>
-              <div className="flex items-center">
-                <BarChart3 className="mr-2 h-4 w-4 text-blue-600" />
-                <span className="text-sm text-gray-600">Last updated: {formatDate(new Date().toISOString())}</span>
               </div>
             </CardFooter>
           </Card>
-        </TabsContent>      </Tabs>      {/* Additional info section */}
+        </TabsContent>
+
+        <TabsContent value="nfts">
+          <Card className="border-gray-200 bg-white shadow-lg">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-pink-50 to-rose-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-pink-100 rounded-lg">
+                    <Gem className="h-5 w-5 text-pink-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 text-xl">Digital Assets & NFTs</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Non-fungible tokens and digital collectibles in the treasury
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge variant="outline" className="px-3 py-1 text-sm bg-gray-50 text-gray-600 border-gray-200">
+                  0 NFTs
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-12">
+              <div className="text-center">
+                <div className="mx-auto w-24 h-24 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full flex items-center justify-center mb-6">
+                  <Gem className="h-12 w-12 text-pink-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">No Digital Assets Yet</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto leading-relaxed">
+                  The treasury currently focuses on fungible tokens and cryptocurrencies. 
+                  NFTs and digital collectibles may be added in the future as part of our diversification strategy.
+                </p>
+                
+                <div className="bg-gradient-to-r from-pink-50 to-rose-50 rounded-lg p-6 border border-pink-200 max-w-lg mx-auto">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-pink-100 rounded-lg">
+                      <Info className="h-4 w-4 text-pink-600" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-sm font-semibold text-pink-800 mb-2">Future Digital Asset Strategy</h4>
+                      <p className="text-sm text-pink-700 leading-relaxed">
+                        Our club is exploring opportunities in the NFT space, including educational NFTs, 
+                        blockchain art, and utility tokens that align with our mission. Any future NFT 
+                        acquisitions will be subject to member governance and our ESG investment criteria.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-8 flex justify-center gap-4">
+                  <Button variant="outline" className="border-pink-200 text-pink-700 hover:bg-pink-50">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Learn About NFTs
+                  </Button>
+                  <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    View Token Holdings
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-pink-50 to-rose-50 px-6 py-4">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Gem className="mr-2 h-4 w-4 text-pink-600" />
+                  <span>Digital assets section - currently empty</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  Focus: <span className="font-semibold text-gray-900">Fungible Tokens & Crypto</span>
+                </div>
+              </div>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="wallet">
+          <Card className="border-gray-200 bg-white shadow-lg">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Shield className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 text-xl">Treasury Wallet & Security</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Multi-signature wallet securing the club's digital assets
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="px-3 py-1 text-sm bg-green-50 text-green-700 border-green-200">
+                    ✓ Secured
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {/* Wallet Overview */}
+                <div className="rounded-lg border border-gray-200 p-6 bg-gradient-to-r from-indigo-50 to-blue-50">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <Shield className="h-6 w-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-lg">Treasury Wallet</h3>
+                        <p className="text-sm text-gray-600">Secure wallet for club's digital assets</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      asChild
+                      className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                    >
+                      <a 
+                        href={getExplorerAddressUrl(MULTISIG_WALLET, 'ethereum')} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" /> 
+                        View on Etherscan
+                      </a>
+                    </Button>
+                  </div>
+                  
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                      <div className="text-sm font-medium text-gray-700 mb-1">Wallet Address</div>
+                      <div className="text-sm text-gray-900 font-mono break-all">{MULTISIG_WALLET}</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                      <div className="text-sm font-medium text-gray-700 mb-1">Total Assets</div>
+                      <div className="text-sm text-gray-900">{portfolio.assets.length} tokens across {portfolio.chainBreakdown?.length || 0} chains</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                      <div className="text-sm font-medium text-gray-700 mb-1">Total Value</div>
+                      <div className="text-sm font-semibold text-gray-900">{formatCurrency(portfolio.totalValue)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Transaction History Section with Enhanced Header */}
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gray-100 rounded-lg">
+                        <Clock className="h-5 w-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+                        <p className="text-sm text-gray-600">Recent treasury activity across all chains</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        // This will be handled by the TransactionHistory component
+                        // We'll add export functionality there if needed
+                        alert('Transaction export feature will be available in the transaction history component');
+                      }}
+                    >
+                      <Download className="mr-2 h-4 w-4" /> 
+                      Export History
+                    </Button>
+                  </div>
+                  <TransactionHistory walletAddress={MULTISIG_WALLET} />
+                </div>
+                
+                {portfolio.assets.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                    <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="font-medium">No assets found in the treasury wallet</p>
+                    <p className="text-sm">Check back later as we build our portfolio</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+            <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-6">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                  >
+                    <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> 
+                    Refresh Data
+                  </Button>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <BarChart3 className="mr-2 h-4 w-4 text-indigo-600" />
+                    <span>Last updated: {lastUpdated ? new Date(lastUpdated).toLocaleString() : 'Never'}</span>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600">
+                  Cache: <span className="font-semibold text-gray-900">3 minutes</span>
+                </div>
+              </div>
+            </CardFooter>
+          </Card>
+        </TabsContent>      </Tabs>
+      
+      {/* Educational Insights Section */}
+      <div className="mb-8">
+        <EducationalInsights 
+          assets={portfolio.assets} 
+        />
+      </div>
+
+      {/* Additional info section */}
       <div className="mt-8 mb-12">
         <Card className="border-gray-200 shadow-sm overflow-hidden p-6">
           <div className="flex items-center gap-4">

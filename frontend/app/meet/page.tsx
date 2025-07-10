@@ -1,91 +1,56 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { EnhancedCard, IconWrapper, FloatingBadge } from "@/components/ui/enhanced-card"
-import { Mail, Linkedin, Users, Crown, Key, Award, Shield } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Mail, Linkedin, Users, Crown, Key, Award, Shield, MapPin, GraduationCap, User, DollarSign } from "lucide-react"
 
 export default function MeetPage() {
+
   // Combine all club members into a single array
   const clubMembers = [
     {
       id: 1,
-      name: "Alex Johnson",
-      role: "President",
-      bio: "Computer Science senior with a focus on blockchain development. Leading the club's strategic initiatives and governance structure.",
-      image: "/blockchain-president-headshot.png",
-      tokenType: "Officer",
-      email: "alex@universityblockchainclub.edu",
-      linkedin: "https://linkedin.com/in/alex-johnson-blockchain",
+      name: "Dr. Yosef Bonaparte",
+      role: "Faculty Advisor",
+      bio: "Professor of Finance at CU Denver, Director of External Affairs, and leader of the MS in FinTech program. Founding faculty advisor and national expert in AI, crypto, and blockchain.",
+      image: "/yosef.jpg",
+      tokenType: "Advisor",
+      email: "yosef.bonaparte@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/yosef-bonaparte-22234aa6/",
     },
     {
       id: 2,
-      name: "Maya Patel",
-      role: "Vice President",
-      bio: "Finance and Computer Science double major. Manages the club treasury and oversees the implementation of our token system.",
-      image: "/blockchain-vp-headshot.png",
+      name: "Julie Jurkowski",
+      role: "President",
+      bio: "Julie combines hands-on experience at Comcast and Lockheed Martin with a drive to foster growth and accountability within the club. She’s committed to building a culture where students turn data-driven ideas into real results, together.",
+      image: "/julie.jpg",
       tokenType: "Officer",
-      email: "maya@universityblockchainclub.edu",
-      linkedin: "https://linkedin.com/in/maya-patel-finance",
+      email: "Julie.Jurkowski@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/julie-jurkowski/",
     },
     {
       id: 3,
-      name: "David Kim",
-      role: "Technical Lead",
-      bio: "Graduate student in Cryptography. Leads the development of our smart contracts and ensures security best practices.",
-      image: "/blockchain-technical-lead-headshot.png",
+      name: "Liam Murphy",
+      role: "Treasurer",
+      bio: "Treasurer of the Blockchain Club and is currently pursuing an MS in Finance at CU Denver. He’s dedicated to making finance and blockchain accessible to all students, and is passionate about building a transparent, supportive community where everyone can learn and grow together.",
+      image: "/liam.jpg",
       tokenType: "Officer",
-      email: "david@universityblockchainclub.edu",
-      linkedin: "https://linkedin.com/in/david-kim-crypto",
+      email: "liam.murphy@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/liam-m-582255340/",
     },
     {
       id: 4,
-      name: "Sarah Williams",
-      role: "Education Coordinator",
-      bio: "Junior in Information Systems. Organizes workshops and educational content for club members and the broader university community.",
-      image: "/education-coordinator-headshot.png",
+      name: "Samuel Sherrow",
+      role: "Member",
+      bio: "Sam is a senior product manager and MBA candidate who’s led teams at S&P Global and top SaaS firms. With 15+ years connecting technology and finance, he helps the club link classroom concepts to industry trends—offering real-world insights on digital platforms, product strategy, and what it takes to succeed in finance.",
+      image: "/sam.jpg",
       tokenType: "Member",
-      email: "sarah@universityblockchainclub.edu",
-      linkedin: "https://linkedin.com/in/sarah-williams-edu",
+      email: "Samuel.Sherrow@Ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/ssherrow/",
     },
-    {
-      id: 5,
-      name: "James Rodriguez",
-      role: "Events Manager",
-      bio: "Marketing major with a passion for blockchain. Coordinates club events, hackathons, and speaker series.",
-      image: "/events-manager-headshot.png",
-      tokenType: "Member",
-      email: "james@universityblockchainclub.edu",
-      linkedin: "https://linkedin.com/in/james-rodriguez-events",
-    },
-    {
-      id: 6,
-      name: "Emma Chen",
-      role: "Research Coordinator",
-      bio: "Economics PhD candidate. Leads research initiatives on blockchain applications in various industries.",
-      image: "/research-coordinator-headshot.png",
-      tokenType: "Member",
-      email: "emma@universityblockchainclub.edu",
-      linkedin: "https://linkedin.com/in/emma-chen-research",
-    },
-    {
-      id: 7,
-      name: "Michael Thompson",
-      role: "New Member",
-      bio: "Sophomore in Computer Engineering. Recently joined the club and actively participating in workshops and events.",
-      image: "/student-observer-headshot.png",
-      tokenType: "Observer",
-      email: "michael@university.edu",
-      linkedin: "https://linkedin.com/in/michael-thompson-eng",
-    },
-    {
-      id: 8,
-      name: "Sophia Garcia",
-      role: "Industry Advisor",
-      bio: "Blockchain Developer at a major tech company. Provides industry insights and mentorship to club members.",
-      image: "/professional-headshot-advisor.png",
-      tokenType: "Observer",
-      email: "sophia@techcompany.com",
-      linkedin: "https://linkedin.com/in/sophia-garcia-blockchain",
-    },
+    
+   
   ]
 
   // TODO: Replace hardcoded clubMembers with real data from backend or club directory
@@ -97,7 +62,7 @@ export default function MeetPage() {
   return (
     <div className="flex flex-col">
       {/* Enhanced Header Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-600 via-red-600 to-pink-600 py-20 md:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-sky-600 to-blue-600 py-20 md:py-28">
         {/* Background Elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
@@ -108,98 +73,97 @@ export default function MeetPage() {
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl">
             {/* Floating Badge */}
-            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-orange-100 backdrop-blur-sm border border-white/30">
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-cyan-100 backdrop-blur-sm border border-white/30">
               <Users className="mr-2 h-4 w-4" />
               Meet Our Community
             </div>
             
             <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              🤝 Connect With Us
+              🤝 Meet Our Team
             </h1>
             
-            <p className="mb-8 text-xl text-orange-100 leading-relaxed">
-              Meet the passionate individuals driving our blockchain community forward. From seasoned officers to dedicated members, each person contributes to our mission of blockchain education and innovation.
+            <p className="mb-8 text-xl text-cyan-100 leading-relaxed">
+              Meet the passionate individuals driving our blockchain community forward.
             </p>
           </div>
         </div>
-      </div>
+      </section>
       
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50 to-yellow-50">
-        <div className="container mx-auto px-4 py-12">
-        {/* Enhanced Member Grid */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {clubMembers.map((member) => {
-            const getRoleIcon = (role: string) => {
-              if (role.includes("President")) return <Crown className="h-6 w-6" />
-              if (role.includes("Officer") || role.includes("Lead") || role.includes("Vice")) return <Key className="h-6 w-6" />
-              if (role.includes("Coordinator") || role.includes("Manager")) return <Award className="h-6 w-6" />
-              return <Shield className="h-6 w-6" />
-            }
-            
-            const getRoleColor = (role: string) => {
-              if (role.includes("President")) return "orange"
-              if (role.includes("Officer") || role.includes("Lead") || role.includes("Vice")) return "purple" 
-              if (role.includes("Coordinator") || role.includes("Manager")) return "blue"
-              return "gray"
-            }
-            
-            return (
-              <EnhancedCard key={member.id} variant="gradient" className="group">
-                <CardHeader className="text-center pb-4">
-                  <div className="flex justify-center mb-3">
-                    <IconWrapper color={getRoleColor(member.role)} size="md">
-                      {getRoleIcon(member.role)}
-                    </IconWrapper>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-cyan-50 to-sky-50">
+        <div className="container mx-auto px-4 py-16">
+          
+          {/* Team Grid - Fresh Professional Design */}
+          <div className="grid grid-cols-1 gap-8 max-w-4xl mx-auto">
+            {clubMembers.map((member, index) => (
+              <Card key={member.id} className="group relative overflow-hidden bg-white border border-gray-200 hover:border-cyan-300 transition-all duration-300 hover:shadow-xl">
+                <div className="flex flex-col md:flex-row">
+                  {/* Left: Profile Image Section */}
+                  <div className="md:w-1/3 p-8 bg-gradient-to-br from-gray-50 to-cyan-50 flex flex-col items-center justify-center border-r border-gray-100">
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg group-hover:scale-105 transition-transform duration-300">
+                        <img
+                          src={member.image || "/placeholder.svg"}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      {/* Professional Status Badge */}
+                      <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+                        <div className="w-3 h-3 bg-white rounded-full"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Role Badge */}
+                    <div className="mt-6 px-4 py-2 bg-white rounded-full border border-cyan-200 shadow-sm">
+                      <span className="text-sm font-semibold text-cyan-700">
+                        {member.role}
+                      </span>
+                    </div>
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
-                    {member.name}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 font-medium">
-                    {member.role}
-                  </CardDescription>
-                  <div className="flex justify-center mt-2">
-                    <Badge 
-                      variant="outline" 
-                      className={`${
-                        member.tokenType === "Officer" 
-                          ? "border-purple-200 text-purple-700 bg-purple-50" 
-                          : "border-blue-200 text-blue-700 bg-blue-50"
-                      }`}
-                    >
-                      {member.tokenType}
-                    </Badge>
+
+                  {/* Right: Content Section */}
+                  <div className="md:w-2/3 p-8">
+                    {/* Header */}
+                    <div className="mb-6">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-cyan-600 transition-colors">
+                        {member.name}
+                      </h3>
+                      <p className="text-lg text-cyan-600 font-medium">
+                        Blockchain Club {member.role}
+                      </p>
+                    </div>
+
+                    {/* Bio */}
+                    <p className="text-gray-600 leading-relaxed mb-8 text-base">
+                      {member.bio}
+                    </p>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button
+                        variant="outline"
+                        className="flex items-center justify-center gap-2 px-6 py-3 border-gray-300 hover:border-cyan-400 hover:bg-cyan-50 transition-colors"
+                        onClick={() => window.open(`mailto:${member.email}`)}
+                      >
+                        <Mail className="h-4 w-4" />
+                        Send Email
+                      </Button>
+                      <Button
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-sm"
+                        onClick={() => window.open(member.linkedin, '_blank')}
+                      >
+                        <Linkedin className="h-4 w-4" />
+                        Connect on LinkedIn
+                      </Button>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center text-center">
-                  <div className="w-28 h-28 rounded-full overflow-hidden mb-4 ring-4 ring-white shadow-lg">
-                    <img
-                      src={member.image || "/placeholder.svg"}
-                      alt={member.name}
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                    />
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{member.bio}</p>
-                </CardContent>
-                <CardFooter className="flex flex-col space-y-3 pt-4 bg-gray-50/50">
-                  <a
-                    href={`mailto:${member.email}`}
-                    className="w-full flex items-center justify-center text-gray-700 hover:text-orange-600 text-sm font-medium transition-colors py-2 px-3 rounded-lg hover:bg-orange-50"
-                  >
-                    <Mail className="h-4 w-4 mr-2" /> Contact
-                  </a>
-                  <a
-                    href={member.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center text-gray-700 hover:text-orange-600 text-sm font-medium transition-colors py-2 px-3 rounded-lg hover:bg-orange-50"
-                  >
-                    <Linkedin className="h-4 w-4 mr-2" /> LinkedIn
-                  </a>
-                </CardFooter>
-              </EnhancedCard>
-            )
-          })}
-        </div>
+                </div>
+
+                {/* Bottom Accent Bar */}
+                <div className="h-1 w-full bg-gradient-to-r from-cyan-500 to-blue-500"></div>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>

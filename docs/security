@@ -1,0 +1,82 @@
+# Security Overview
+
+The Blockchain Club protocol is designed for secure, transparent management of NFT-based memberships and treasury flows. All smart contracts follow battle-tested upgradeable patterns and enforce strict access control via modular roles.
+
+This document summarizes the system’s security posture, protections, and known limitations.
+
+---
+
+## Core Protections
+
+### Role-Based Access Control
+- Administrative, minting, and treasury functions are gated by `Roles.sol` using OpenZeppelin's `AccessControlEnumerable`.
+- Roles:
+  - `ADMIN_ROLE`: upgrade authority and full privileges
+  - `OFFICER_ROLE`: operational access (e.g., minting, pausing)
+  - `MEMBER_ROLE`: baseline permissions
+- Voting weights are configurable by role (e.g., Admin: 10, Officer: 5, Member: 1).
+
+### Upgradeability
+- Contracts use the UUPS proxy standard.
+- Only accounts with `ADMIN_ROLE` (ideally a Gnosis Safe) can trigger upgrades.
+- Upgrade logic cannot be changed once deployed, reducing attack surface.
+
+### Reentrancy Protection
+- All externally accessible state-changing functions are wrapped with `nonReentrant`.
+- Minting, burning, and treasury flows are protected.
+
+### Escrow-Based Treasury
+- `TreasuryRouter.sol` includes a 24-hour delay on all outgoing transfers (ETH, ERC-20, NFTs).
+- Allows time to cancel unauthorized or erroneous withdrawals.
+- Escrow metadata and logs are public and verifiable.
+
+### Emergency Pause
+- Critical contracts support pause/resume functionality.
+- Only trusted roles can pause the system; unpausing requires review and consensus.
+
+---
+
+## Known Limitations
+
+### Manual Whitelisting
+- Member access is manually managed.
+- Future versions may integrate decentralized identity or token-gated applications.
+
+### Off-Chain Voting (Phase 1)
+- Snapshot is used for DAO voting.
+- Long-term roadmap includes on-chain voting via Aragon or equivalent.
+
+### Escrow Delay Risk
+- 24-hour delay may still expose risk if a key is compromised.
+- Future update may add multisig gating on release step.
+
+---
+
+## Audit Summary
+
+- All contracts passed a full Slither static audit.
+- Critical issues (e.g., unprotected initializers, reentrancy in minting) were fully resolved.
+- Batch treasury logic has known complexity but is isolated from user-facing flows.
+
+📄 [Full audit summary](./audit/slither-summary.md)
+
+---
+
+## Vulnerability Reporting
+
+We encourage responsible disclosure.
+
+- 📧 Email: `security@blockchain-club.org`
+- 🔒 GitHub: Submit via private security advisory
+
+Please include:
+- Contract + function impacted
+- Proof-of-concept or reproduction steps
+- Estimated severity
+
+---
+
+## Status
+
+✅ Ready for production use in small DAOs or university-level deployments.  
+🔍 External audit planned before treasury or upgrade actions go live on Ethereum Mainnet.

@@ -34,6 +34,8 @@ export default function GovernancePage() {
     roles: "",
     treasury: ""
   })
+  const [demoActive, setDemoActive] = useState(false)
+  const [demoMode, setDemoMode] = useState<'dao' | 'multisig'>('dao')
 
   useEffect(() => {
     // Get contract addresses from the single source of truth
@@ -44,10 +46,31 @@ export default function GovernancePage() {
     })
   }, [])
 
+  // Play both demos in sequence when Why DeFi is clicked
+  useEffect(() => {
+    if (!demoActive) return;
+    setDemoMode('dao');
+    let daoTimeout: NodeJS.Timeout;
+    let multisigTimeout: NodeJS.Timeout;
+    let endTimeout: NodeJS.Timeout;
+    // DAO: 7 votes, each 0.18s apart, each anim 0.7s, plus a pause
+    const daoDuration = 7 * 0.18 + 0.7 + 1.2; // 2.46s + 0.7s + 1.2s
+    // Multisig: 3 signers, each 0.33s apart, each anim 0.7s, plus a pause
+    const multisigDuration = 3 * 0.33 + 0.7 + 1.2; // 0.99s + 0.7s + 1.2s
+    daoTimeout = setTimeout(() => setDemoMode('multisig'), daoDuration * 1000);
+    multisigTimeout = setTimeout(() => setDemoMode('multisig'), daoDuration * 1000); // for safety
+    endTimeout = setTimeout(() => setDemoActive(false), (daoDuration + multisigDuration) * 1000);
+    return () => {
+      clearTimeout(daoTimeout);
+      clearTimeout(multisigTimeout);
+      clearTimeout(endTimeout);
+    };
+  }, [demoActive])
+
   return (
     <div className="flex flex-col">
-      {/* Hero Section with Gradient Background */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 py-20 md:py-28">
+      {/* Enhanced Header Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 py-20 md:py-28">
         {/* Background Elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
@@ -58,16 +81,16 @@ export default function GovernancePage() {
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl">
             {/* Floating Badge */}
-            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-emerald-100 backdrop-blur-sm border border-white/30">
+            <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
               <Vote className="mr-2 h-4 w-4" />
               Governance & Operations
             </div>
             
             <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              How Our Club Actually Works
+              🗳️ Club Governance
             </h1>
             
-            <p className="mb-8 text-xl text-emerald-100 leading-relaxed">
+            <p className="mb-8 text-xl text-purple-100 leading-relaxed">
               Explore our transparent governance structure, smart contract architecture, and decentralized operations. 
               Everything is on-chain, auditable, and designed for maximum transparency.
             </p>
@@ -146,78 +169,96 @@ export default function GovernancePage() {
             ⚖️ <strong>Power to the people.</strong> Our governance structure is designed to balance security with efficient operations. Here&apos;s how responsibilities are distributed.
           </p>
         </div>
-
-        {/* Role Hierarchy Tree */}
-        <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg">
-          <div className="flex flex-col items-center space-y-8">
-            {/* Owner */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Crown className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-lg font-bold">Owner (Multisig)</span>
-              <span className="text-sm text-muted-foreground text-center max-w-xs">Can upgrade contracts and pause membership in emergencies</span>
-            </div>
-
-            <div className="flex items-center">
-              <ArrowDown className="h-8 w-8 text-red-400" />
-            </div>
-
-            {/* Admin */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Shield className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-lg font-bold">Admin (Can be Multisig)</span>
-              <span className="text-sm text-muted-foreground text-center max-w-xs">Manages roles, treasury addresses, and emergency functions</span>
-            </div>
-
-            <div className="flex items-center">
-              <ArrowDown className="h-8 w-8 text-orange-400" />
-            </div>
-
-            {/* Officers - Multiple Roles */}
-            <div className="flex flex-col items-center space-y-6 lg:space-y-0 lg:flex-row lg:space-x-12 lg:justify-center">
-              {/* Contract Officer */}
+        <div className="flex justify-center mt-4 mb-8">
+          {!demoActive ? (
+            <Button onClick={() => setDemoActive(true)}>
+              Why DeFi?
+            </Button>
+          ) : null}
+        </div>
+        <div className="relative">
+          {/* Role Hierarchy Tree */}
+          <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg">
+            <div className="flex flex-col items-center space-y-8">
+              {/* Owner */}
               <div className="flex flex-col items-center group">
-                <div className="mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                  <Key className="h-10 w-10 text-white" />
+                <div className="mb-3 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 p-6 shadow-lg transition-all group-hover:scale-110">
+                  <Crown className="h-10 w-10 text-white" />
                 </div>
-                <span className="text-lg font-bold">Contract Officer</span>
-                <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
+                <span className="text-lg font-bold">Owner</span>
+                <span className="text-sm text-muted-foreground text-center max-w-xs">1 per contract, can be multisig. Can upgrade contracts and transfer ownership.</span>
               </div>
 
-              {/* Chief Trading Officer */}
-              <div className="flex flex-col items-center group">
-                <div className="mb-3 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                  <Award className="h-10 w-10 text-white" />
-                </div>
-                <span className="text-lg font-bold">Chief Trading Officer</span>
-                <span className="text-sm text-muted-foreground text-center max-w-xs">Oversees trading activities and investment strategies</span>
+              <div className="flex items-center">
+                <ArrowDown className="h-8 w-8 text-red-400" />
               </div>
 
-              {/* Support Officer */}
-              <div className="flex flex-col items-center group">
-                <div className="mb-3 rounded-2xl bg-gradient-to-br from-teal-500 to-green-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                  <Users className="h-10 w-10 text-white" />
+              {/* Admins */}
+              <div className="flex flex-row items-center justify-center space-x-8">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center group">
+                    <div className="mb-3 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-6 shadow-lg transition-all group-hover:scale-110">
+                      <Shield className="h-10 w-10 text-white" />
+                    </div>
+                    <span className="text-lg font-bold">Admin</span>
+                    <span className="text-sm text-muted-foreground text-center max-w-xs">Can be multisig. Manages roles, treasury addresses, and emergency functions.</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center">
+                <ArrowDown className="h-8 w-8 text-orange-400" />
+              </div>
+
+              {/* Officers - Multiple Roles */}
+              <div className="flex flex-col items-center space-y-6 lg:space-y-0 lg:flex-row lg:space-x-12 lg:justify-center">
+                {/* Contract Officer */}
+                <div className="flex flex-col items-center group">
+                  <div className="mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 shadow-lg transition-all group-hover:scale-110">
+                    <Key className="h-10 w-10 text-white" />
+                  </div>
+                  <span className="text-lg font-bold">Contract Officer</span>
+                  <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
                 </div>
-                <span className="text-lg font-bold">Support Officer</span>
-                <span className="text-sm text-muted-foreground text-center max-w-xs">Provides various operational and community support</span>
+
+                {/* Chief Trading Officer */}
+                <div className="flex flex-col items-center group">
+                  <div className="mb-3 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 shadow-lg transition-all group-hover:scale-110">
+                    <Award className="h-10 w-10 text-white" />
+                  </div>
+                  <span className="text-lg font-bold">Chief Trading Officer</span>
+                  <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
+                </div>
+
+                {/* Support Officer (Yellow) */}
+                <div className="flex flex-col items-center group">
+                  <div className="mb-3 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 p-6 shadow-lg transition-all group-hover:scale-110">
+                    <Users className="h-10 w-10 text-white" />
+                  </div>
+                  <span className="text-lg font-bold">Support Officer</span>
+                  <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <ArrowDown className="h-8 w-8 text-green-400" />
+              </div>
+
+              {/* Members - 1 row of 4 */}
+              <div className="flex flex-row items-center justify-center gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center group">
+                    <div className="mb-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 shadow-lg transition-all group-hover:scale-110">
+                      <User className="h-10 w-10 text-white" />
+                    </div>
+                    <span className="text-lg font-bold">Member</span>
+                    <span className="text-sm text-muted-foreground text-center max-w-xs">Holds membership NFT and participates in club activities</span>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="flex items-center">
-              <ArrowDown className="h-8 w-8 text-blue-400" />
-            </div>
-
-            {/* Member */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <User className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-lg font-bold">Member</span>
-              <span className="text-sm text-muted-foreground text-center max-w-xs">Holds membership NFT and participates in club activities</span>
-            </div>
+            {/* Overlay Voting Demo - only if active */}
+            {/* {demoActive && <WhyDeFiVotingDemo />} */}
           </div>
         </div>
       </div>

@@ -1,0 +1,343 @@
+'solc --version' running
+'solc contracts/BlockchainClubMembership.sol --combined-json abi,ast,bin,bin-runtime,srcmap,srcmap-runtime,userdoc,devdoc,hashes --base-path . --include-path node_modules --allow-paths .,C:\Users\lmur2\blockchain-club\contracts' running
+Compilation warnings/errors on contracts/BlockchainClubMembership.sol:
+Warning: Contract code size is 35379 bytes and exceeds 24576 bytes (a limit introduced in Spurious Dragon). This contract may not be deployable on Mainnet. Consider enabling the optimizer (with a low "runs" value!), turning off revert strings, or using libraries.
+  --> contracts/BlockchainClubMembership.sol:13:1:
+   |
+13 | contract BlockchainClubMembership is 
+   | ^ (Relevant source part starts here and spans across multiple lines).
+
+
+INFO:Detectors:
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) has bitwise-xor operator ^ instead of the exponentiation operator **: 
+	 - inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#116)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-exponentiation
+INFO:Detectors:
+BlockchainClubMembership (contracts/BlockchainClubMembership.sol#13-360) is an upgradeable contract that does not protect its initialize functions: BlockchainClubMembership.initialize(string,string,address) (contracts/BlockchainClubMembership.sol#80-94). Anyone can delete the contract with: UUPSUpgradeable.upgradeTo(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#74-77)UUPSUpgradeable.upgradeToAndCall(address,bytes) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#89-92)Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unprotected-upgradeable-contract
+INFO:Detectors:
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#116)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#120)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#121)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#122)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#123)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#124)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+	- inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#125)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+	- prod0 = prod0 / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#104)
+	- result = prod0 * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#131)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+Reentrancy in BlockchainClubMembership.mint(address,bytes32,bool) (contracts/BlockchainClubMembership.sol#140-167):
+	External calls:
+	- _safeMint(to,tokenId) (contracts/BlockchainClubMembership.sol#154)
+		- retval = IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#411-422)
+	State variables written after the call(s):
+	- soulbound[tokenId] = isSoulbound (contracts/BlockchainClubMembership.sol#156)
+	BlockchainClubMembership.soulbound (contracts/BlockchainClubMembership.sol#27) can be used in cross function reentrancies:
+	- BlockchainClubMembership._beforeTokenTransfer(address,address,uint256,uint256) (contracts/BlockchainClubMembership.sol#217-229)
+	- BlockchainClubMembership.soulbound (contracts/BlockchainClubMembership.sol#27)
+	- config.currentSupply ++ (contracts/BlockchainClubMembership.sol#157)
+	BlockchainClubMembership.tokenTypeConfigs (contracts/BlockchainClubMembership.sol#60) can be used in cross function reentrancies:
+	- BlockchainClubMembership.createTokenType(bytes32,string,string,uint256,uint256,uint256,BlockchainClubMembership.MintAccess) (contracts/BlockchainClubMembership.sol#97-119)
+	- BlockchainClubMembership.deactivateTokenType(bytes32) (contracts/BlockchainClubMembership.sol#122-125)
+	- BlockchainClubMembership.tokenTypeConfigs (contracts/BlockchainClubMembership.sol#60)
+	- BlockchainClubMembership.tokenURI(uint256) (contracts/BlockchainClubMembership.sol#272-296)
+	- tokenTypes[tokenId] = tokenType (contracts/BlockchainClubMembership.sol#155)
+	BlockchainClubMembership.tokenTypes (contracts/BlockchainClubMembership.sol#26) can be used in cross function reentrancies:
+	- BlockchainClubMembership.tokenTypes (contracts/BlockchainClubMembership.sol#26)
+	- BlockchainClubMembership.tokenURI(uint256) (contracts/BlockchainClubMembership.sol#272-296)
+Reentrancy in BlockchainClubMembership.publicMint(bytes32,bool) (contracts/BlockchainClubMembership.sol#170-197):
+	External calls:
+	- _safeMint(msg.sender,tokenId) (contracts/BlockchainClubMembership.sol#184)
+		- retval = IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#411-422)
+	State variables written after the call(s):
+	- soulbound[tokenId] = isSoulbound (contracts/BlockchainClubMembership.sol#186)
+	BlockchainClubMembership.soulbound (contracts/BlockchainClubMembership.sol#27) can be used in cross function reentrancies:
+	- BlockchainClubMembership._beforeTokenTransfer(address,address,uint256,uint256) (contracts/BlockchainClubMembership.sol#217-229)
+	- BlockchainClubMembership.soulbound (contracts/BlockchainClubMembership.sol#27)
+	- config.currentSupply ++ (contracts/BlockchainClubMembership.sol#187)
+	BlockchainClubMembership.tokenTypeConfigs (contracts/BlockchainClubMembership.sol#60) can be used in cross function reentrancies:
+	- BlockchainClubMembership.createTokenType(bytes32,string,string,uint256,uint256,uint256,BlockchainClubMembership.MintAccess) (contracts/BlockchainClubMembership.sol#97-119)
+	- BlockchainClubMembership.deactivateTokenType(bytes32) (contracts/BlockchainClubMembership.sol#122-125)
+	- BlockchainClubMembership.tokenTypeConfigs (contracts/BlockchainClubMembership.sol#60)
+	- BlockchainClubMembership.tokenURI(uint256) (contracts/BlockchainClubMembership.sol#272-296)
+	- tokenTypes[tokenId] = tokenType (contracts/BlockchainClubMembership.sol#185)
+	BlockchainClubMembership.tokenTypes (contracts/BlockchainClubMembership.sol#26) can be used in cross function reentrancies:
+	- BlockchainClubMembership.tokenTypes (contracts/BlockchainClubMembership.sol#26)
+	- BlockchainClubMembership.tokenURI(uint256) (contracts/BlockchainClubMembership.sol#272-296)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+ERC1967UpgradeUpgradeable._upgradeToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#65-70) ignores return value by AddressUpgradeable.functionDelegateCall(newImplementation,data) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#68)
+ERC1967UpgradeUpgradeable._upgradeBeaconToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#156-162) ignores return value by AddressUpgradeable.functionDelegateCall(IBeaconUpgradeable(newBeacon).implementation(),data) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#160)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+BlockchainClubMembership.initialize(string,string,address).name (contracts/BlockchainClubMembership.sol#81) shadows:
+	- ERC721Upgradeable.name() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#84-86) (function)
+	- IERC721MetadataUpgradeable.name() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#16) (function)
+BlockchainClubMembership.initialize(string,string,address).symbol (contracts/BlockchainClubMembership.sol#82) shadows:
+	- ERC721Upgradeable.symbol() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#91-93) (function)
+	- IERC721MetadataUpgradeable.symbol() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#21) (function)
+BlockchainClubMembership.createTokenType(bytes32,string,string,uint256,uint256,uint256,BlockchainClubMembership.MintAccess).name (contracts/BlockchainClubMembership.sol#99) shadows:
+	- ERC721Upgradeable.name() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#84-86) (function)
+	- IERC721MetadataUpgradeable.name() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#16) (function)
+BlockchainClubMembership._hasTokenOfType(address,bytes32).owner (contracts/BlockchainClubMembership.sol#128) shadows:
+	- OwnableUpgradeable.owner() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#48-50) (function)
+BlockchainClubMembership.burnToken(uint256).owner (contracts/BlockchainClubMembership.sol#201) shadows:
+	- OwnableUpgradeable.owner() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#48-50) (function)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
+INFO:Detectors:
+Ownable2StepUpgradeable.transferOwnership(address).newOwner (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#42) lacks a zero-check on :
+		- _pendingOwner = newOwner (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#43)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+Reentrancy in BlockchainClubMembership.mint(address,bytes32,bool) (contracts/BlockchainClubMembership.sol#140-167):
+	External calls:
+	- _safeMint(to,tokenId) (contracts/BlockchainClubMembership.sol#154)
+		- retval = IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#411-422)
+	State variables written after the call(s):
+	- _updateMemberStats(to) (contracts/BlockchainClubMembership.sol#159)
+		- stats.joinDate = block.timestamp (contracts/BlockchainClubMembership.sol#242)
+		- stats.tokenCount = balanceOf(member) (contracts/BlockchainClubMembership.sol#245)
+		- stats.isActive = true (contracts/BlockchainClubMembership.sol#246)
+		- stats.currentRole = currentRole (contracts/BlockchainClubMembership.sol#257)
+Reentrancy in BlockchainClubMembership.publicMint(bytes32,bool) (contracts/BlockchainClubMembership.sol#170-197):
+	External calls:
+	- _safeMint(msg.sender,tokenId) (contracts/BlockchainClubMembership.sol#184)
+		- retval = IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#411-422)
+	State variables written after the call(s):
+	- _updateMemberStats(msg.sender) (contracts/BlockchainClubMembership.sol#189)
+		- stats.joinDate = block.timestamp (contracts/BlockchainClubMembership.sol#242)
+		- stats.tokenCount = balanceOf(member) (contracts/BlockchainClubMembership.sol#245)
+		- stats.isActive = true (contracts/BlockchainClubMembership.sol#246)
+		- stats.currentRole = currentRole (contracts/BlockchainClubMembership.sol#257)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+BlockchainClubMembership.mint(address,bytes32,bool) (contracts/BlockchainClubMembership.sol#140-167) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp >= config.startTime,Minting not started for this token type) (contracts/BlockchainClubMembership.sol#149)
+	- require(bool,string)(block.timestamp <= config.endTime,Minting has ended for this token type) (contracts/BlockchainClubMembership.sol#150)
+BlockchainClubMembership.publicMint(bytes32,bool) (contracts/BlockchainClubMembership.sol#170-197) uses timestamp for comparisons
+	Dangerous comparisons:
+	- require(bool,string)(block.timestamp >= config.startTime,Minting not started for this token type) (contracts/BlockchainClubMembership.sol#174)
+	- require(bool,string)(block.timestamp <= config.endTime,Minting has ended for this token type) (contracts/BlockchainClubMembership.sol#175)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+ERC721Upgradeable._checkOnERC721Received(address,address,uint256,bytes) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#404-426) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#418-420)
+AddressUpgradeable._revert(bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#231-243) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#236-239)
+StorageSlotUpgradeable.getAddressSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#62-67) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#64-66)
+StorageSlotUpgradeable.getBooleanSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#72-77) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#74-76)
+StorageSlotUpgradeable.getBytes32Slot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#82-87) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#84-86)
+StorageSlotUpgradeable.getUint256Slot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#92-97) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#94-96)
+StorageSlotUpgradeable.getStringSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#102-107) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#104-106)
+StorageSlotUpgradeable.getStringSlot(string) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#112-117) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#114-116)
+StorageSlotUpgradeable.getBytesSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#122-127) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#124-126)
+StorageSlotUpgradeable.getBytesSlot(bytes) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#132-137) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#134-136)
+StringsUpgradeable.toString(uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#19-39) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#25-27)
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#31-33)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) uses assembly
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#62-66)
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#85-92)
+	- INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#99-108)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+4 different versions of Solidity are used:
+	- Version constraint ^0.8.0 is used by:
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#5)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#4)
+		-^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/SignedMathUpgradeable.sol#4)
+	- Version constraint ^0.8.2 is used by:
+		-^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#4)
+		-^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4)
+	- Version constraint ^0.8.1 is used by:
+		-^0.8.1 (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#4)
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (contracts/BlockchainClubMembership.sol#2)
+		-^0.8.20 (contracts/interfaces/IRoles.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+ContextUpgradeable.__Context_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#18-19) is never used and should be removed
+ContextUpgradeable.__Context_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#21-22) is never used and should be removed
+ContextUpgradeable._contextSuffixLength() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#31-33) is never used and should be removed
+ContextUpgradeable._msgData() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#27-29) is never used and should be removed
+ERC165Upgradeable.__ERC165_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#24-25) is never used and should be removed
+ERC165Upgradeable.__ERC165_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#27-28) is never used and should be removed
+ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#30-31) is never used and should be removed
+ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#33-34) is never used and should be removed
+ERC1967UpgradeUpgradeable._changeAdmin(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#120-123) is never used and should be removed
+ERC1967UpgradeUpgradeable._getAdmin() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#103-105) is never used and should be removed
+ERC1967UpgradeUpgradeable._getBeacon() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#134-136) is never used and should be removed
+ERC1967UpgradeUpgradeable._setAdmin(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#110-113) is never used and should be removed
+ERC1967UpgradeUpgradeable._setBeacon(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#141-148) is never used and should be removed
+ERC1967UpgradeUpgradeable._upgradeBeaconToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#156-162) is never used and should be removed
+ERC721EnumerableUpgradeable.__ERC721Enumerable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#31-32) is never used and should be removed
+ERC721Upgradeable.__unsafe_increaseBalance(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#468-470) is never used and should be removed
+ERC721Upgradeable._baseURI() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#110-112) is never used and should be removed
+Initializable._disableInitializers() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#145-151) is never used and should be removed
+Initializable._getInitializedVersion() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#156-158) is never used and should be removed
+Initializable._isInitializing() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#163-165) is never used and should be removed
+Ownable2StepUpgradeable.__Ownable2Step_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#29-30) is never used and should be removed
+OwnableUpgradeable.__Ownable_init() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#29-31) is never used and should be removed
+ReentrancyGuardUpgradeable._reentrancyGuardEntered() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#79-81) is never used and should be removed
+UUPSUpgradeable.__UUPSUpgradeable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#51-52) is never used and should be removed
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dead-code
+INFO:Detectors:
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#5)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#4)
+	- ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/SignedMathUpgradeable.sol#4)
+Version constraint ^0.8.2 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#4)
+	- ^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4)
+Version constraint ^0.8.1 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess
+	- AbiReencodingHeadOverflowWithStaticArrayCleanup
+	- DirtyBytesArrayToStorage
+	- DataLocationChangeInInternalOverride
+	- NestedCalldataArrayAbiReencodingSizeValidation
+	- SignedImmutables
+	- ABIDecodeTwoDimensionalArrayMemory
+	- KeccakCaching.
+It is used by:
+	- ^0.8.1 (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#4)
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+	- VerbatimInvalidDeduplication
+	- FullInlinerNonExpressionSplitArgumentEvaluationOrder
+	- MissingSideEffectsOnSelectorAccess.
+It is used by:
+	- ^0.8.20 (contracts/BlockchainClubMembership.sol#2)
+	- ^0.8.20 (contracts/interfaces/IRoles.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in AddressUpgradeable.sendValue(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#64-69):
+	- (success,None) = recipient.call{value: amount}() (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#67)
+Low level call in AddressUpgradeable.functionCallWithValue(address,bytes,uint256,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#128-137):
+	- (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#135)
+Low level call in AddressUpgradeable.functionStaticCall(address,bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#155-162):
+	- (success,returndata) = target.staticcall(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#160)
+Low level call in AddressUpgradeable.functionDelegateCall(address,bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#180-187):
+	- (success,returndata) = target.delegatecall(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#185)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Function Ownable2StepUpgradeable.__Ownable2Step_init() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#25-27) is not in mixedCase
+Function Ownable2StepUpgradeable.__Ownable2Step_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#29-30) is not in mixedCase
+Variable Ownable2StepUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#70) is not in mixedCase
+Function OwnableUpgradeable.__Ownable_init() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#29-31) is not in mixedCase
+Function OwnableUpgradeable.__Ownable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#33-35) is not in mixedCase
+Variable OwnableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#94) is not in mixedCase
+Function ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#30-31) is not in mixedCase
+Function ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#33-34) is not in mixedCase
+Variable ERC1967UpgradeUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#169) is not in mixedCase
+Function UUPSUpgradeable.__UUPSUpgradeable_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#48-49) is not in mixedCase
+Function UUPSUpgradeable.__UUPSUpgradeable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#51-52) is not in mixedCase
+Variable UUPSUpgradeable.__self (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#24) is not in mixedCase
+Variable UUPSUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#111) is not in mixedCase
+Function PausableUpgradeable.__Pausable_init() (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#34-36) is not in mixedCase
+Function PausableUpgradeable.__Pausable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#38-40) is not in mixedCase
+Variable PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#116) is not in mixedCase
+Function ReentrancyGuardUpgradeable.__ReentrancyGuard_init() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#40-42) is not in mixedCase
+Function ReentrancyGuardUpgradeable.__ReentrancyGuard_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#44-46) is not in mixedCase
+Variable ReentrancyGuardUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#88) is not in mixedCase
+Function ERC721Upgradeable.__ERC721_init(string,string) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#45-47) is not in mixedCase
+Function ERC721Upgradeable.__ERC721_init_unchained(string,string) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#49-52) is not in mixedCase
+Function ERC721Upgradeable.__unsafe_increaseBalance(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#468-470) is not in mixedCase
+Variable ERC721Upgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#477) is not in mixedCase
+Function ERC721EnumerableUpgradeable.__ERC721Enumerable_init() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#28-29) is not in mixedCase
+Function ERC721EnumerableUpgradeable.__ERC721Enumerable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#31-32) is not in mixedCase
+Variable ERC721EnumerableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#171) is not in mixedCase
+Function ContextUpgradeable.__Context_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#18-19) is not in mixedCase
+Function ContextUpgradeable.__Context_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#21-22) is not in mixedCase
+Variable ContextUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#40) is not in mixedCase
+Function ERC165Upgradeable.__ERC165_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#24-25) is not in mixedCase
+Function ERC165Upgradeable.__ERC165_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#27-28) is not in mixedCase
+Variable ERC165Upgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#41) is not in mixedCase
+Variable BlockchainClubMembership.__gap (contracts/BlockchainClubMembership.sol#359) is not in mixedCase
+Function IRoles.ADMIN_ROLE() (contracts/interfaces/IRoles.sol#6) is not in mixedCase
+Function IRoles.OFFICER_ROLE() (contracts/interfaces/IRoles.sol#7) is not in mixedCase
+Function IRoles.MEMBER_ROLE() (contracts/interfaces/IRoles.sol#8) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+BlockchainClubMembership.__gap (contracts/BlockchainClubMembership.sol#359) is never used in BlockchainClubMembership (contracts/BlockchainClubMembership.sol#13-360)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-state-variable
+INFO:Slither:contracts/BlockchainClubMembership.sol analyzed (26 contracts with 100 detectors), 106 result(s) found

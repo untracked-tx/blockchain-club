@@ -1,0 +1,48 @@
+# Blockchain & Crypto Investing Club: Whitepaper
+
+1. Abstract  
+   - What this project is  
+   - Why it's different (on-chain governance, student-led investing)
+
+2. Introduction & Vision  
+   - Mission, values  
+   - What makes this club unique
+
+3. Problem Statement  
+   - Challenges in traditional clubs (transparency, engagement, education)  
+   - Why blockchain solves them
+
+4. Technical Overview  
+   - Summary of the three smart contracts  
+   - Diagram of system architecture  
+   - Polygon network rationale
+
+5. Governance Model  
+   - Roles: Admin, Officer, Member  
+   - Voting structure  
+   - DAO evolution phases
+
+6. Membership System  
+   - NFT-based identity  
+   - Token types and privileges  
+   - Access control (public, whitelist, officer)
+
+7. Treasury Operations  
+   - Escrow delay logic  
+   - Fund flows and risk mitigation  
+   - Investment strategy (high-level)
+
+8. Educational Framework  
+   - Learning objectives  
+   - Hands-on activities and research  
+   - Mentorship, speaker events, community building
+
+9. Future Roadmap  
+   - Key milestones (governance, expansion, partnerships)  
+   - DAO transition phases
+
+10. Appendices  
+    - Links to contracts  
+    - Audit info  
+    - Financial reporting overview  
+    - Contact & website

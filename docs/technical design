@@ -1,0 +1,147 @@
+.
+
+📄 docs/technical-specs.md
+md
+Copy
+Edit
+# Technical Specification
+
+This document describes the contract architecture and internal logic for the Blockchain Club membership system. It is intended for developers, auditors, and contributors seeking a clear overview of how the smart contracts operate.
+
+---
+
+## Overview
+
+The system uses modular, upgradeable smart contracts to handle:
+
+- NFT-based role assignment (membership tokens)
+- Role management (Admin / Officer / Member)
+- Escrowed treasury functions (ETH, ERC20, NFT)
+
+All contracts follow the UUPS proxy upgrade standard and enforce granular access control through `AccessControlEnumerable`.
+
+---
+
+## Contracts
+
+### 1. `BlockchainClubMembership.sol`
+
+The primary ERC721 contract that mints NFT-based membership tokens and links users to roles.
+
+**Key Features:**
+- ERC721Enumerable + upgradeable
+- Supports multiple token “types” via hash-based identifiers
+- Time-limited minting windows per token type
+- Soulbound (non-transferable) logic for officer tokens
+- Token metadata (base URI, editions) configurable by Admin
+- Hooks into `Roles.sol` to assign permissions on mint
+
+**Key Functions:**
+- `mint(to, typeHash, isSoulbound)` – Officer-only mint
+- `publicMint(typeHash, isSoulbound)` – Open minting if whitelisted
+- `burnToken(tokenId)` – Deletes token and revokes roles
+- `setBaseURI()` – Updates metadata base path
+- `initialize(name, symbol, rolesAddr)` – Sets initial state
+
+**Access Control:**
+- Only Admins can set config or mint officer tokens
+- Officers can mint members
+- NonReentrant on all public state changers
+
+---
+
+### 2. `Roles.sol`
+
+Centralized role management contract using OpenZeppelin’s `AccessControlEnumerable`.
+
+**Roles Defined:**
+- `ADMIN_ROLE` – Full privileges (can upgrade contracts, pause, mint officers)
+- `OFFICER_ROLE` – Can mint members, pause
+- `MEMBER_ROLE` – Base membership tier
+
+**Voting Power (optional DAO use):**
+- Admin: 10 votes
+- Officer: 5 votes
+- Member: 1 vote
+
+**Key Functions:**
+- `grantRole(role, account)`
+- `revokeRole(role, account)`
+- `hasRole(role, account)`
+- `getVotingPower(account)` – returns weight
+
+---
+
+### 3. `TreasuryRouter.sol`
+
+Escrow controller for funds and NFTs routed to the DAO treasury. Handles MATIC/ETH, ERC20, and ERC721.
+
+**Core Concepts:**
+- 24-hour time lock on withdrawals
+- Deposit and execution are separate steps
+- Metadata and logs are public
+- Optional cancellation by Admins
+
+**Key Functions:**
+- `deposit()` – Initiates a time-locked transfer
+- `executeTransfer()` – Finalizes ETH transfer after delay
+- `depositERC20()`, `executeERC20Transfer()`
+- `depositNFT()`, `executeNFTTransfer()`
+- `cancelTransfer()` – Reverts scheduled action
+- `setTreasury(address)` – Sets receiver wallet (Gnosis Safe recommended)
+
+**Escrow Flow:**
+1. Officer deposits funds or NFTs
+2. Transfer is queued with metadata and timestamp
+3. After 24 hours, execution can be triggered
+4. Admins can cancel before execution
+
+---
+
+## Contract Interaction Flow
+
+[User] --(mint request)--> [Membership Contract]
+↓ ↓
+[Grants Role] [Assigns NFT]
+↓ ↓
+[Roles.sol] [Token Metadata]
+
+[Officer/Admin] --(deposit)--> [TreasuryRouter]
+↓
+[24h Escrow Delay]
+↓
+[Gnosis Safe receives funds]
+
+
+---
+
+## Upgradeability & Admin Access
+
+- All contracts are UUPS upgradeable.
+- `ADMIN_ROLE` is the only entity that can trigger upgrades.
+- Upgrades should be routed through a multisig or Gnosis Safe on mainnet.
+
+---
+
+## Deployment Notes
+
+- Use `initialize()` instead of constructor (upgradeable pattern)
+- Contracts must be deployed in correct order:
+  1. `Roles.sol`
+  2. `BlockchainClubMembership.sol` (pass roles address)
+  3. `TreasuryRouter.sol` (pass membership + treasury)
+
+---
+
+## Known Considerations
+
+- Time-based minting and execution delays use `block.timestamp`; edge cases are possible
+- Off-chain whitelist logic must sync with smart contract state
+- ERC721 tokens are soulbound if flagged at mint time (non-transferable)
+
+---
+
+## Final Notes
+
+This spec represents the current production version deployed on Polygon Amoy testnet. Mainnet deployment is planned pending further frontend integration and external audit.
+

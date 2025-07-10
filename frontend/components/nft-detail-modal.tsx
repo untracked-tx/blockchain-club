@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle2, AlertCircle, Code, ChevronRight, Wallet, Mail } from "lucide-react"
+import { CheckCircle2, AlertCircle, Code, ChevronRight, Wallet, Mail, X } from "lucide-react"
 import { ethers } from "ethers"
 import { useAccount } from 'wagmi'
 import { useConnectModal } from "@rainbow-me/rainbowkit"
@@ -103,6 +103,7 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
   const [step, setStep] = useState<string>("")
   const [permissionError, setPermissionError] = useState<string | null>(null)
   const [contractConfig, setContractConfig] = useState<any>(null)
+  const [zoomOpen, setZoomOpen] = useState(false);
   const clubEmail = "liam.murphy@ucdenver.edu"; // Set your club email here
 
   // Token name mapping from display name to contract token type name
@@ -373,7 +374,8 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
                     <img 
                       src={token.imageUri || "/placeholder.svg"} 
                       alt={token.name} 
-                      className="max-h-80 max-w-full object-contain rounded-lg"
+                      className="max-h-80 max-w-full object-contain rounded-lg cursor-zoom-in"
+                      onClick={() => setZoomOpen(true)}
                     />
                   </div>
 
@@ -524,6 +526,69 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Zoom Modal with Magnifier */}
+      <Dialog open={zoomOpen} onOpenChange={() => setZoomOpen(false)}>
+        <DialogContent className="flex flex-col items-center justify-center bg-black/90 max-w-3xl p-0">
+          <DialogTitle className="sr-only">Zoomed NFT Image</DialogTitle>
+          <button
+            className="absolute top-4 right-4 z-10 text-white hover:text-gray-300"
+            onClick={() => setZoomOpen(false)}
+            aria-label="Close zoom"
+          >
+            <X size={28} />
+          </button>
+          <MagnifierImage imageUrl={token.imageUri || "/placeholder.svg"} alt={token.name} />
+        </DialogContent>
+      </Dialog>
     </Dialog>
+  );
+}
+
+// MagnifierImage component
+function MagnifierImage({ imageUrl, alt }: { imageUrl: string, alt: string }) {
+  const [showMagnifier, setShowMagnifier] = useState(false);
+  const [magnifierPos, setMagnifierPos] = useState({ x: 0, y: 0 });
+  const magnifierSize = 220; // px
+  const zoom = 1.75;
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  return (
+    <div className="relative flex items-center justify-center w-full h-full p-6">
+      <img
+        ref={imgRef}
+        src={imageUrl}
+        alt={alt}
+        className="max-h-[70vh] max-w-full rounded-lg bg-black select-none"
+        style={{ cursor: showMagnifier ? 'none' : 'zoom-in' }}
+        draggable={false}
+        onMouseEnter={() => setShowMagnifier(true)}
+        onMouseLeave={() => setShowMagnifier(false)}
+        onMouseMove={e => {
+          const { left, top } = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - left;
+          const y = e.clientY - top;
+          setMagnifierPos({ x, y });
+        }}
+      />
+      {showMagnifier && imgRef.current && (
+        <div
+          style={{
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: `${magnifierPos.y - magnifierSize / 2}px`,
+            left: `${magnifierPos.x - magnifierSize / 2}px`,
+            width: `${magnifierSize}px`,
+            height: `${magnifierSize}px`,
+            borderRadius: '50%',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+            border: '2px solid #fff',
+            background: `url('${imageUrl}') no-repeat`,
+            backgroundSize: `${imgRef.current.width * zoom}px ${imgRef.current.height * zoom}px`,
+            backgroundPosition: `-${magnifierPos.x * zoom - magnifierSize / 2}px -${magnifierPos.y * zoom - magnifierSize / 2}px`,
+            zIndex: 10,
+          }}
+        />
+      )}
+    </div>
   );
 }

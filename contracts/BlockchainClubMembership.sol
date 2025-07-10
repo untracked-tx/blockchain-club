@@ -58,6 +58,8 @@ contract BlockchainClubMembership is
     }
     
     mapping(bytes32 => TokenTypeConfig) public tokenTypeConfigs;
+    // Array to store all token type IDs
+    bytes32[] private _allTokenTypeIds;
     
     // Base URI for metadata
     string private _baseTokenURI;
@@ -76,17 +78,16 @@ contract BlockchainClubMembership is
     
     // Initialize function
     function initialize(
-        string memory name,
-        string memory symbol,
+        string memory contractName,
+        string memory contractSymbol,
         address rolesContract
-    ) public initializer {
-        __ERC721_init(name, symbol);
+    ) public initializer onlyOwner {
+        __ERC721_init(contractName, contractSymbol);
         __ERC721Enumerable_init();
         __Ownable2Step_init();
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
         __Pausable_init();
-        
         require(rolesContract != address(0), "Invalid roles contract");
         roles = IRoles(rolesContract);
     }
@@ -94,8 +95,8 @@ contract BlockchainClubMembership is
     // Token type management
     function createTokenType(
         bytes32 typeId,
-        string calldata name,
-        string calldata category,
+        string calldata typeName,
+        string calldata typeCategory,
         uint256 startTime,
         uint256 endTime,
         uint256 maxSupply,
@@ -103,8 +104,8 @@ contract BlockchainClubMembership is
     ) external onlyRole(roles.OFFICER_ROLE()) {
         require(tokenTypeConfigs[typeId].maxSupply == 0, "Type already exists");
         tokenTypeConfigs[typeId] = TokenTypeConfig({
-            name: name,
-            category: category,
+            name: typeName,
+            category: typeCategory,
             startTime: startTime,
             endTime: endTime,
             maxSupply: maxSupply,
@@ -112,14 +113,21 @@ contract BlockchainClubMembership is
             isActive: true,
             mintAccess: mintAccess
         });
-        emit TokenTypeCreated(typeId, name, category);
+        _allTokenTypeIds.push(typeId); // Track the new token type
+        emit TokenTypeCreated(typeId, typeName, typeCategory);
+    }
+    
+    // Function to deactivate a token type
+    function deactivateTokenType(bytes32 typeId) external onlyRole(roles.OFFICER_ROLE()) {
+        require(tokenTypeConfigs[typeId].isActive, "Token type already inactive");
+        tokenTypeConfigs[typeId].isActive = false;
     }
     
     // Internal helper to check if an address already owns a token of a given type
-    function _hasTokenOfType(address owner, bytes32 tokenType) internal view returns (bool) {
-        uint256 balance = balanceOf(owner);
+    function _hasTokenOfType(address account, bytes32 tokenType) internal view returns (bool) {
+        uint256 balance = balanceOf(account);
         for (uint256 i = 0; i < balance; i++) {
-            uint256 tokenId = tokenOfOwnerByIndex(owner, i);
+            uint256 tokenId = tokenOfOwnerByIndex(account, i);
             if (tokenTypes[tokenId] == tokenType) {
                 return true;
             }
@@ -131,7 +139,7 @@ contract BlockchainClubMembership is
     function mint(
         address to,
         bytes32 tokenType,
-        bool isSoulbound
+        bool isSoulboundFlag
     ) external onlyRole(roles.OFFICER_ROLE()) whenNotPaused nonReentrant {
         require(whitelist[to] || roles.hasRole(roles.MEMBER_ROLE(), to), "Address not whitelisted");
         TokenTypeConfig storage config = tokenTypeConfigs[tokenType];
@@ -139,17 +147,10 @@ contract BlockchainClubMembership is
         require(config.currentSupply < config.maxSupply, "Max supply reached");
         require(block.timestamp >= config.startTime, "Minting not started for this token type");
         require(block.timestamp <= config.endTime, "Minting has ended for this token type");
-        // Restrict to one member and one officer token per wallet
-        if (tokenType == MEMBER_TOKEN_TYPE) {
-            require(!_hasTokenOfType(to, MEMBER_TOKEN_TYPE), "Wallet already owns a member token");
-        }
-        if (tokenType == OFFICER_TOKEN_TYPE) {
-            require(!_hasTokenOfType(to, OFFICER_TOKEN_TYPE), "Wallet already owns an officer token");
-        }
-        uint256 tokenId = _nextTokenId++;
-        _safeMint(to, tokenId);
-        tokenTypes[tokenId] = tokenType;
-        soulbound[tokenId] = isSoulbound;
+        require(!_hasTokenOfType(to, tokenType), "Wallet already owns a token of this type");
+        uint256 newTokenId = _nextTokenId++;
+        tokenTypes[newTokenId] = tokenType;
+        soulbound[newTokenId] = isSoulboundFlag;
         config.currentSupply++;
         // Update member stats
         _updateMemberStats(to);
@@ -159,11 +160,12 @@ contract BlockchainClubMembership is
                 roles.grantRole(roles.MEMBER_ROLE(), to);
             }
         }
-        emit TokenMinted(to, tokenId, tokenType);
+        _safeMint(to, newTokenId);
+        emit TokenMinted(to, newTokenId, tokenType);
     }
     
     // Public mint function
-    function publicMint(bytes32 tokenType, bool isSoulbound) external whenNotPaused nonReentrant {
+    function publicMint(bytes32 tokenType, bool isSoulboundFlag) external whenNotPaused nonReentrant {
         TokenTypeConfig storage config = tokenTypeConfigs[tokenType];
         require(config.isActive, "Token type not active");
         require(config.currentSupply < config.maxSupply, "Max supply reached");
@@ -174,17 +176,10 @@ contract BlockchainClubMembership is
         } else if (config.mintAccess == MintAccess.WHITELIST_ONLY) {
             require(whitelist[msg.sender], "Not whitelisted");
         }
-        // Restrict to one member and one officer token per wallet
-        if (tokenType == MEMBER_TOKEN_TYPE) {
-            require(!_hasTokenOfType(msg.sender, MEMBER_TOKEN_TYPE), "Wallet already owns a member token");
-        }
-        if (tokenType == OFFICER_TOKEN_TYPE) {
-            require(!_hasTokenOfType(msg.sender, OFFICER_TOKEN_TYPE), "Wallet already owns an officer token");
-        }
-        uint256 tokenId = _nextTokenId++;
-        _safeMint(msg.sender, tokenId);
-        tokenTypes[tokenId] = tokenType;
-        soulbound[tokenId] = isSoulbound;
+        require(!_hasTokenOfType(msg.sender, tokenType), "Wallet already owns a token of this type");
+        uint256 newTokenId = _nextTokenId++;
+        tokenTypes[newTokenId] = tokenType;
+        soulbound[newTokenId] = isSoulboundFlag;
         config.currentSupply++;
         // Update member stats
         _updateMemberStats(msg.sender);
@@ -194,23 +189,24 @@ contract BlockchainClubMembership is
                 roles.grantRole(roles.MEMBER_ROLE(), msg.sender);
             }
         }
-        emit TokenMinted(msg.sender, tokenId, tokenType);
+        _safeMint(msg.sender, newTokenId);
+        emit TokenMinted(msg.sender, newTokenId, tokenType);
     }
     
     /// @notice Allows an officer to burn a token.
-    function burnToken(uint256 tokenId) external onlyRole(roles.OFFICER_ROLE()) {
-        address owner = ownerOf(tokenId);
+    function burnToken(uint256 tokenId) external onlyRole(roles.OFFICER_ROLE()) nonReentrant {
+        address tokenOwner = ownerOf(tokenId);
         _burn(tokenId);
         // update stats properly
-        _updateMemberStats(owner);
+        _updateMemberStats(tokenOwner);
         // if zero token count, explicitly mark inactive
-        if (memberStats[owner].tokenCount == 0) {
-            memberStats[owner].isActive = false;
+        if (memberStats[tokenOwner].tokenCount == 0) {
+            memberStats[tokenOwner].isActive = false;
         }
         emit StatsUpdated(
-            owner,
-            memberStats[owner].currentRole,
-            memberStats[owner].tokenCount
+            tokenOwner,
+            memberStats[tokenOwner].currentRole,
+            memberStats[tokenOwner].tokenCount
         );
     }
     
@@ -230,7 +226,7 @@ contract BlockchainClubMembership is
     }
     
     // Whitelist management
-    function updateWhitelist(address account, bool status) external onlyRole(roles.OFFICER_ROLE()) {
+    function updateWhitelist(address account, bool status) external onlyRole(roles.OFFICER_ROLE()) nonReentrant {
         whitelist[account] = status;
         emit WhitelistUpdated(account, status);
     }
@@ -261,7 +257,7 @@ contract BlockchainClubMembership is
     }
     
     // Base URI management
-    function setBaseURI(string memory newBaseURI) public onlyRole(roles.ADMIN_ROLE()) {
+    function setBaseURI(string memory newBaseURI) public onlyRole(roles.ADMIN_ROLE()) nonReentrant {
         _baseTokenURI = newBaseURI;
     }
 
@@ -328,6 +324,11 @@ contract BlockchainClubMembership is
         return roles.getRoleMemberCount(roles.OFFICER_ROLE());
     }
     
+    // Public getter to retrieve all token type IDs
+    function getAllTokenTypeIds() external view returns (bytes32[] memory) {
+        return _allTokenTypeIds;
+    }
+    
     // Ownership, pause and upgrade controls
     function pause() external onlyOwner {
         _pause();
@@ -350,7 +351,4 @@ contract BlockchainClubMembership is
     {
         return super.supportsInterface(interfaceId);
     }
-    
-    // Storage gap for future upgrades
-    uint256[39] private __gap;
 }

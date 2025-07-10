@@ -135,16 +135,22 @@ const CryptoTicker: React.FC = () => {
     return () => window.removeEventListener('resize', updateTickerWidth);
   }, []);
   
-  // Fetch data from CoinGecko API
+  // Fetch data from our API route to avoid CORS issues
   const fetchCryptoData = useCallback(async (forceReload = false) => {
     if (forceReload) {
       setLoading(true);
     }
     
     try {
-      // For the main ticker, fetch the specified number of coins
+      // Use our API route to avoid CORS issues
       const response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=${coinCount}&page=1&sparkline=false&price_change_percentage=1h,24h,7d`
+        `/api/crypto?vs_currency=${currency}&per_page=${coinCount}&order=market_cap_desc&sparkline=false&price_change_percentage=1h,24h,7d`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          },
+          cache: 'no-store',
+        }
       );
       
       if (!response.ok) {
