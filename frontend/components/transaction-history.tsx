@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -22,7 +23,8 @@ import {
   CheckCircle,
   XCircle,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Filter
 } from "lucide-react"
 import { Transaction, TransactionResponse, transactionService } from "@/lib/transaction-service"
 
@@ -32,17 +34,27 @@ interface TransactionHistoryProps {
 
 export function TransactionHistory({ walletAddress }: TransactionHistoryProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [total, setTotal] = useState(0)
   
+  // Filter states
+  const [directionFilter, setDirectionFilter] = useState<string>('all')
+  const [chainFilter, setChainFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  
   const limit = 10
   
   useEffect(() => {
     fetchTransactions()
   }, [walletAddress, page])
+
+  useEffect(() => {
+    applyFilters()
+  }, [transactions, directionFilter, chainFilter, typeFilter])
 
   const fetchTransactions = async () => {
     setIsLoading(true)
@@ -63,10 +75,47 @@ export function TransactionHistory({ walletAddress }: TransactionHistoryProps) {
     }
   }
 
+  const applyFilters = () => {
+    let filtered = [...transactions]
+
+    // Direction filter
+    if (directionFilter === 'incoming') {
+      filtered = filtered.filter(tx => tx.to.toLowerCase() === walletAddress.toLowerCase())
+    } else if (directionFilter === 'outgoing') {
+      filtered = filtered.filter(tx => tx.from.toLowerCase() === walletAddress.toLowerCase())
+    }
+
+    // Chain filter
+    if (chainFilter !== 'all') {
+      filtered = filtered.filter(tx => tx.chainName.toLowerCase() === chainFilter.toLowerCase())
+    }
+
+    // Type filter
+    if (typeFilter === 'native') {
+      filtered = filtered.filter(tx => 
+        tx.action === 'Transfer' && 
+        ['ETH', 'MATIC', 'POL', 'BNB'].includes(tx.token)
+      )
+    } else if (typeFilter === 'token') {
+      filtered = filtered.filter(tx => 
+        tx.action === 'Token Transfer' || 
+        (tx.token !== 'ETH' && tx.token !== 'MATIC' && tx.token !== 'POL' && tx.token !== 'BNB' && tx.token !== 'Contract')
+      )
+    } else if (typeFilter === 'contract') {
+      filtered = filtered.filter(tx => 
+        tx.action === 'Contract Call' || 
+        tx.token === 'Contract' ||
+        (tx.action !== 'Transfer' && tx.action !== 'Token Transfer')
+      )
+    }
+
+    setFilteredTransactions(filtered)
+  }
+
   const handleDownloadCSV = () => {
-    if (transactions.length > 0) {
+    if (filteredTransactions.length > 0) {
       const filename = `treasury-transactions-${walletAddress.slice(0, 8)}.csv`
-      transactionService.downloadCSV(transactions, filename)
+      transactionService.downloadCSV(filteredTransactions, filename)
     }
   }
 
@@ -180,6 +229,68 @@ export function TransactionHistory({ walletAddress }: TransactionHistoryProps) {
           </div>
         ) : (
           <>
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3 mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filters:</span>
+              </div>
+              
+              <Select value={directionFilter} onValueChange={setDirectionFilter}>
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectValue placeholder="Direction" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="incoming">Incoming</SelectItem>
+                  <SelectItem value="outgoing">Outgoing</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={chainFilter} onValueChange={setChainFilter}>
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectValue placeholder="Chain" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Chains</SelectItem>
+                  <SelectItem value="ethereum">Ethereum</SelectItem>
+                  <SelectItem value="polygon">Polygon</SelectItem>
+                  <SelectItem value="bsc">BSC</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-32 h-8 text-xs">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="native">Native</SelectItem>
+                  <SelectItem value="token">Tokens</SelectItem>
+                  <SelectItem value="contract">Contracts</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(directionFilter !== 'all' || chainFilter !== 'all' || typeFilter !== 'all') && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setDirectionFilter('all')
+                    setChainFilter('all')
+                    setTypeFilter('all')
+                  }}
+                  className="h-8 px-2 text-xs"
+                >
+                  Clear Filters
+                </Button>
+              )}
+              
+              <div className="ml-auto text-xs text-gray-500">
+                Showing {filteredTransactions.length} of {transactions.length}
+              </div>
+            </div>
+
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -193,7 +304,7 @@ export function TransactionHistory({ walletAddress }: TransactionHistoryProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((tx) => (
+                  {filteredTransactions.map((tx) => (
                     <TableRow key={`${tx.chainName}-${tx.hash}`}>
                       <TableCell>
                         <Badge 
@@ -278,7 +389,7 @@ export function TransactionHistory({ walletAddress }: TransactionHistoryProps) {
             {/* Pagination */}
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-gray-600">
-                Page {page} • Showing {transactions.length} of {total} transactions
+                Page {page} • Showing {filteredTransactions.length} of {total} transactions
               </div>
               <div className="flex gap-2">
                 <Button

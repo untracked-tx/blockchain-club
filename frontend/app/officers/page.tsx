@@ -128,6 +128,7 @@ export default function OfficersPage() {
   const [whitelistStatus, setWhitelistStatus] = useState<boolean | null>(null)
   const [selectedWalletWhitelistStatus, setSelectedWalletWhitelistStatus] = useState<boolean | null>(null)
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [showHowItWorksDropdown, setShowHowItWorksDropdown] = useState(false)
   const { toast } = useToast()
 
   // Web3 and contract setup
@@ -178,6 +179,35 @@ export default function OfficersPage() {
 
   // Token management mode state
   const [tokenManagementMode, setTokenManagementMode] = useState<"mint" | "burn">("mint")
+
+  // Status tracking for key operations
+  const [createTokenTypeStatus, setCreateTokenTypeStatus] = useState<{
+    loading: boolean
+    message: string
+    type: "idle" | "loading" | "success" | "error"
+    txHash?: string
+  }>({ loading: false, message: "", type: "idle" })
+
+  const [tokenManagementStatus, setTokenManagementStatus] = useState<{
+    loading: boolean
+    message: string
+    type: "idle" | "loading" | "success" | "error"
+    txHash?: string
+  }>({ loading: false, message: "", type: "idle" })
+
+  const [quickRoleSetupStatus, setQuickRoleSetupStatus] = useState<{
+    loading: boolean
+    message: string
+    type: "idle" | "loading" | "success" | "error"
+    txHash?: string
+  }>({ loading: false, message: "", type: "idle" })
+
+  const [emergencyFunctionStatus, setEmergencyFunctionStatus] = useState<{
+    loading: boolean
+    message: string
+    type: "idle" | "loading" | "success" | "error"
+    txHash?: string
+  }>({ loading: false, message: "", type: "idle" })
 
   // Wallet tokens modal state
   const [selectedWallet, setSelectedWallet] = useState<MemberData | null>(null)
@@ -528,31 +558,27 @@ export default function OfficersPage() {
       return
     }
 
-    console.log("[DEBUG] Loading token types...")
+    console.log("[DEBUG] Loading token types from contract...")
     try {
-      // For now, let's check known token types directly since event parsing is complex
-      const knownTypes = [
-        { id: "MEMBER", name: "Club Member", category: "Membership" },
-        { id: "OFFICER", name: "Club Officer", category: "Leadership" },
-        { id: "FOUNDER", name: "Founder", category: "Special" },
-        { id: "CUSTOM_ART", name: "Digital Art Collection", category: "Collectible" },
-        { id: "SPECIAL", name: "Special Edition", category: "Limited" },
-        { id: "SUPPORTER", name: "Supporter", category: "Community" }
-      ]
+      // Get all token type IDs that actually exist in the contract
+      const allTokenTypeIds = await membershipContract.getAllTokenTypeIds()
+      console.log(`[DEBUG] Found ${allTokenTypeIds.length} token types in contract:`, allTokenTypeIds)
       
       const tokenTypesData: TokenTypeData[] = []
 
-      for (const type of knownTypes) {
+      for (const typeId of allTokenTypeIds) {
         try {
-          const typeId = ethers.keccak256(ethers.toUtf8Bytes(type.id))
           const config = await membershipContract.tokenTypeConfigs(typeId)
-          console.log(`[DEBUG] Token type ${type.id} config:`, config)
+          console.log(`[DEBUG] Token type ${typeId} config:`, config)
           
           if (Number(config.maxSupply) > 0) { // Only add if configured
+            // Use the config.name as the typeId since that's what the mint function expects
+            // The mint function will convert it back to bytes32 using keccak256
+            
             tokenTypesData.push({
-              typeId: type.id,
-              name: type.name,
-              category: type.category,
+              typeId: config.name, // Use the actual token name for minting
+              name: config.name,
+              category: config.category,
               currentSupply: Number(config.currentSupply),
               maxSupply: Number(config.maxSupply),
               isActive: config.isActive,
@@ -562,15 +588,19 @@ export default function OfficersPage() {
               endTime: Number(config.endTime) * 1000
             })
           } else {
-            console.log(`[DEBUG] Skipping ${type.id} - maxSupply is 0`)
+            console.log(`[DEBUG] Skipping ${typeId} - maxSupply is 0`)
           }
         } catch (error) {
-          console.error(`Error checking token type ${type.id}:`, error)
+          console.error(`Error loading config for token type ${typeId}:`, error)
         }
       }
 
       console.log(`[DEBUG] Final token types data:`, tokenTypesData)
       setTokenTypes(tokenTypesData)
+      
+      if (tokenTypesData.length === 0) {
+        console.log("[DEBUG] No configured token types found. Use 'Create Token Type' to add some!")
+      }
     } catch (error) {
       console.error("Failed to load token types:", error)
     }
@@ -679,15 +709,57 @@ export default function OfficersPage() {
   const grantRole = async () => {
     if (!rolesContract || !roleAddress || !selectedRole) return
     
-    setRoleLoading(true)
+    setQuickRoleSetupStatus({
+      loading: true,
+      message: "Preparing to grant role...",
+      type: "loading"
+    })
+    
     try {
       const roleBytes = selectedRole === "ADMIN_ROLE" ? ethers.ZeroHash : // DEFAULT_ADMIN_ROLE is bytes32(0)
                        selectedRole === "OFFICER_ROLE" ? ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE")) :
                        ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
       
+      // Check if user already has this role
+      const hasRole = await rolesContract.hasRole(roleBytes, roleAddress)
+      if (hasRole) {
+        setQuickRoleSetupStatus({
+          loading: false,
+          message: `User already has ${selectedRole}`,
+          type: "error"
+        })
+        toast({
+          title: "Role Already Assigned",
+          description: `${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)} already has ${selectedRole}! No need to grant it again. 🎭`,
+          variant: "destructive"
+        })
+        return
+      }
+
+      setQuickRoleSetupStatus({
+        loading: true,
+        message: "Submitting transaction...",
+        type: "loading"
+      })
+
       const tx = await rolesContract.grantRole(roleBytes, roleAddress)
+      
+      setQuickRoleSetupStatus({
+        loading: true,
+        message: "Transaction submitted! Waiting for confirmation...",
+        type: "loading",
+        txHash: tx.hash
+      })
+
       await tx.wait()
       
+      setQuickRoleSetupStatus({
+        loading: false,
+        message: `${selectedRole} successfully granted!`,
+        type: "success",
+        txHash: tx.hash
+      })
+
       toast({
         title: "Role Granted Successfully",
         description: `${selectedRole} granted to ${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)}`,
@@ -695,32 +767,108 @@ export default function OfficersPage() {
       
       // Refresh data
       await loadContractData()
-      setRoleAddress("")
-      setSelectedRole("")
-      setRoleCheckResult(null)
+      
+      // Clear form and reset status after 5 seconds
+      setTimeout(() => {
+        setQuickRoleSetupStatus({ loading: false, message: "", type: "idle" })
+        setRoleAddress("")
+        setSelectedRole("")
+        setRoleCheckResult(null)
+      }, 5000)
+
     } catch (error: any) {
       console.error("Error granting role:", error)
+      
+      let userFriendlyMessage = "Failed to grant role"
+      let statusMessage = "Role grant failed"
+      
+      if (error.code === 4001) {
+        userFriendlyMessage = "Transaction was cancelled by user"
+        statusMessage = "Transaction cancelled"
+      } else if (error.message?.includes("AccessControl: account") && error.message?.includes("is missing role")) {
+        userFriendlyMessage = "You don't have permission to grant this role. Admin access required."
+        statusMessage = "Permission denied"
+      } else if (error.message?.includes("insufficient funds")) {
+        userFriendlyMessage = "Insufficient funds for gas fees"
+        statusMessage = "Insufficient gas fees"
+      } else if (error.message?.includes("could not coalesce error")) {
+        userFriendlyMessage = "Polygon Amoy is having a moment 🎭 - try again in a few seconds!"
+        statusMessage = "Network being dramatic"
+      } else if (error.shortMessage) {
+        userFriendlyMessage = error.shortMessage
+        statusMessage = "Transaction failed"
+      } else if (error.message) {
+        userFriendlyMessage = error.message
+      }
+
+      setQuickRoleSetupStatus({
+        loading: false,
+        message: statusMessage,
+        type: "error"
+      })
+
       toast({
         title: "Failed to Grant Role",
-        description: error.message || "Transaction failed",
+        description: userFriendlyMessage,
         variant: "destructive"
       })
     }
-    setRoleLoading(false)
   }
 
   const revokeRole = async () => {
     if (!rolesContract || !roleAddress || !selectedRole) return
     
-    setRoleLoading(true)
+    setQuickRoleSetupStatus({
+      loading: true,
+      message: "Preparing to revoke role...",
+      type: "loading"
+    })
+    
     try {
       const roleBytes = selectedRole === "ADMIN_ROLE" ? ethers.ZeroHash : // DEFAULT_ADMIN_ROLE is bytes32(0)
                        selectedRole === "OFFICER_ROLE" ? ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE")) :
                        ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
       
+      // Check if user has this role first
+      const hasRole = await rolesContract.hasRole(roleBytes, roleAddress)
+      if (!hasRole) {
+        setQuickRoleSetupStatus({
+          loading: false,
+          message: `User doesn't have ${selectedRole}`,
+          type: "error"
+        })
+        toast({
+          title: "Role Not Found",
+          description: `${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)} doesn't have ${selectedRole}! Nothing to revoke. 🤷‍♀️`,
+          variant: "destructive"
+        })
+        return
+      }
+
+      setQuickRoleSetupStatus({
+        loading: true,
+        message: "Submitting transaction...",
+        type: "loading"
+      })
+
       const tx = await rolesContract.revokeRole(roleBytes, roleAddress)
+      
+      setQuickRoleSetupStatus({
+        loading: true,
+        message: "Transaction submitted! Waiting for confirmation...",
+        type: "loading",
+        txHash: tx.hash
+      })
+
       await tx.wait()
       
+      setQuickRoleSetupStatus({
+        loading: false,
+        message: `${selectedRole} successfully revoked!`,
+        type: "success",
+        txHash: tx.hash
+      })
+
       toast({
         title: "Role Revoked Successfully",
         description: `${selectedRole} revoked from ${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)}`,
@@ -728,18 +876,52 @@ export default function OfficersPage() {
       
       // Refresh data
       await loadContractData()
-      setRoleAddress("")
-      setSelectedRole("")
-      setRoleCheckResult(null)
+      
+      // Clear form and reset status after 5 seconds
+      setTimeout(() => {
+        setQuickRoleSetupStatus({ loading: false, message: "", type: "idle" })
+        setRoleAddress("")
+        setSelectedRole("")
+        setRoleCheckResult(null)
+      }, 5000)
+
     } catch (error: any) {
       console.error("Error revoking role:", error)
+      
+      let userFriendlyMessage = "Failed to revoke role"
+      let statusMessage = "Role revoke failed"
+      
+      if (error.code === 4001) {
+        userFriendlyMessage = "Transaction was cancelled by user"
+        statusMessage = "Transaction cancelled"
+      } else if (error.message?.includes("AccessControl: account") && error.message?.includes("is missing role")) {
+        userFriendlyMessage = "You don't have permission to revoke this role. Admin access required."
+        statusMessage = "Permission denied"
+      } else if (error.message?.includes("insufficient funds")) {
+        userFriendlyMessage = "Insufficient funds for gas fees"
+        statusMessage = "Insufficient gas fees"
+      } else if (error.message?.includes("could not coalesce error")) {
+        userFriendlyMessage = "Polygon Amoy is having a moment 🎭 - try again in a few seconds!"
+        statusMessage = "Network being dramatic"
+      } else if (error.shortMessage) {
+        userFriendlyMessage = error.shortMessage
+        statusMessage = "Transaction failed"
+      } else if (error.message) {
+        userFriendlyMessage = error.message
+      }
+
+      setQuickRoleSetupStatus({
+        loading: false,
+        message: statusMessage,
+        type: "error"
+      })
+
       toast({
         title: "Failed to Revoke Role",
-        description: error.message || "Transaction failed",
+        description: userFriendlyMessage,
         variant: "destructive"
       })
     }
-    setRoleLoading(false)
   }
 
   // Whitelist management functions
@@ -1114,6 +1296,11 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
 
   const mintToken = async () => {
     if (!mintAddress || !selectedTokenType) {
+      setTokenManagementStatus({
+        loading: false,
+        message: "Please enter address and select token type",
+        type: "error"
+      })
       toast({
         title: "Error",
         description: "Please enter address and select token type",
@@ -1123,6 +1310,11 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
     }
 
     if (!membershipContract) {
+      setTokenManagementStatus({
+        loading: false,
+        message: "Contract not connected",
+        type: "error"
+      })
       toast({
         title: "Error",
         description: "Contract not connected",
@@ -1131,18 +1323,43 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
       return
     }
 
+    setTokenManagementStatus({
+      loading: true,
+      message: "Preparing transaction...",
+      type: "loading"
+    })
+
     try {
       // Validate address format
       if (!ethers.isAddress(mintAddress)) {
         throw new Error("Invalid address format")
       }
 
+      setTokenManagementStatus({
+        loading: true,
+        message: "Converting token type to blockchain format...",
+        type: "loading"
+      })
+
       // Convert token type to bytes32
       const tokenTypeBytes = ethers.keccak256(ethers.toUtf8Bytes(selectedTokenType))
       
+      setTokenManagementStatus({
+        loading: true,
+        message: "Submitting transaction to blockchain...",
+        type: "loading"
+      })
+
       // Call mint function
       const tx = await membershipContract.mint(mintAddress, tokenTypeBytes, isSoulbound)
       
+      setTokenManagementStatus({
+        loading: true,
+        message: "Transaction submitted! Waiting for confirmation...",
+        type: "loading",
+        txHash: tx.hash
+      })
+
       toast({
         title: "Transaction Submitted",
         description: "Waiting for confirmation...",
@@ -1150,18 +1367,82 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
 
       await tx.wait()
       
+      setTokenManagementStatus({
+        loading: false,
+        message: `Token successfully minted for ${mintAddress.slice(0, 6)}...${mintAddress.slice(-4)}!`,
+        type: "success",
+        txHash: tx.hash
+      })
+
       toast({
         title: "Success",
         description: `Token minted for ${mintAddress.slice(0, 6)}...${mintAddress.slice(-4)}`,
       })
       
       loadContractData()
-    } catch (error: unknown) {
+
+      // Clear form and reset status after 5 seconds
+      setTimeout(() => {
+        setTokenManagementStatus({ loading: false, message: "", type: "idle" })
+        setMintAddress("")
+        setSelectedTokenType("")
+        setIsSoulbound(false)
+      }, 5000)
+
+    } catch (error: any) {
       console.error("Failed to mint token:", error)
-      const errorMessage = error instanceof Error ? error.message : "Failed to mint token"
+      
+      let userFriendlyMessage = "Failed to mint token"
+      let statusMessage = "Minting failed"
+      
+      // Handle specific error cases with user-friendly messages
+      if (error.reason === "Wallet already owns a token of this type" || 
+          error.message?.includes("Wallet already owns a token of this type")) {
+        userFriendlyMessage = `This wallet already owns a ${selectedTokenType} token! Each wallet can only have one token of each type. 🎫`
+        statusMessage = "Already owns this token type"
+      } else if (error.code === 4001) {
+        userFriendlyMessage = "Transaction was cancelled by user"
+        statusMessage = "Transaction cancelled"
+      } else if (error.message?.includes("insufficient funds")) {
+        userFriendlyMessage = "Insufficient funds for gas fees. Please ensure you have enough MATIC in your wallet."
+        statusMessage = "Insufficient gas fees"
+      } else if (error.message?.includes("Token type does not exist") || 
+                 error.message?.includes("TokenTypeNotFound")) {
+        userFriendlyMessage = `The token type "${selectedTokenType}" doesn't exist in the contract. Please create it first or select a different type.`
+        statusMessage = "Token type doesn't exist"
+      } else if (error.message?.includes("Mint window closed") || 
+                 error.message?.includes("not active")) {
+        userFriendlyMessage = `The minting window for "${selectedTokenType}" is currently closed. Check the token type settings.`
+        statusMessage = "Minting window closed"
+      } else if (error.message?.includes("Max supply reached")) {
+        userFriendlyMessage = `Maximum supply reached for "${selectedTokenType}". No more tokens of this type can be minted.`
+        statusMessage = "Max supply reached"
+      } else if (error.message?.includes("Access denied") || 
+                 error.message?.includes("OFFICER_ROLE")) {
+        userFriendlyMessage = "You don't have permission to mint tokens. Officer role required."
+        statusMessage = "Permission denied"
+      } else if (error.message?.includes("could not coalesce error") || 
+                 error.message?.includes("Internal JSON-RPC error")) {
+        userFriendlyMessage = "Polygon Amoy is having a moment 🎭 - totally not your fault! Try again in a few seconds."
+        statusMessage = "Network being dramatic"
+      } else if (error.shortMessage) {
+        // Use ethers' cleaned up error message if available
+        userFriendlyMessage = error.shortMessage
+        statusMessage = "Transaction failed"
+      } else if (error.message) {
+        userFriendlyMessage = error.message
+        statusMessage = "Minting failed"
+      }
+      
+      setTokenManagementStatus({
+        loading: false,
+        message: statusMessage,
+        type: "error"
+      })
+
       toast({
-        title: "Error",
-        description: errorMessage,
+        title: "Minting Failed",
+        description: userFriendlyMessage,
         variant: "destructive"
       })
     }
@@ -1312,6 +1593,65 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
     if (token.name === "Loyalty Token") return "/longrun.png"
     if (token.name === "Art Drop Token") return "/digi_art.png"
     return "/placeholder.svg"
+  }
+
+  // Status Indicator Component
+  const StatusIndicator = ({ status, title }: { 
+    status: { loading: boolean; message: string; type: "idle" | "loading" | "success" | "error"; txHash?: string }
+    title: string
+  }) => {
+    if (status.type === "idle") return null
+
+    const getIcon = () => {
+      switch (status.type) {
+        case "loading":
+          return <RefreshCw className="h-4 w-4 animate-spin" />
+        case "success":
+          return <CheckCircle className="h-4 w-4" />
+        case "error":
+          return <XCircle className="h-4 w-4" />
+        default:
+          return null
+      }
+    }
+
+    const getStyles = () => {
+      switch (status.type) {
+        case "loading":
+          return "bg-blue-50 border-blue-200 text-blue-800"
+        case "success":
+          return "bg-green-50 border-green-200 text-green-800"
+        case "error":
+          return "bg-red-50 border-red-200 text-red-800"
+        default:
+          return "bg-gray-50 border-gray-200 text-gray-800"
+      }
+    }
+
+    return (
+      <div className={`p-3 rounded-lg border ${getStyles()} mt-3`}>
+        <div className="flex items-start space-x-2">
+          {getIcon()}
+          <div className="flex-1">
+            <div className="font-medium text-sm">{title} Status</div>
+            <div className="text-sm mt-1">{status.message}</div>
+            {status.txHash && (
+              <div className="mt-2">
+                <a
+                  href={`https://amoy.polygonscan.com/tx/${status.txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  <span>View on Polygon Amoy Scan</span>
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const filteredMembers = members.filter(member => 
@@ -1483,7 +1823,7 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button onClick={connectWallet} className="w-full bg-amber-600 hover:bg-amber-700">
+              <Button onClick={connectWallet} className="w-full bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold">
                 Connect Wallet
               </Button>
             </CardContent>
@@ -1680,13 +2020,59 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
             {/* Member Overview */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Users className="mr-2 h-5 w-5" />
-                  Member Overview
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Users className="mr-2 h-5 w-5" />
+                    Member Overview
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHowItWorksDropdown(!showHowItWorksDropdown)}
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    <HelpCircle className="mr-1 h-4 w-4" />
+                    How this works
+                    {showHowItWorksDropdown ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    )}
+                  </Button>
                 </CardTitle>
                 <CardDescription>
                   View and search through all club members and their roles. Click on any address to view their tokens.
                 </CardDescription>
+                {showHowItWorksDropdown && (
+                  <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="space-y-2 text-sm text-blue-900">
+                      <div className="flex items-start space-x-2">
+                        <Code className="h-4 w-4 mt-0.5 text-blue-600" />
+                        <div>
+                          <strong>On-Chain Data Tracking:</strong> All member data is stored directly on the blockchain, ensuring transparency and immutability.
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <Shield className="h-4 w-4 mt-0.5 text-blue-600" />
+                        <div>
+                          <strong>Role-Based Access:</strong> Members are assigned roles (Admin, Officer, Member) which determine their permissions and voting power.
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <Award className="h-4 w-4 mt-0.5 text-blue-600" />
+                        <div>
+                          <strong>Token-Based Membership:</strong> Each member holds NFT tokens that represent their membership status and special privileges.
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <BarChart3 className="h-4 w-4 mt-0.5 text-blue-600" />
+                        <div>
+                          <strong>Voting Power:</strong> Calculated based on token holdings and roles, with optional custom overrides for special cases.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex space-x-2">
@@ -1862,22 +2248,52 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                       />
                       <Button 
                         onClick={async () => {
-                          if (!rolesContract || !membershipContract || !roleAddress) return
+                          if (!rolesContract || !membershipContract || !roleAddress) {
+                            setQuickRoleSetupStatus({
+                              loading: false,
+                              message: "Please enter a valid address",
+                              type: "error"
+                            })
+                            return
+                          }
                           
+                          setQuickRoleSetupStatus({
+                            loading: true,
+                            message: "Setting up roles and permissions...",
+                            type: "loading"
+                          })
+
                           setRoleLoading(true)
                           try {
                             const officerHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
                             const memberHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
                             
                             // Check and grant whitelist if needed
+                            setQuickRoleSetupStatus({
+                              loading: true,
+                              message: "Checking whitelist status...",
+                              type: "loading"
+                            })
+
                             const isWhitelisted = await membershipContract.whitelist(roleAddress)
                             if (!isWhitelisted) {
+                              setQuickRoleSetupStatus({
+                                loading: true,
+                                message: "Adding to whitelist...",
+                                type: "loading"
+                              })
                               const whitelistTx = await membershipContract.updateWhitelist(roleAddress, true)
                               await whitelistTx.wait()
                             }
                             
                             if (roleType === 'admin') {
                               // Grant all three roles for admin
+                              setQuickRoleSetupStatus({
+                                loading: true,
+                                message: "Granting admin roles (ADMIN + OFFICER + MEMBER)...",
+                                type: "loading"
+                              })
+
                               const adminHash = ethers.ZeroHash
                               const tx1 = await rolesContract.grantRole(adminHash, roleAddress)
                               await tx1.wait()
@@ -1886,16 +2302,36 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                               const tx3 = await rolesContract.grantRole(memberHash, roleAddress)
                               await tx3.wait()
                               
+                              setQuickRoleSetupStatus({
+                                loading: false,
+                                message: `Full admin setup complete! All roles and whitelist granted to ${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)}`,
+                                type: "success",
+                                txHash: tx3.hash
+                              })
+
                               toast({
                                 title: "Full Admin Setup Complete",
                                 description: `All roles and whitelist granted to ${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)}`,
                               })
                             } else {
                               // Grant officer and member roles only
+                              setQuickRoleSetupStatus({
+                                loading: true,
+                                message: "Granting officer roles (OFFICER + MEMBER)...",
+                                type: "loading"
+                              })
+
                               const tx1 = await rolesContract.grantRole(officerHash, roleAddress)
                               await tx1.wait()
                               const tx2 = await rolesContract.grantRole(memberHash, roleAddress)
                               await tx2.wait()
+
+                              setQuickRoleSetupStatus({
+                                loading: false,
+                                message: `Officer setup complete! Officer and member roles + whitelist granted to ${roleAddress.slice(0, 8)}...${roleAddress.slice(-6)}`,
+                                type: "success",
+                                txHash: tx2.hash
+                              })
                               
                               toast({
                                 title: "Officer Setup Complete",
@@ -1904,9 +2340,20 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             }
                             
                             await loadContractData()
-                            setRoleAddress("")
+
+                            // Clear form and reset status after 5 seconds
+                            setTimeout(() => {
+                              setQuickRoleSetupStatus({ loading: false, message: "", type: "idle" })
+                              setRoleAddress("")
+                            }, 5000)
+
                           } catch (error: any) {
                             console.error(`Error setting up ${roleType}:`, error)
+                            setQuickRoleSetupStatus({
+                              loading: false,
+                              message: `Failed to setup ${roleType === 'admin' ? 'admin' : 'officer'}: ${error.message || "Transaction failed"}`,
+                              type: "error"
+                            })
                             toast({
                               title: `Failed to Setup ${roleType === 'admin' ? 'Admin' : 'Officer'}`,
                               description: error.message || "Transaction failed",
@@ -1915,10 +2362,10 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           }
                           setRoleLoading(false)
                         }}
-                        disabled={roleLoading || !roleAddress}
+                        disabled={roleLoading || !roleAddress || quickRoleSetupStatus.loading}
                         className={roleType === 'admin' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}
                       >
-                        {roleLoading ? (
+                        {(roleLoading || quickRoleSetupStatus.loading) ? (
                           <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                         ) : roleType === 'admin' ? (
                           <Crown className="mr-2 h-4 w-4" />
@@ -1928,6 +2375,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                         Setup {roleType === 'admin' ? 'Full Admin' : 'Officer'}
                       </Button>
                     </div>
+
+                    {/* Quick Role Setup Status */}
+                    <StatusIndicator status={quickRoleSetupStatus} title="Role Setup" />
 
                     {/* How this works section */}
                     <div className="border-t pt-4">
@@ -2009,6 +2459,182 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                   </CardContent>
                 </Card>
 
+                {/* Individual Role Management */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Settings className="mr-2 h-5 w-5" />
+                      Individual Role Management
+                    </CardTitle>
+                    <CardDescription>
+                      Grant or revoke individual roles with fine-grained control
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Alert className="border-amber-200 bg-amber-50">
+                      <Info className="h-4 w-4" />
+                      <AlertTitle className="text-amber-900">Precise Role Control</AlertTitle>
+                      <AlertDescription className="text-amber-700">
+                        Use this for precise role management. Unlike Quick Setup, this allows you to grant or revoke individual roles without affecting others.
+                      </AlertDescription>
+                    </Alert>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Address Input */}
+                      <div className="space-y-2">
+                        <Label htmlFor="role-address">Wallet Address</Label>
+                        <Input
+                          id="role-address"
+                          placeholder="0x..."
+                          value={roleAddress}
+                          onChange={(e) => setRoleAddress(e.target.value)}
+                        />
+                      </div>
+
+                      {/* Role Selection */}
+                      <div className="space-y-2">
+                        <Label htmlFor="role-selection">Role</Label>
+                        <Select value={selectedRole} onValueChange={setSelectedRole}>
+                          <SelectTrigger id="role-selection">
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ADMIN_ROLE">
+                              <div className="flex items-center">
+                                <Crown className="mr-2 h-4 w-4 text-red-600" />
+                                Admin Role
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="OFFICER_ROLE">
+                              <div className="flex items-center">
+                                <Award className="mr-2 h-4 w-4 text-amber-600" />
+                                Officer Role
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="MEMBER_ROLE">
+                              <div className="flex items-center">
+                                <Users className="mr-2 h-4 w-4 text-blue-600" />
+                                Member Role
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-3">
+                      <Button 
+                        onClick={checkUserRole}
+                        disabled={roleLoading || !roleAddress || !selectedRole || quickRoleSetupStatus.loading}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        Check Role
+                      </Button>
+                      <Button 
+                        onClick={grantRole}
+                        disabled={roleLoading || !roleAddress || !selectedRole || quickRoleSetupStatus.loading}
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                      >
+                        {(roleLoading || quickRoleSetupStatus.loading) ? (
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <UserPlus className="mr-2 h-4 w-4" />
+                        )}
+                        Grant Role
+                      </Button>
+                      <Button 
+                        onClick={revokeRole}
+                        disabled={roleLoading || !roleAddress || !selectedRole || quickRoleSetupStatus.loading}
+                        variant="destructive"
+                        className="flex-1"
+                      >
+                        {(roleLoading || quickRoleSetupStatus.loading) ? (
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4" />
+                        )}
+                        Revoke Role
+                      </Button>
+                    </div>
+
+                    {/* Role Check Result */}
+                    {roleCheckResult && (
+                      <Alert className={roleCheckResult.includes("✅") ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
+                        <CheckCircle2 className="h-4 w-4" />
+                        <AlertTitle>Role Check Result</AlertTitle>
+                        <AlertDescription>{roleCheckResult}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* Individual Role Management Status */}
+                    <StatusIndicator status={quickRoleSetupStatus} title="Role Management" />
+
+                    {/* How this works section */}
+                    <div className="border-t pt-4">
+                      <button
+                        onClick={() => setShowOfficerWhitelistHelp(!showOfficerWhitelistHelp)}
+                        className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <HelpCircle className="h-4 w-4" />
+                          Role Management Guide
+                        </div>
+                        {showOfficerWhitelistHelp ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </button>
+                      
+                      {showOfficerWhitelistHelp && (
+                        <div className="mt-3 space-y-3 p-4 bg-gray-50 rounded-lg border">
+                          <div className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
+                            Role Hierarchy & Best Practices
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border">
+                              <Crown className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm text-red-700">ADMIN_ROLE</div>
+                                <div className="text-xs text-gray-600">Full contract control, can grant/revoke all roles, access admin tools</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border">
+                              <Award className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm text-amber-700">OFFICER_ROLE</div>
+                                <div className="text-xs text-gray-600">Dashboard access, token minting, limited admin functions</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border">
+                              <Users className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm text-blue-700">MEMBER_ROLE</div>
+                                <div className="text-xs text-gray-600">Appears in member listings, basic club membership</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-2">
+                              💡 Pro Tip
+                            </div>
+                            <div className="text-sm text-blue-700">
+                              For full functionality, users typically need multiple roles. For example, an officer should have both OFFICER_ROLE and MEMBER_ROLE to appear in all relevant lists and have full access.
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Emergency Functions */}
                 <Card className="border-red-200 bg-red-50">
                   <CardHeader>
@@ -2042,11 +2668,38 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           onClick={async () => {
                             if (!membershipContract) return
                             
+                            setEmergencyFunctionStatus({
+                              loading: true,
+                              message: "Preparing to pause membership contract...",
+                              type: "loading"
+                            })
                             setIsLoading(true)
+                            
                             try {
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Submitting pause transaction...",
+                                type: "loading"
+                              })
+
                               const tx = await membershipContract.pause()
+
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Transaction submitted! Waiting for confirmation...",
+                                type: "loading",
+                                txHash: tx.hash
+                              })
+
                               await tx.wait()
                               
+                              setEmergencyFunctionStatus({
+                                loading: false,
+                                message: "Membership contract has been paused! All NFT operations are now suspended.",
+                                type: "success",
+                                txHash: tx.hash
+                              })
+
                               toast({
                                 title: "Membership Contract Paused",
                                 description: "All NFT operations have been suspended",
@@ -2054,8 +2707,21 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                               })
                               
                               await loadContractData()
+
+                              // Clear status after 10 seconds (longer for emergency actions)
+                              setTimeout(() => {
+                                setEmergencyFunctionStatus({ loading: false, message: "", type: "idle" })
+                              }, 10000)
+
                             } catch (error: any) {
                               console.error("Error pausing contract:", error)
+                              
+                              setEmergencyFunctionStatus({
+                                loading: false,
+                                message: `Failed to pause contract: ${error.message || "Transaction failed"}`,
+                                type: "error"
+                              })
+
                               toast({
                                 title: "Failed to Pause Contract",
                                 description: error.message || "Transaction failed",
@@ -2064,9 +2730,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             }
                             setIsLoading(false)
                           }}
-                          disabled={isLoading}
+                          disabled={isLoading || emergencyFunctionStatus.loading}
                         >
-                          {isLoading ? (
+                          {(isLoading || emergencyFunctionStatus.loading) ? (
                             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                           ) : (
                             <Lock className="mr-2 h-4 w-4" />
@@ -2087,19 +2753,59 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           onClick={async () => {
                             if (!membershipContract) return
                             
+                            setEmergencyFunctionStatus({
+                              loading: true,
+                              message: "Preparing to unpause membership contract...",
+                              type: "loading"
+                            })
                             setIsLoading(true)
+                            
                             try {
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Submitting unpause transaction...",
+                                type: "loading"
+                              })
+
                               const tx = await membershipContract.unpause()
+
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Transaction submitted! Waiting for confirmation...",
+                                type: "loading",
+                                txHash: tx.hash
+                              })
+
                               await tx.wait()
                               
+                              setEmergencyFunctionStatus({
+                                loading: false,
+                                message: "Membership contract has been unpaused! Normal operations have been restored.",
+                                type: "success",
+                                txHash: tx.hash
+                              })
+
                               toast({
                                 title: "Membership Contract Unpaused",
                                 description: "Normal NFT operations have been restored"
                               })
                               
                               await loadContractData()
+
+                              // Clear status after 10 seconds
+                              setTimeout(() => {
+                                setEmergencyFunctionStatus({ loading: false, message: "", type: "idle" })
+                              }, 10000)
+
                             } catch (error: any) {
                               console.error("Error unpausing contract:", error)
+                              
+                              setEmergencyFunctionStatus({
+                                loading: false,
+                                message: `Failed to unpause contract: ${error.message || "Transaction failed"}`,
+                                type: "error"
+                              })
+
                               toast({
                                 title: "Failed to Unpause Contract",
                                 description: error.message || "Transaction failed",
@@ -2108,9 +2814,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             }
                             setIsLoading(false)
                           }}
-                          disabled={isLoading}
+                          disabled={isLoading || emergencyFunctionStatus.loading}
                         >
-                          {isLoading ? (
+                          {(isLoading || emergencyFunctionStatus.loading) ? (
                             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                           ) : (
                             <CheckCircle className="mr-2 h-4 w-4" />
@@ -2131,8 +2837,20 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           onClick={async () => {
                             if (!provider) return
                             
+                            setEmergencyFunctionStatus({
+                              loading: true,
+                              message: "Preparing emergency treasury withdrawal...",
+                              type: "loading"
+                            })
                             setIsLoading(true)
+                            
                             try {
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Connecting to treasury contract...",
+                                type: "loading"
+                              })
+
                               const signer = await provider.getSigner()
                               const treasuryContract = new ethers.Contract(
                                 contracts.treasury.address,
@@ -2140,9 +2858,30 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                                 signer
                               )
                               
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Submitting emergency withdrawal transaction...",
+                                type: "loading"
+                              })
+
                               const tx = await treasuryContract.emergencyWithdraw()
+
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Transaction submitted! Processing emergency withdrawal...",
+                                type: "loading",
+                                txHash: tx.hash
+                              })
+
                               await tx.wait()
                               
+                              setEmergencyFunctionStatus({
+                                loading: false,
+                                message: "Emergency withdrawal complete! All treasury funds have been withdrawn to your address.",
+                                type: "success",
+                                txHash: tx.hash
+                              })
+
                               toast({
                                 title: "Emergency Withdrawal Complete",
                                 description: "All treasury funds have been withdrawn to your address",
@@ -2150,8 +2889,21 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                               })
                               
                               await loadContractData()
+
+                              // Clear status after 10 seconds
+                              setTimeout(() => {
+                                setEmergencyFunctionStatus({ loading: false, message: "", type: "idle" })
+                              }, 10000)
+
                             } catch (error: any) {
                               console.error("Error during emergency withdrawal:", error)
+                              
+                              setEmergencyFunctionStatus({
+                                loading: false,
+                                message: `Emergency withdrawal failed: ${error.message || "Transaction failed"}`,
+                                type: "error"
+                              })
+
                               toast({
                                 title: "Emergency Withdrawal Failed",
                                 description: error.message || "Transaction failed",
@@ -2160,9 +2912,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             }
                             setIsLoading(false)
                           }}
-                          disabled={isLoading}
+                          disabled={isLoading || emergencyFunctionStatus.loading}
                         >
-                          {isLoading ? (
+                          {(isLoading || emergencyFunctionStatus.loading) ? (
                             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                           ) : (
                             <AlertCircle className="mr-2 h-4 w-4" />
@@ -2190,8 +2942,20 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             onClick={async () => {
                               if (!provider || !targetAddress) return
                               
+                              setEmergencyFunctionStatus({
+                                loading: true,
+                                message: "Preparing to update treasury address...",
+                                type: "loading"
+                              })
                               setIsLoading(true)
+                              
                               try {
+                                setEmergencyFunctionStatus({
+                                  loading: true,
+                                  message: "Connecting to treasury contract...",
+                                  type: "loading"
+                                })
+
                                 const signer = await provider.getSigner()
                                 const treasuryContract = new ethers.Contract(
                                   contracts.treasury.address,
@@ -2199,9 +2963,30 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                                   signer
                                 )
                                 
+                                setEmergencyFunctionStatus({
+                                  loading: true,
+                                  message: "Submitting treasury update transaction...",
+                                  type: "loading"
+                                })
+
                                 const tx = await treasuryContract.updateTreasury(targetAddress)
+
+                                setEmergencyFunctionStatus({
+                                  loading: true,
+                                  message: "Transaction submitted! Waiting for confirmation...",
+                                  type: "loading",
+                                  txHash: tx.hash
+                                })
+
                                 await tx.wait()
                                 
+                                setEmergencyFunctionStatus({
+                                  loading: false,
+                                  message: `Treasury address successfully updated to ${targetAddress.slice(0, 8)}...${targetAddress.slice(-6)}`,
+                                  type: "success",
+                                  txHash: tx.hash
+                                })
+
                                 toast({
                                   title: "Treasury Address Updated",
                                   description: `Treasury address changed to ${targetAddress.slice(0, 8)}...${targetAddress.slice(-6)}`
@@ -2209,8 +2994,21 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                                 
                                 setTargetAddress("")
                                 await loadContractData()
+
+                                // Clear status after 10 seconds
+                                setTimeout(() => {
+                                  setEmergencyFunctionStatus({ loading: false, message: "", type: "idle" })
+                                }, 10000)
+
                               } catch (error: any) {
                                 console.error("Error updating treasury:", error)
+                                
+                                setEmergencyFunctionStatus({
+                                  loading: false,
+                                  message: `Failed to update treasury: ${error.message || "Transaction failed"}`,
+                                  type: "error"
+                                })
+
                                 toast({
                                   title: "Failed to Update Treasury",
                                   description: error.message || "Transaction failed",
@@ -2219,9 +3017,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                               }
                               setIsLoading(false)
                             }}
-                            disabled={isLoading || !targetAddress}
+                            disabled={isLoading || !targetAddress || emergencyFunctionStatus.loading}
                           >
-                            {isLoading ? (
+                            {(isLoading || emergencyFunctionStatus.loading) ? (
                               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
                               <Settings className="mr-2 h-4 w-4" />
@@ -2231,6 +3029,9 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                         </div>
                       </div>
                     </div>
+
+                    {/* Emergency Functions Status */}
+                    <StatusIndicator status={emergencyFunctionStatus} title="Emergency Function" />
 
                     {/* How this works section for Emergency Functions */}
                     <div className="border-t border-red-200 pt-4">
@@ -2339,9 +3140,21 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                 {/* Token Management */}
                 <Card className="h-fit">
                   <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Award className="mr-2 h-5 w-5" />
-                      Token Management
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <Award className="mr-2 h-5 w-5" />
+                        Token Management
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={loadTokenTypes}
+                        disabled={isLoading}
+                        className="text-xs"
+                      >
+                        <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                        Refresh Types
+                      </Button>
                     </CardTitle>
                     <CardDescription>
                       Mint new membership tokens and burn existing ones
@@ -2383,18 +3196,69 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           value={mintAddress}
                           onChange={(e) => setMintAddress(e.target.value)}
                         />
-                        <Select value={selectedTokenType} onValueChange={setSelectedTokenType}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select token type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {tokenTypes.map(tokenType => (
-                              <SelectItem key={tokenType.typeId} value={tokenType.typeId}>
-                                {tokenType.name} ({tokenType.category})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="space-y-2">
+                          <Label>Token Type</Label>
+                          <Select value={selectedTokenType} onValueChange={setSelectedTokenType}>
+                            <SelectTrigger>
+                              <SelectValue placeholder={
+                                isLoading ? "Loading token types..." : 
+                                tokenTypes.length === 0 ? "No token types available" : 
+                                "Select token type"
+                              } />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {tokenTypes.length === 0 ? (
+                                <SelectItem value="loading" disabled>
+                                  {isLoading ? "Loading token types..." : "No token types available"}
+                                </SelectItem>
+                              ) : (
+                                tokenTypes
+                                  .filter(tokenType => tokenType.isActive && tokenType.currentSupply < tokenType.maxSupply)
+                                  .map(tokenType => (
+                                    <SelectItem key={tokenType.typeId} value={tokenType.typeId}>
+                                      {tokenType.name} ({tokenType.category}) - {tokenType.currentSupply}/{tokenType.maxSupply}
+                                    </SelectItem>
+                                  ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          {tokenTypes.length === 0 && !isLoading && (
+                            <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-1">
+                                  <AlertCircle className="h-3 w-3" />
+                                  <span>No token types exist yet. Create your first token type below!</span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setActiveTab("officer-tools")}
+                                  className="text-xs h-6"
+                                >
+                                  Create Types
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          {tokenTypes.length > 0 && tokenTypes.filter(t => t.isActive && t.currentSupply < t.maxSupply).length === 0 && (
+                            <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded p-2">
+                              <div className="flex items-center space-x-1">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>No mintable token types available. All types may be at max supply or inactive.</span>
+                              </div>
+                            </div>
+                          )}
+                          {tokenTypes.length > 0 && tokenTypes.filter(t => t.isActive && t.currentSupply < t.maxSupply).length > 0 && (
+                            <div className="text-xs text-green-600 bg-green-50 border border-green-200 rounded p-2">
+                              <div className="flex items-center space-x-1">
+                                <CheckCircle className="h-3 w-3" />
+                                <span>
+                                  Ready to mint: {tokenTypes.filter(t => t.isActive && t.currentSupply < t.maxSupply).length} token type(s) available.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex items-center space-x-2">
                           <input
                             type="checkbox"
@@ -2407,12 +3271,19 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                         </div>
                         <Button 
                           onClick={mintToken} 
-                          disabled={!mintAddress || !selectedTokenType}
+                          disabled={!mintAddress || !selectedTokenType || tokenManagementStatus.loading}
                           className="w-full bg-green-600 hover:bg-green-700"
                         >
-                          <Plus className="mr-2 h-4 w-4" />
+                          {tokenManagementStatus.loading ? (
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Plus className="mr-2 h-4 w-4" />
+                          )}
                           Mint Token
                         </Button>
+
+                        {/* Token Management Status */}
+                        <StatusIndicator status={tokenManagementStatus} title="Token Minting" />
                       </div>
                     )}
 
@@ -2898,6 +3769,11 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                   <Button 
                     onClick={async () => {
                       if (!membershipContract || !newTokenType.typeId || !newTokenType.name || !newTokenType.category) {
+                        setCreateTokenTypeStatus({
+                          loading: false,
+                          message: "Please fill in Type ID, Name, and Category",
+                          type: "error"
+                        })
                         toast({
                           title: "Missing Information",
                           description: "Please fill in Type ID, Name, and Category",
@@ -2906,8 +3782,20 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                         return
                       }
 
+                      setCreateTokenTypeStatus({
+                        loading: true,
+                        message: "Preparing token type creation...",
+                        type: "loading"
+                      })
                       setCreateTokenTypeLoading(true)
+                      
                       try {
+                        setCreateTokenTypeStatus({
+                          loading: true,
+                          message: "Converting parameters to blockchain format...",
+                          type: "loading"
+                        })
+
                         const typeIdBytes32 = ethers.keccak256(ethers.toUtf8Bytes(newTokenType.typeId))
                         const startTimeUnix = newTokenType.startTime ? Math.floor(new Date(newTokenType.startTime).getTime() / 1000) : 0
                         const endTimeUnix = newTokenType.endTime ? Math.floor(new Date(newTokenType.endTime).getTime() / 1000) : 0
@@ -2916,6 +3804,12 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                         // Convert mintAccess to enum value (0, 1, 2)
                         const mintAccessEnum = newTokenType.mintAccess === "OFFICER_ONLY" ? 0 : 
                                              newTokenType.mintAccess === "WHITELIST_ONLY" ? 1 : 2
+
+                        setCreateTokenTypeStatus({
+                          loading: true,
+                          message: "Submitting transaction to blockchain...",
+                          type: "loading"
+                        })
 
                         const tx = await membershipContract.createTokenType(
                           typeIdBytes32,
@@ -2926,7 +3820,22 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           maxSupply,
                           mintAccessEnum
                         )
+
+                        setCreateTokenTypeStatus({
+                          loading: true,
+                          message: "Transaction submitted! Waiting for confirmation...",
+                          type: "loading",
+                          txHash: tx.hash
+                        })
+
                         await tx.wait()
+
+                        setCreateTokenTypeStatus({
+                          loading: false,
+                          message: `Token type "${newTokenType.name}" created successfully!`,
+                          type: "success",
+                          txHash: tx.hash
+                        })
 
                         toast({
                           title: "Token Type Created",
@@ -2946,8 +3855,21 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                         setIsCustomCategory(false)
 
                         await loadContractData()
+
+                        // Clear status after 5 seconds
+                        setTimeout(() => {
+                          setCreateTokenTypeStatus({ loading: false, message: "", type: "idle" })
+                        }, 5000)
+
                       } catch (error: any) {
                         console.error("Error creating token type:", error)
+                        
+                        setCreateTokenTypeStatus({
+                          loading: false,
+                          message: `Failed to create token type: ${error.message || "Transaction failed"}`,
+                          type: "error"
+                        })
+
                         toast({
                           title: "Failed to Create Token Type",
                           description: error.message || "Transaction failed",
@@ -2956,16 +3878,19 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                       }
                       setCreateTokenTypeLoading(false)
                     }}
-                    disabled={createTokenTypeLoading || !newTokenType.typeId || !newTokenType.name || !newTokenType.category}
+                    disabled={createTokenTypeLoading || !newTokenType.typeId || !newTokenType.name || !newTokenType.category || createTokenTypeStatus.loading}
                     className="w-full"
                   >
-                    {createTokenTypeLoading ? (
+                    {(createTokenTypeLoading || createTokenTypeStatus.loading) ? (
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <Plus className="mr-2 h-4 w-4" />
                     )}
                     Create Token Type
                   </Button>
+
+                  {/* Create Token Type Status */}
+                  <StatusIndicator status={createTokenTypeStatus} title="Token Type Creation" />
 
                   {/* How this works section */}
                   <div className="border-t pt-4">

@@ -205,23 +205,6 @@ export default function PortfolioPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50">
         <div className="container mx-auto px-4 py-12">
 
-      {/* Organization Info Banner */}
-      <div className="mb-8 rounded-xl bg-blue-50 p-6">
-        <div className="flex items-start gap-4">
-          <div className="rounded-full bg-blue-100 p-2 text-blue-600">
-            <Info className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-900">About Our Treasury</h3>
-            <p className="text-gray-600 mb-4">
-              The club maintains a diversified cryptocurrency treasury to fund events, workshops, club activities, and strategic investments in blockchain projects. Our treasury serves as both an operational fund and an educational investment vehicle, allowing members to learn about crypto markets, DeFi protocols, and portfolio management through hands-on experience.
-            </p>
-            <p className="text-gray-600">
-              Our treasury prioritizes investments in blockchain projects that advance environmental sustainability and social impact. We focus on proof-of-stake networks, carbon-neutral protocols, and projects that support financial inclusion and community empowerment. Treasury decisions and investments are made through governance votes by members holding voting tokens, with all decisions guided by ESG principles.
-            </p>
-          </div>
-        </div>      </div>
-
       {/* Live Crypto Ticker */}
       <div className="mb-8">
         <LightCryptoTicker />
@@ -778,21 +761,24 @@ export default function PortfolioPage() {
         </TabsContent>
 
         <TabsContent value="chains">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Zap className="h-5 w-5 text-yellow-600" />
+          <Card className="border-gray-200 bg-white shadow-lg">
+            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-amber-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Zap className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 text-xl">Chain Breakdown</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Assets distributed across different blockchain networks
+                    </CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Chain Breakdown</h3>
-                  <p className="text-sm text-gray-600">Assets distributed across different blockchain networks</p>
-                </div>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
                   // CSV Export functionality for chain breakdown
                   const csvData = portfolio.chainBreakdown?.flatMap(chain => {
                     const chainAssets = [];
@@ -838,13 +824,14 @@ export default function PortfolioPage() {
                   window.URL.revokeObjectURL(url);
                 }}
                 className="border-yellow-200 text-yellow-700 hover:bg-yellow-50"
-              >
-                <Download className="mr-2 h-4 w-4" /> 
-                Export Chain Data
-              </Button>
-            </div>
-
-            {portfolio.chainBreakdown && portfolio.chainBreakdown.length > 0 ? (
+              >                  <Download className="mr-2 h-4 w-4" /> 
+                  Export Chain Data
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {portfolio.chainBreakdown && portfolio.chainBreakdown.length > 0 ? (
               portfolio.chainBreakdown.map((chain, index) => (
                 <Card key={chain.chainName} className="border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-orange-50">
@@ -964,7 +951,9 @@ export default function PortfolioPage() {
                 </CardContent>
               </Card>
             )}
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="distribution">
@@ -1196,129 +1185,113 @@ export default function PortfolioPage() {
                     <Shield className="h-5 w-5 text-indigo-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-gray-900 text-xl">Treasury Wallet & Security</CardTitle>
+                    <CardTitle className="text-gray-900 text-xl">Treasury Wallet</CardTitle>
                     <CardDescription className="text-gray-600">
-                      Multi-signature wallet securing the club's digital assets
+                      Multi-signature wallet securing {formatCurrency(portfolio.totalValue)} in digital assets
                     </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="px-3 py-1 text-sm bg-green-50 text-green-700 border-green-200">
-                    ✓ Secured
-                  </Badge>
-                </div>
+                <Badge variant="outline" className="px-3 py-1 text-sm bg-green-50 text-green-700 border-green-200">
+                  ✓ Secured
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                {/* Wallet Overview */}
-                <div className="rounded-lg border border-gray-200 p-6 bg-gradient-to-r from-indigo-50 to-blue-50">
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                        <Shield className="h-6 w-6 text-indigo-600" />
+                {/* Simplified Wallet Info */}
+                <div className="rounded-lg border border-gray-200 p-4 bg-gradient-to-r from-indigo-50 to-blue-50">
+                  <div className="grid gap-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-2">Treasury Address</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-gray-900 font-mono bg-white px-3 py-2 rounded border flex-1">
+                          {MULTISIG_WALLET}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          asChild
+                          className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                        >
+                          <a 
+                            href={getExplorerAddressUrl(MULTISIG_WALLET, 'ethereum')} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 text-lg">Treasury Wallet</h3>
-                        <p className="text-sm text-gray-600">Secure wallet for club's digital assets</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                      <div className="bg-white rounded border p-3">
+                        <div className="text-xs text-gray-500 mb-1">Total Assets</div>
+                        <div className="text-lg font-semibold text-gray-900">{portfolio.assets.length}</div>
                       </div>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      asChild
-                      className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                    >
-                      <a 
-                        href={getExplorerAddressUrl(MULTISIG_WALLET, 'ethereum')} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" /> 
-                        View on Etherscan
-                      </a>
-                    </Button>
-                  </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
-                      <div className="text-sm font-medium text-gray-700 mb-1">Wallet Address</div>
-                      <div className="text-sm text-gray-900 font-mono break-all">{MULTISIG_WALLET}</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
-                      <div className="text-sm font-medium text-gray-700 mb-1">Total Assets</div>
-                      <div className="text-sm text-gray-900">{portfolio.assets.length} tokens across {portfolio.chainBreakdown?.length || 0} chains</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
-                      <div className="text-sm font-medium text-gray-700 mb-1">Total Value</div>
-                      <div className="text-sm font-semibold text-gray-900">{formatCurrency(portfolio.totalValue)}</div>
+                      <div className="bg-white rounded border p-3">
+                        <div className="text-xs text-gray-500 mb-1">Active Chains</div>
+                        <div className="text-lg font-semibold text-gray-900">
+                          {portfolio.chainBreakdown?.length || 1}
+                        </div>
+                      </div>
+                      <div className="bg-white rounded border p-3">
+                        <div className="text-xs text-gray-500 mb-1">Last Updated</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {lastUpdated ? new Date(lastUpdated).toLocaleTimeString() : 'Never'}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Transaction History Section with Enhanced Header */}
+                {/* Transaction History Section */}
                 <div className="border-t border-gray-200 pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        <Clock className="h-5 w-5 text-gray-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
-                        <p className="text-sm text-gray-600">Recent treasury activity across all chains</p>
-                      </div>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <Clock className="h-5 w-5 text-gray-600" />
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="border-gray-200 text-gray-700 hover:bg-gray-50"
-                      onClick={() => {
-                        // This will be handled by the TransactionHistory component
-                        // We'll add export functionality there if needed
-                        alert('Transaction export feature will be available in the transaction history component');
-                      }}
-                    >
-                      <Download className="mr-2 h-4 w-4" /> 
-                      Export History
-                    </Button>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+                      <p className="text-sm text-gray-600">Recent treasury activity across all chains</p>
+                    </div>
                   </div>
                   <TransactionHistory walletAddress={MULTISIG_WALLET} />
                 </div>
-                
-                {portfolio.assets.length === 0 && (
-                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-                    <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="font-medium">No assets found in the treasury wallet</p>
-                    <p className="text-sm">Check back later as we build our portfolio</p>
-                  </div>
-                )}
               </div>
             </CardContent>
             <CardFooter className="border-t border-gray-100 bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4">
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-6">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleRefresh}
-                    disabled={isLoading}
-                    className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-                  >
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> 
-                    Refresh Data
-                  </Button>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <BarChart3 className="mr-2 h-4 w-4 text-indigo-600" />
-                    <span>Last updated: {lastUpdated ? new Date(lastUpdated).toLocaleString() : 'Never'}</span>
-                  </div>
-                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isLoading}
+                  className="border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> 
+                  Refresh Data
+                </Button>
                 <div className="text-sm text-gray-600">
-                  Cache: <span className="font-semibold text-gray-900">3 minutes</span>
+                  Cache expires: <span className="font-semibold text-gray-900">3 minutes</span>
                 </div>
               </div>
             </CardFooter>
           </Card>
         </TabsContent>      </Tabs>
+      
+      {/* Treasury Footnote */}
+      <div className="mb-8 mt-4 px-4 py-3 bg-gray-50/50 border border-gray-100 rounded-lg">
+        <div className="flex items-start gap-3">
+          <Info className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-1">About Our Treasury</h4>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Our treasury prioritizes investments in blockchain projects that advance environmental sustainability and social impact. We focus on proof-of-stake networks, carbon-neutral protocols, and projects that support financial inclusion and community empowerment. Treasury decisions and investments are made through governance votes by members holding voting tokens, with all decisions guided by ESG principles.
+            </p>
+          </div>
+        </div>
+      </div>
       
       {/* Educational Insights Section */}
       <div className="mb-8">

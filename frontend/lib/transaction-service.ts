@@ -108,10 +108,10 @@ export class TransactionService {
     return transactions.map((tx: any) => ({
       hash: tx.hash,
       chainName,
-      status: this.parseTransactionStatus(tx.txreceipt_status || tx.isError),
+      status: this.parseTransactionStatus(tx.txreceipt_status || tx.isError || '1'),
       action: this.determineAction(tx),
       token: this.determineToken(tx, chainName),
-      value: tx.value || '0',
+      value: this.formatTransactionValue(tx),
       from: tx.from,
       fromInfo: this.getAddressInfo(tx.from),
       to: tx.to,
@@ -124,43 +124,97 @@ export class TransactionService {
   }
 
   private parseTransactionStatus(status: string | number): 'Success' | 'Failed' | 'Pending' {
-    // For Etherscan API: txreceipt_status = '1' means success, '0' means failed
-    // For isError: '0' means success, '1' means failed
-    if (status === '1' || status === 1) {
+    // For Etherscan API:
+    // - txreceipt_status: '1' = success, '0' = failed, '' or undefined = pending
+    // - isError: '0' = success, '1' = failed
+    
+    // Convert to string for consistent comparison
+    const statusStr = String(status).toLowerCase()
+    
+    // Handle explicit success indicators
+    if (statusStr === '1' || statusStr === 'success' || statusStr === 'true') {
       return 'Success'
-    } else if (status === '0' || status === 0) {
-      return 'Success' // txreceipt_status = '0' can mean failed, but isError = '0' means success
     }
-    return 'Failed'
+    
+    // Handle explicit failure indicators
+    if (statusStr === '0' || statusStr === 'failed' || statusStr === 'false') {
+      return 'Failed'
+    }
+    
+    // Handle pending states
+    if (statusStr === 'pending' || statusStr === '') {
+      return 'Pending'
+    }
+    
+    // Default to success for most completed transactions in blockchain explorers
+    // (Most APIs only return completed transactions unless specifically querying pending)
+    return 'Success'
   }
 
   private determineAction(tx: any): string {
-    if (tx.input && tx.input !== '0x') {
-      // Contract interaction
+    // Check if this is explicitly marked as a token transfer
+    if (tx.isTokenTransfer === true || tx.tokenSymbol) {
+      return 'Token Transfer'
+    }
+    
+    // Check for contract interaction
+    if (tx.input && tx.input !== '0x' && tx.input.length > 2) {
+      // Contract interaction with data
       if (tx.methodId) {
         return tx.methodId
       }
       return 'Contract Call'
     }
+    
+    // Check if value is 0 (might be a contract call without ETH transfer)
+    if (tx.value === '0' || !tx.value) {
+      return 'Contract Call'
+    }
+    
+    // Default to Transfer for native token movements
     return 'Transfer'
   }
 
+  private formatTransactionValue(tx: any): string {
+    // For token transfers, use the token amount
+    if (tx.isTokenTransfer || tx.tokenSymbol) {
+      return tx.value || '0'
+    }
+    // For regular transactions, use the ETH/native token value
+    return tx.value || '0'
+  }
+
   private determineToken(tx: any, chainName: string): string {
+    // For explicit token transfers, use the token symbol first
     if (tx.tokenSymbol) {
       return tx.tokenSymbol
     }
-    if (tx.value && tx.value !== '0') {
-      // Return appropriate native token symbol based on chain
+    
+    // For token transfers marked with isTokenTransfer flag
+    if (tx.isTokenTransfer === true) {
+      if (tx.tokenName) {
+        return tx.tokenName
+      }
+      if (tx.contractAddress) {
+        return `Token (${tx.contractAddress.slice(0, 8)}...)`
+      }
+    }
+    
+    // For regular transactions, check if there's value being transferred
+    if (tx.value && tx.value !== '0' && tx.value !== 0) {
+      // Native token transfer
       switch (chainName.toLowerCase()) {
         case 'ethereum': return 'ETH'
-        case 'polygon': return 'MATIC'
+        case 'polygon': return 'POL' // Updated to POL (was MATIC)
         case 'bsc': return 'BNB'
         case 'arbitrum': return 'ETH'
         case 'optimism': return 'ETH'
         default: return 'ETH'
       }
     }
-    return 'Contract' // Likely an ERC-20 or other token
+    
+    // For contract calls with no value transfer
+    return 'Contract'
   }
 
   private getAddressInfo(address: string): string {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,7 +16,10 @@ import {
 	TrendingUp,
 	Star,
 	ChevronRight,
-	Tag
+	Tag,
+	GripVertical,
+	Eye,
+	EyeOff
 } from "lucide-react"
 import { researchArticles, categories } from "@/lib/articles-data"
 
@@ -24,37 +27,12 @@ export default function ResearchPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [selectedCategory, setSelectedCategory] = useState("All")
 	const [showSecrets, setShowSecrets] = useState(false)
-	const [secretSequence, setSecretSequence] = useState<string[]>([])
+	const [isDragging, setIsDragging] = useState(false)
+	const [position, setPosition] = useState({ x: 0, y: 0 })
+	const [dragCount, setDragCount] = useState(0)
+	const dragRef = useRef<HTMLDivElement>(null)
+	const dragStartPos = useRef({ x: 0, y: 0 })
 	const router = useRouter()
-
-	// Secret sequence to reveal passwords (more covert than dragging)
-	const TARGET_SEQUENCE = ["logo", "star", "trending", "newsletter"] // Click these elements in order
-	
-	const handleSecretClick = (elementId: string) => {
-		setSecretSequence(prev => {
-			const newSequence = [...prev, elementId]
-			
-			// Check if the sequence matches our target
-			const isCorrectSequence = TARGET_SEQUENCE.every((target, index) => 
-				newSequence[index] === target
-			)
-			
-			if (newSequence.length === TARGET_SEQUENCE.length) {
-				if (isCorrectSequence) {
-					setShowSecrets(true)
-				}
-				// Reset sequence after 4 clicks regardless
-				return []
-			}
-			
-			// Reset if wrong element clicked
-			if (newSequence[newSequence.length - 1] !== TARGET_SEQUENCE[newSequence.length - 1]) {
-				return []
-			}
-			
-			return newSequence
-		})
-	}
 
 	// Handle search functionality with secret keywords
 	const handleSearch = (e: React.FormEvent) => {
@@ -90,6 +68,48 @@ export default function ResearchPage() {
 
 	const featuredArticles = researchArticles.filter(article => article.featured)
 
+	// Draggable functionality
+	const handleMouseDown = (e: React.MouseEvent) => {
+		setIsDragging(true)
+		dragStartPos.current = {
+			x: e.clientX - position.x,
+			y: e.clientY - position.y
+		}
+	}
+
+	const handleMouseMove = useCallback((e: MouseEvent) => {
+		if (!isDragging) return
+		
+		const newX = e.clientX - dragStartPos.current.x
+		const newY = e.clientY - dragStartPos.current.y
+		
+		setPosition({ x: newX, y: newY })
+	}, [isDragging])
+
+	const handleMouseUp = useCallback(() => {
+		if (isDragging) {
+			setIsDragging(false)
+			setDragCount(prev => prev + 1)
+			
+			// Reveal secrets after dragging 3 times
+			if (dragCount >= 2) {
+				setShowSecrets(true)
+			}
+		}
+	}, [isDragging, dragCount])
+
+	useEffect(() => {
+		if (isDragging) {
+			document.addEventListener('mousemove', handleMouseMove)
+			document.addEventListener('mouseup', handleMouseUp)
+			
+			return () => {
+				document.removeEventListener('mousemove', handleMouseMove)
+				document.removeEventListener('mouseup', handleMouseUp)
+			}
+		}
+	}, [isDragging, handleMouseMove, handleMouseUp])
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
 			{/* Hero Section */}
@@ -104,10 +124,7 @@ export default function ResearchPage() {
 				<div className="container relative mx-auto px-4 text-center">
 					<div className="mx-auto max-w-4xl">
 						<div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-blue-100 backdrop-blur-sm border border-white/30">
-							<BookOpen 
-								className="mr-2 h-4 w-4 cursor-pointer hover:scale-110 transition-transform" 
-								onClick={() => handleSecretClick("logo")}
-							/>
+							<BookOpen className="mr-2 h-4 w-4" />
 							Research & Analysis
 						</div>
 						
@@ -143,10 +160,7 @@ export default function ResearchPage() {
 				{featuredArticles.length > 0 && (
 					<section className="mb-12">
 						<div className="flex items-center gap-3 mb-6">
-							<Star 
-								className="h-6 w-6 text-yellow-500 cursor-pointer hover:scale-110 transition-transform" 
-								onClick={() => handleSecretClick("star")}
-							/>
+							<Star className="h-6 w-6 text-yellow-500" />
 							<h2 className="text-2xl font-bold text-gray-900">Featured Research</h2>
 						</div>
 						
@@ -282,49 +296,85 @@ export default function ResearchPage() {
 				</section>
 			</div>
 
-			{/* Static Call to Action Footer */}
-			<section className="mt-16 text-center">
-				<Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-					<CardContent className="p-8">
-						<TrendingUp 
-							className="h-12 w-12 mx-auto mb-4 opacity-90 cursor-pointer hover:scale-110 transition-transform" 
-							onClick={() => handleSecretClick("trending")}
-						/>
-						<h3 className="text-2xl font-bold mb-2">Stay Updated</h3>
-						<p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-							Get the latest research insights, market analysis, and blockchain developments delivered to your inbox.
-						</p>
+			{/* Draggable "Stay Updated" Section - Easter Egg */}
+			<div 
+				ref={dragRef}
+				className={`fixed bottom-8 right-8 z-50 transition-all duration-300 ${
+					isDragging ? 'scale-105 shadow-2xl' : 'shadow-lg'
+				} ${dragCount >= 3 ? 'animate-pulse' : ''}`}
+				style={{
+					transform: `translate(${position.x}px, ${position.y}px)`,
+					cursor: isDragging ? 'grabbing' : 'grab'
+				}}
+			>
+				<Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white max-w-sm">
+					<CardContent className="p-6">
+						<div 
+							className="flex items-center gap-3 mb-4 cursor-grab active:cursor-grabbing"
+							onMouseDown={handleMouseDown}
+						>
+							<GripVertical className="h-5 w-5 opacity-70" />
+							<TrendingUp className="h-8 w-8 opacity-90" />
+							<div>
+								<h3 className="text-lg font-bold">
+									{dragCount >= 3 ? "🎉 Well, well..." : "Stay Updated"}
+								</h3>
+								<p className="text-xs text-blue-100">
+									{dragCount >= 3 ? "You found the secret!" : "Drag me around!"}
+								</p>
+							</div>
+						</div>
 						
 						{!showSecrets ? (
-							<Button 
-								variant="secondary" 
-								size="lg" 
-								className="bg-white text-blue-600 hover:bg-gray-100"
-								onClick={() => handleSecretClick("newsletter")}
-							>
-								Subscribe to Newsletter
-							</Button>
-						) : (
-							<div className="bg-black/20 rounded-lg p-4 text-left max-w-md mx-auto">
-								<p className="font-medium mb-3 text-center">🔐 Secret Access Codes:</p>
-								<div className="space-y-2">
-									<div>
-										<span className="text-blue-200">Members Lounge:</span>
-										<code className="ml-2 bg-white/20 px-2 py-1 rounded text-sm">satoshi</code>
-									</div>
-									<div>
-										<span className="text-blue-200">O Club:</span>
-										<code className="ml-2 bg-white/20 px-2 py-1 rounded text-sm">capt_satoshi</code>
-									</div>
-								</div>
-								<p className="text-xs mt-3 text-blue-200 text-center">
-									✨ Enter these in the search bar above! ✨
+							<>
+								<p className="text-blue-100 mb-4 text-sm">
+									{dragCount === 0 && "Get the latest research insights and market analysis."}
+									{dragCount === 1 && "Hmm, that's interesting... Keep going! 🤔"}
+									{dragCount === 2 && "One more time... Something magical might happen! ✨"}
+									{dragCount >= 3 && "🎭 You're persistent! The secrets await..."}
 								</p>
+								
+								{dragCount < 3 ? (
+									<Button variant="secondary" size="sm" className="bg-white text-blue-600 hover:bg-gray-100 w-full">
+										Subscribe to Newsletter
+									</Button>
+								) : (
+									<Button 
+										variant="secondary" 
+										size="sm" 
+										className="bg-white text-blue-600 hover:bg-gray-100 w-full"
+										onClick={() => setShowSecrets(true)}
+									>
+										<Eye className="h-4 w-4 mr-2" />
+										Reveal Secrets
+									</Button>
+								)}
+							</>
+						) : (
+							<div className="space-y-3">
+								<div className="bg-black/20 rounded p-3 text-sm">
+									<p className="font-medium mb-2">🔐 Access Codes:</p>
+									<div className="space-y-1">
+										<p><strong>Members Lounge:</strong> <code className="bg-white/20 px-2 py-1 rounded">satoshi</code></p>
+										<p><strong>O Club:</strong> <code className="bg-white/20 px-2 py-1 rounded">capt_satoshi</code></p>
+									</div>
+									<p className="text-xs mt-2 opacity-75">Use these in the search bar above! 🎯</p>
+								</div>
+								
+								<Button 
+									variant="secondary" 
+									size="sm" 
+									className="bg-white text-blue-600 hover:bg-gray-100 w-full"
+									onClick={() => setShowSecrets(false)}
+								>
+									<EyeOff className="h-4 w-4 mr-2" />
+									Hide Secrets
+								</Button>
 							</div>
 						)}
 					</CardContent>
 				</Card>
-			</section>
+			</div>
 		</div>
 	)
 }

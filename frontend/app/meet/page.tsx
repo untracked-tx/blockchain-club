@@ -19,6 +19,7 @@ export default function MeetPage() {
       tokenType: "Advisor",
       email: "yosef.bonaparte@ucdenver.edu",
       linkedin: "https://www.linkedin.com/in/yosef-bonaparte-22234aa6/",
+      website: "https://yosef-bonaparte.vercel.app",
     },
     {
       id: 2,
@@ -195,6 +196,15 @@ Community: THRIVING
                     >
                       <Linkedin className="h-4 w-4 text-blue-300 group-hover/btn:text-blue-200" />
                     </button>
+                    {/* Website button only for Dr. Yosef Bonaparte (card 1) */}
+                    {member.id === 1 && (
+                      <button
+                        onClick={() => window.open(member.website, '_blank')}
+                        className="p-2 bg-purple-400/20 border border-purple-400/40 rounded-lg hover:bg-purple-400/30 hover:border-purple-400/80 transition-all duration-200 group/btn"
+                      >
+                        <ExternalLink className="h-4 w-4 text-purple-300 group-hover/btn:text-purple-200" />
+                      </button>
+                    )}
                     {/* GitHub button only for Liam Murphy (card 3) */}
                     {member.id === 3 && (
                       <button

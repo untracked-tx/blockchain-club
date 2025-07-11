@@ -31,7 +31,7 @@ export function ResearchHeader() {
     e.preventDefault()
     
     // Check for secret keyword
-    if (searchQuery.toLowerCase().trim() === "inplainview42") {
+    if (searchQuery.toLowerCase().trim() === "satoshi") {
       // Redirect to members lounge with authorization key
       router.push("/memberslounge?key=authorized")
       return
