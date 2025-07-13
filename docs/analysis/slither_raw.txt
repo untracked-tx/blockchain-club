@@ -1,0 +1,480 @@
+slither .
+$ slither .
+'npx hardhat clean' running (wd: C:\Users\lmur2\blockchain-club)
+'npx hardhat clean --global' running (wd: C:\Users\lmur2\blockchain-club)
+'npx hardhat compile --force' running (wd: C:\Users\lmur2\blockchain-club)
+INFO:Detectors:
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) has bitwise-xor operator ^ instead of the exponentiation operator **:
+         - inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#116)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-exponentiation
+INFO:Detectors:
+BlockchainClubMembership (contracts/BlockchainClubMembership.sol#13-447) is an upgradeable contract that does not protect its initialize functions: BlockchainClubMembership.initialize(string,string,address) (contracts/BlockchainClubMem
+bership.sol#94-107). Anyone can delete the contract with: UUPSUpgradeable.upgradeTo(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#74-77)UUPSUpgradeable.upgradeToAndCall(address,bytes) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#89-92)Roles (contracts/Roles.sol#7-100) is an upgradeable contract that does not protect its initialize functions: Roles.initialize(address) (contracts/Roles.sol#28-38). Anyone can delete the contract with: UUPSUpgradeable.upgradeTo(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#74-77)UUPSUpgradeable.upgradeToAndCall(address,bytes) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#89-92)TreasuryRouter (contracts/TreasuryRouter.sol#13-353) is an upgradeable contract that does not protect its initialize functions: TreasuryRouter.initialize(address,address) (contracts/TreasuryRouter.sol#98-111). Anyone can delete the contract with: UUPSUpgradeable.upgradeTo(address) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#74-77)UUPSUpgradeable.upgradeToAndCall(address,bytes) (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#89-92)Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unprotected-upgradeable-contract                      INFO:Detectors:
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse = (3 * denominator) ^ 2 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#116)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#120)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#121)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#122)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#123)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#124)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - denominator = denominator / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#101)
+        - inverse *= 2 - denominator * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#125)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) performs a multiplication on the result of a division:
+        - prod0 = prod0 / twos (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#104)
+        - result = prod0 * inverse (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#131)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#divide-before-multiply
+INFO:Detectors:
+Reentrancy in TreasuryRouter.cancelERC20Transfer(bytes32,string) (contracts/TreasuryRouter.sol#301-308):
+        External calls:
+        - require(bool,string)(IERC20Upgradeable(transfer.token).transfer(transfer.from,transfer.amount),ERC20 transfer failed) (contracts/TreasuryRouter.sol#305)
+        State variables written after the call(s):
+        - delete pendingERC20Transfers[transferId] (contracts/TreasuryRouter.sol#307)
+        TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#58) can be used in cross function reentrancies:
+        - TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#58)
+Reentrancy in TreasuryRouter.cancelNFTTransfer(bytes32,string) (contracts/TreasuryRouter.sol#309-316):
+        External calls:
+        - IERC721Upgradeable(transfer.token).safeTransferFrom(address(this),transfer.from,transfer.tokenId) (contracts/TreasuryRouter.sol#313)
+        State variables written after the call(s):
+        - delete pendingNFTTransfers[transferId] (contracts/TreasuryRouter.sol#315)
+        TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#69) can be used in cross function reentrancies:
+        - TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#69)
+Reentrancy in TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#227-238):
+        External calls:
+        - require(bool,string)(IERC20Upgradeable(transfer.token).transfer(treasury,transfer.amount),ERC20 transfer failed) (contracts/TreasuryRouter.sol#234)
+        State variables written after the call(s):
+        - delete pendingERC20Transfers[transferId] (contracts/TreasuryRouter.sol#237)
+        TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#58) can be used in cross function reentrancies:
+        - TreasuryRouter.pendingERC20Transfers (contracts/TreasuryRouter.sol#58)
+Reentrancy in TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#241-251):
+        External calls:
+        - IERC721Upgradeable(transfer.token).safeTransferFrom(address(this),treasury,transfer.tokenId) (contracts/TreasuryRouter.sol#247)
+        State variables written after the call(s):
+        - delete pendingNFTTransfers[transferId] (contracts/TreasuryRouter.sol#250)
+        TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#69) can be used in cross function reentrancies:
+        - TreasuryRouter.pendingNFTTransfers (contracts/TreasuryRouter.sol#69)
+Reentrancy in TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#205-224):
+        External calls:
+        - treasury.sendValue(transfer.amount) (contracts/TreasuryRouter.sol#211)
+        State variables written after the call(s):
+        - delete pendingTransfers[transferId] (contracts/TreasuryRouter.sol#213)
+        TreasuryRouter.pendingTransfers (contracts/TreasuryRouter.sol#41) can be used in cross function reentrancies:
+        - TreasuryRouter.pendingTransfers (contracts/TreasuryRouter.sol#41)
+        - TreasuryRouter.receive() (contracts/TreasuryRouter.sol#136-155)
+Reentrancy in BlockchainClubMembership.mint(address,bytes32,bool) (contracts/BlockchainClubMembership.sol#231-257):
+        External calls:
+        - roles.grantRole(roles.MEMBER_ROLE(),to) (contracts/BlockchainClubMembership.sol#252)
+        - _safeMint(to,newTokenId) (contracts/BlockchainClubMembership.sol#255)
+                - retval = IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#411-422)
+        State variables written after the call(s):
+        - _safeMint(to,newTokenId) (contracts/BlockchainClubMembership.sol#255)
+                - _balances[to] += 1 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#283)
+        ERC721Upgradeable._balances (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#34) can be used in cross function reentrancies:
+        - ERC721Upgradeable._transfer(address,address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#338-364)
+        - ERC721Upgradeable.balanceOf(address) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#67-70)
+        - _safeMint(to,newTokenId) (contracts/BlockchainClubMembership.sol#255)
+                - _ownedTokens[to][length] = tokenId (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#100)
+                - _ownedTokens[from][tokenIndex] = lastTokenId (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#132)
+                - delete _ownedTokens[from][lastTokenIndex] (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#138)
+        ERC721EnumerableUpgradeable._ownedTokens (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#17) can be used in cross function reentrancies:
+        - ERC721EnumerableUpgradeable._addTokenToOwnerEnumeration(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#98-102)
+        - ERC721EnumerableUpgradeable._removeTokenFromOwnerEnumeration(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#121-139)
+        - ERC721EnumerableUpgradeable.tokenOfOwnerByIndex(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#43-46)
+Reentrancy in BlockchainClubMembership.publicMint(bytes32,bool) (contracts/BlockchainClubMembership.sol#260-286):
+        External calls:
+        - roles.grantRole(roles.MEMBER_ROLE(),msg.sender) (contracts/BlockchainClubMembership.sol#281)
+        - _safeMint(msg.sender,newTokenId) (contracts/BlockchainClubMembership.sol#284)
+                - retval = IERC721ReceiverUpgradeable(to).onERC721Received(_msgSender(),from,tokenId,data) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#411-422)
+        State variables written after the call(s):
+        - _safeMint(msg.sender,newTokenId) (contracts/BlockchainClubMembership.sol#284)
+                - _balances[to] += 1 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#283)
+        ERC721Upgradeable._balances (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#34) can be used in cross function reentrancies:
+        - ERC721Upgradeable._transfer(address,address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#338-364)
+        - ERC721Upgradeable.balanceOf(address) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#67-70)
+        - _safeMint(msg.sender,newTokenId) (contracts/BlockchainClubMembership.sol#284)
+                - _ownedTokens[to][length] = tokenId (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#100)
+                - _ownedTokens[from][tokenIndex] = lastTokenId (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#132)
+                - delete _ownedTokens[from][lastTokenIndex] (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#138)
+        ERC721EnumerableUpgradeable._ownedTokens (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#17) can be used in cross function reentrancies:
+        - ERC721EnumerableUpgradeable._addTokenToOwnerEnumeration(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#98-102)
+        - ERC721EnumerableUpgradeable._removeTokenFromOwnerEnumeration(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#121-139)
+        - ERC721EnumerableUpgradeable.tokenOfOwnerByIndex(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#43-46)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-1
+INFO:Detectors:
+ERC1967UpgradeUpgradeable._upgradeToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#65-70) ignores return value by AddressUpgradeable.functionDelegateCall(newImp
+lementation,data) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#68)                                                                                                                        ERC1967UpgradeUpgradeable._upgradeBeaconToAndCall(address,bytes,bool) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#156-162) ignores return value by AddressUpgradeable.functionDelegateCal
+l(IBeaconUpgradeable(newBeacon).implementation(),data) (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#160)                                                                                  AccessControlEnumerableUpgradeable._grantRole(bytes32,address) (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#58-61) ignores return value by _roleMembers[role].add(account) (node_modules
+/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#60)                                                                                                                                                     AccessControlEnumerableUpgradeable._revokeRole(bytes32,address) (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#66-69) ignores return value by _roleMembers[role].remove(account) (node_mod
+ules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#68)                                                                                                                                                 Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unused-return
+INFO:Detectors:
+BlockchainClubMembership.processWhitelistRequest(uint256,bool).approve (contracts/BlockchainClubMembership.sol#130) shadows:
+        - ERC721Upgradeable.approve(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#117-127) (function)
+        - IERC721Upgradeable.approve(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#103) (function)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#local-variable-shadowing
+INFO:Detectors:
+Ownable2StepUpgradeable.transferOwnership(address).newOwner (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#42) lacks a zero-check on :
+                - _pendingOwner = newOwner (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#43)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#missing-zero-address-validation
+INFO:Detectors:
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#227-238) has external calls inside a loop: require(bool,string)(IERC20Upgradeable(transfer.token).transfer(treasury,transfer.amount),ERC20 transfer failed) (con
+tracts/TreasuryRouter.sol#234)                                                                                                                                                                                                                     Calls stack containing the loop:
+                TreasuryRouter.executeERC20TransferBatch(bytes32[])
+TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#241-251) has external calls inside a loop: IERC721Upgradeable(transfer.token).safeTransferFrom(address(this),treasury,transfer.tokenId) (contracts/TreasuryRouter.
+sol#247)                                                                                                                                                                                                                                           Calls stack containing the loop:
+                TreasuryRouter.executeNFTTransferBatch(bytes32[])
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation/#calls-inside-a-loop
+INFO:Detectors:
+Reentrancy in TreasuryRouter.depositERC20(address,uint256,string) (contracts/TreasuryRouter.sol#158-179):
+        External calls:
+        - require(bool,string)(IERC20Upgradeable(token).transferFrom(msg.sender,address(this),amount),ERC20 transferFrom failed) (contracts/TreasuryRouter.sol#161)
+        State variables written after the call(s):
+        - pendingERC20Transfers[transferId] = PendingERC20Transfer({token:token,from:msg.sender,amount:amount,timestamp:block.timestamp,executed:false,metadata:metadata}) (contracts/TreasuryRouter.sol#168-175)
+        - transferNonce ++ (contracts/TreasuryRouter.sol#166)
+Reentrancy in TreasuryRouter.depositNFT(address,uint256,string) (contracts/TreasuryRouter.sol#182-202):
+        External calls:
+        - IERC721Upgradeable(token).safeTransferFrom(msg.sender,address(this),tokenId) (contracts/TreasuryRouter.sol#184)
+        State variables written after the call(s):
+        - pendingNFTTransfers[transferId] = PendingNFTTransfer({token:token,from:msg.sender,tokenId:tokenId,timestamp:block.timestamp,executed:false,metadata:metadata}) (contracts/TreasuryRouter.sol#191-198)
+        - transferNonce ++ (contracts/TreasuryRouter.sol#189)
+Reentrancy in TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#205-224):
+        External calls:
+        - treasury.sendValue(transfer.amount) (contracts/TreasuryRouter.sol#211)
+        State variables written after the call(s):
+        - _pendingTransferIdIndex[lastId] = idx (contracts/TreasuryRouter.sol#220)
+        - delete _pendingTransferIdIndex[transferId] (contracts/TreasuryRouter.sol#223)
+        - _pendingTransferIds[idx] = lastId (contracts/TreasuryRouter.sol#219)
+        - _pendingTransferIds.pop() (contracts/TreasuryRouter.sol#222)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+BlockchainClubMembership.requestWhitelist() (contracts/BlockchainClubMembership.sol#110-127) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(block.timestamp >= lastRequestTime[msg.sender] + REQUEST_COOLDOWN,Please wait before requesting again) (contracts/BlockchainClubMembership.sol#112-115)
+BlockchainClubMembership.processWhitelistRequest(uint256,bool) (contracts/BlockchainClubMembership.sol#130-148) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(requestId < whitelistRequests.length,Invalid request ID) (contracts/BlockchainClubMembership.sol#135)
+        - require(bool,string)(! request.processed,Request already processed) (contracts/BlockchainClubMembership.sol#137)
+BlockchainClubMembership.getPendingWhitelistRequests() (contracts/BlockchainClubMembership.sol#151-175) uses timestamp for comparisons
+        Dangerous comparisons:
+        - i < whitelistRequests.length (contracts/BlockchainClubMembership.sol#157)
+        - i_scope_0 < whitelistRequests.length (contracts/BlockchainClubMembership.sol#166)
+BlockchainClubMembership.hasPendingRequest(address) (contracts/BlockchainClubMembership.sol#178-185) uses timestamp for comparisons
+        Dangerous comparisons:
+        - i < whitelistRequests.length (contracts/BlockchainClubMembership.sol#179)
+        - whitelistRequests[i].requester == user && ! whitelistRequests[i].processed (contracts/BlockchainClubMembership.sol#180)
+BlockchainClubMembership.mint(address,bytes32,bool) (contracts/BlockchainClubMembership.sol#231-257) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(block.timestamp >= config.startTime,Minting not started for this token type) (contracts/BlockchainClubMembership.sol#240)
+        - require(bool,string)(block.timestamp <= config.endTime,Minting has ended for this token type) (contracts/BlockchainClubMembership.sol#241)
+BlockchainClubMembership.publicMint(bytes32,bool) (contracts/BlockchainClubMembership.sol#260-286) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(block.timestamp >= config.startTime,Minting not started for this token type) (contracts/BlockchainClubMembership.sol#264)
+        - require(bool,string)(block.timestamp <= config.endTime,Minting has ended for this token type) (contracts/BlockchainClubMembership.sol#265)
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#205-224) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(transfer.amount > 0,Transfer does not exist) (contracts/TreasuryRouter.sol#207)
+        - require(bool,string)(! transfer.executed,Transfer already executed) (contracts/TreasuryRouter.sol#208)
+        - require(bool,string)(block.timestamp >= transfer.timestamp + EXECUTION_DELAY,Delay not elapsed) (contracts/TreasuryRouter.sol#209)
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#227-238) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(transfer.amount > 0,Transfer does not exist) (contracts/TreasuryRouter.sol#229)
+        - require(bool,string)(! transfer.executed,Already executed) (contracts/TreasuryRouter.sol#230)
+        - require(bool,string)(block.timestamp >= transfer.timestamp + EXECUTION_DELAY,Delay not elapsed) (contracts/TreasuryRouter.sol#231)
+        - require(bool,string)(IERC20Upgradeable(transfer.token).transfer(treasury,transfer.amount),ERC20 transfer failed) (contracts/TreasuryRouter.sol#234)
+TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#241-251) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(! transfer.executed,Already executed) (contracts/TreasuryRouter.sol#243)
+        - require(bool,string)(block.timestamp >= transfer.timestamp + EXECUTION_DELAY,Delay not elapsed) (contracts/TreasuryRouter.sol#244)
+TreasuryRouter.cancelTransfer(bytes32,string) (contracts/TreasuryRouter.sol#291-300) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(transfer.amount > 0 && ! transfer.executed,Not pending) (contracts/TreasuryRouter.sol#293)
+TreasuryRouter.cancelERC20Transfer(bytes32,string) (contracts/TreasuryRouter.sol#301-308) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(transfer.amount > 0 && ! transfer.executed,Not pending) (contracts/TreasuryRouter.sol#303)
+        - require(bool,string)(IERC20Upgradeable(transfer.token).transfer(transfer.from,transfer.amount),ERC20 transfer failed) (contracts/TreasuryRouter.sol#305)
+TreasuryRouter.cancelNFTTransfer(bytes32,string) (contracts/TreasuryRouter.sol#309-316) uses timestamp for comparisons
+        Dangerous comparisons:
+        - require(bool,string)(! transfer.executed,Not pending) (contracts/TreasuryRouter.sol#311)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+ERC721Upgradeable._checkOnERC721Received(address,address,uint256,bytes) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#404-426) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#418-420)
+AddressUpgradeable._revert(bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#231-243) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#236-239)
+StorageSlotUpgradeable.getAddressSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#62-67) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#64-66)
+StorageSlotUpgradeable.getBooleanSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#72-77) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#74-76)
+StorageSlotUpgradeable.getBytes32Slot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#82-87) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#84-86)
+StorageSlotUpgradeable.getUint256Slot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#92-97) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#94-96)
+StorageSlotUpgradeable.getStringSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#102-107) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#104-106)
+StorageSlotUpgradeable.getStringSlot(string) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#112-117) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#114-116)
+StorageSlotUpgradeable.getBytesSlot(bytes32) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#122-127) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#124-126)
+StorageSlotUpgradeable.getBytesSlot(bytes) (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#132-137) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#134-136)
+StringsUpgradeable.toString(uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#19-39) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#25-27)
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#31-33)
+MathUpgradeable.mulDiv(uint256,uint256,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#55-134) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#62-66)
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#85-92)
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#99-108)
+EnumerableSetUpgradeable.values(EnumerableSetUpgradeable.Bytes32Set) (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#219-229) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#224-226)
+EnumerableSetUpgradeable.values(EnumerableSetUpgradeable.AddressSet) (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#293-303) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#298-300)
+EnumerableSetUpgradeable.values(EnumerableSetUpgradeable.UintSet) (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#367-377) uses assembly
+        - INLINE ASM (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#372-374)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+4 different versions of Solidity are used:
+        - Version constraint ^0.8.0 is used by:
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlEnumerableUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#5)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/SignedMathUpgradeable.sol#4)
+                -^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#5)
+        - Version constraint ^0.8.2 is used by:
+                -^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#4)
+                -^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4)
+        - Version constraint ^0.8.1 is used by:
+                -^0.8.1 (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#4)
+        - Version constraint ^0.8.20 is used by:
+                -^0.8.20 (contracts/BlockchainClubMembership.sol#2)
+                -^0.8.20 (contracts/Roles.sol#2)
+                -^0.8.20 (contracts/TreasuryRouter.sol#2)
+                -^0.8.20 (contracts/interfaces/IBlockchainClubMembership.sol#2)
+                -^0.8.20 (contracts/interfaces/IRoles.sol#2)
+                -^0.8.20 (contracts/interfaces/ITreasuryRouter.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+ReentrancyGuardUpgradeable._nonReentrantBefore() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#61-67) has costly operations inside a loop:
+        - _status = _ENTERED (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#66)
+        Calls stack containing the loop:
+                TreasuryRouter.executeTransferBatch(bytes32[])
+                TreasuryRouter.executeTransfer(bytes32)
+                ReentrancyGuardUpgradeable.nonReentrant()
+ReentrancyGuardUpgradeable._nonReentrantAfter() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#69-73) has costly operations inside a loop:
+        - _status = _NOT_ENTERED (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#72)
+        Calls stack containing the loop:
+                TreasuryRouter.executeTransferBatch(bytes32[])
+                TreasuryRouter.executeTransfer(bytes32)
+                ReentrancyGuardUpgradeable.nonReentrant()
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#205-224) has costly operations inside a loop:
+        - delete pendingTransfers[transferId] (contracts/TreasuryRouter.sol#213)
+        Calls stack containing the loop:
+                TreasuryRouter.executeTransferBatch(bytes32[])
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#205-224) has costly operations inside a loop:
+        - _pendingTransferIds.pop() (contracts/TreasuryRouter.sol#222)
+        Calls stack containing the loop:
+                TreasuryRouter.executeTransferBatch(bytes32[])
+TreasuryRouter.executeTransfer(bytes32) (contracts/TreasuryRouter.sol#205-224) has costly operations inside a loop:
+        - delete _pendingTransferIdIndex[transferId] (contracts/TreasuryRouter.sol#223)
+        Calls stack containing the loop:
+                TreasuryRouter.executeTransferBatch(bytes32[])
+ReentrancyGuardUpgradeable._nonReentrantBefore() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#61-67) has costly operations inside a loop:
+        - _status = _ENTERED (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#66)
+        Calls stack containing the loop:
+                TreasuryRouter.executeERC20TransferBatch(bytes32[])
+                TreasuryRouter.executeERC20Transfer(bytes32)
+                ReentrancyGuardUpgradeable.nonReentrant()
+ReentrancyGuardUpgradeable._nonReentrantAfter() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#69-73) has costly operations inside a loop:
+        - _status = _NOT_ENTERED (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#72)
+        Calls stack containing the loop:
+                TreasuryRouter.executeERC20TransferBatch(bytes32[])
+                TreasuryRouter.executeERC20Transfer(bytes32)
+                ReentrancyGuardUpgradeable.nonReentrant()
+TreasuryRouter.executeERC20Transfer(bytes32) (contracts/TreasuryRouter.sol#227-238) has costly operations inside a loop:
+        - delete pendingERC20Transfers[transferId] (contracts/TreasuryRouter.sol#237)
+        Calls stack containing the loop:
+                TreasuryRouter.executeERC20TransferBatch(bytes32[])
+ReentrancyGuardUpgradeable._nonReentrantBefore() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#61-67) has costly operations inside a loop:
+        - _status = _ENTERED (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#66)
+        Calls stack containing the loop:
+                TreasuryRouter.executeNFTTransferBatch(bytes32[])
+                TreasuryRouter.executeNFTTransfer(bytes32)
+                ReentrancyGuardUpgradeable.nonReentrant()
+ReentrancyGuardUpgradeable._nonReentrantAfter() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#69-73) has costly operations inside a loop:
+        - _status = _NOT_ENTERED (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#72)
+        Calls stack containing the loop:
+                TreasuryRouter.executeNFTTransferBatch(bytes32[])
+                TreasuryRouter.executeNFTTransfer(bytes32)
+                ReentrancyGuardUpgradeable.nonReentrant()
+TreasuryRouter.executeNFTTransfer(bytes32) (contracts/TreasuryRouter.sol#241-251) has costly operations inside a loop:
+        - delete pendingNFTTransfers[transferId] (contracts/TreasuryRouter.sol#250)
+        Calls stack containing the loop:
+                TreasuryRouter.executeNFTTransferBatch(bytes32[])
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
+INFO:Detectors:
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess
+        - AbiReencodingHeadOverflowWithStaticArrayCleanup
+        - DirtyBytesArrayToStorage
+        - DataLocationChangeInInternalOverride
+        - NestedCalldataArrayAbiReencodingSizeValidation
+        - SignedImmutables
+        - ABIDecodeTwoDimensionalArrayMemory
+        - KeccakCaching.
+It is used by:
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlEnumerableUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/IERC1967Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/interfaces/draft-IERC1822Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/beacon/IBeaconUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721EnumerableUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StorageSlotUpgradeable.sol#5)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/math/SignedMathUpgradeable.sol#4)
+        - ^0.8.0 (node_modules/@openzeppelin/contracts-upgradeable/utils/structs/EnumerableSetUpgradeable.sol#5)
+Version constraint ^0.8.2 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess
+        - AbiReencodingHeadOverflowWithStaticArrayCleanup
+        - DirtyBytesArrayToStorage
+        - DataLocationChangeInInternalOverride
+        - NestedCalldataArrayAbiReencodingSizeValidation
+        - SignedImmutables
+        - ABIDecodeTwoDimensionalArrayMemory
+        - KeccakCaching.
+It is used by:
+        - ^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#4)
+        - ^0.8.2 (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol#4)
+Version constraint ^0.8.1 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess
+        - AbiReencodingHeadOverflowWithStaticArrayCleanup
+        - DirtyBytesArrayToStorage
+        - DataLocationChangeInInternalOverride
+        - NestedCalldataArrayAbiReencodingSizeValidation
+        - SignedImmutables
+        - ABIDecodeTwoDimensionalArrayMemory
+        - KeccakCaching.
+It is used by:
+        - ^0.8.1 (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#4)
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - VerbatimInvalidDeduplication
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess.
+It is used by:
+        - ^0.8.20 (contracts/BlockchainClubMembership.sol#2)
+        - ^0.8.20 (contracts/Roles.sol#2)
+        - ^0.8.20 (contracts/TreasuryRouter.sol#2)
+        - ^0.8.20 (contracts/interfaces/IBlockchainClubMembership.sol#2)
+        - ^0.8.20 (contracts/interfaces/IRoles.sol#2)
+        - ^0.8.20 (contracts/interfaces/ITreasuryRouter.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Low level call in AddressUpgradeable.sendValue(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#64-69):
+        - (success,None) = recipient.call{value: amount}() (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#67)
+Low level call in AddressUpgradeable.functionCallWithValue(address,bytes,uint256,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#128-137):
+        - (success,returndata) = target.call{value: value}(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#135)
+Low level call in AddressUpgradeable.functionStaticCall(address,bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#155-162):
+        - (success,returndata) = target.staticcall(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#160)
+Low level call in AddressUpgradeable.functionDelegateCall(address,bytes,string) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#180-187):
+        - (success,returndata) = target.delegatecall(data) (node_modules/@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol#185)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Function AccessControlEnumerableUpgradeable.__AccessControlEnumerable_init() (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#19-20) is not in mixedCase
+Function AccessControlEnumerableUpgradeable.__AccessControlEnumerable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#22-23) is not in mixedCase
+Variable AccessControlEnumerableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol#76) is not in mixedCase
+Function AccessControlUpgradeable.__AccessControl_init() (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol#76-77) is not in mixedCase
+Function AccessControlUpgradeable.__AccessControl_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol#79-80) is not in mixedCase
+Variable AccessControlUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol#260) is not in mixedCase
+Function Ownable2StepUpgradeable.__Ownable2Step_init() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#25-27) is not in mixedCase
+Function Ownable2StepUpgradeable.__Ownable2Step_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#29-30) is not in mixedCase
+Variable Ownable2StepUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol#70) is not in mixedCase
+Function OwnableUpgradeable.__Ownable_init() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#29-31) is not in mixedCase
+Function OwnableUpgradeable.__Ownable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#33-35) is not in mixedCase
+Variable OwnableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol#94) is not in mixedCase
+Function ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#30-31) is not in mixedCase
+Function ERC1967UpgradeUpgradeable.__ERC1967Upgrade_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#33-34) is not in mixedCase
+Variable ERC1967UpgradeUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol#169) is not in mixedCase
+Function UUPSUpgradeable.__UUPSUpgradeable_init() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#48-49) is not in mixedCase
+Function UUPSUpgradeable.__UUPSUpgradeable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#51-52) is not in mixedCase
+Variable UUPSUpgradeable.__self (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#24) is not in mixedCase
+Variable UUPSUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol#111) is not in mixedCase
+Function PausableUpgradeable.__Pausable_init() (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#34-36) is not in mixedCase
+Function PausableUpgradeable.__Pausable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#38-40) is not in mixedCase
+Variable PausableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol#116) is not in mixedCase
+Function ReentrancyGuardUpgradeable.__ReentrancyGuard_init() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#40-42) is not in mixedCase
+Function ReentrancyGuardUpgradeable.__ReentrancyGuard_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#44-46) is not in mixedCase
+Variable ReentrancyGuardUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol#88) is not in mixedCase
+Function ERC721Upgradeable.__ERC721_init(string,string) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#45-47) is not in mixedCase
+Function ERC721Upgradeable.__ERC721_init_unchained(string,string) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#49-52) is not in mixedCase
+Function ERC721Upgradeable.__unsafe_increaseBalance(address,uint256) (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#468-470) is not in mixedCase
+Variable ERC721Upgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol#477) is not in mixedCase
+Function ERC721EnumerableUpgradeable.__ERC721Enumerable_init() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#28-29) is not in mixedCase
+Function ERC721EnumerableUpgradeable.__ERC721Enumerable_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#31-32) is not in mixedCase
+Variable ERC721EnumerableUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol#171) is not in mixedCase
+Function ContextUpgradeable.__Context_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#18-19) is not in mixedCase
+Function ContextUpgradeable.__Context_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#21-22) is not in mixedCase
+Variable ContextUpgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol#40) is not in mixedCase
+Function ERC165Upgradeable.__ERC165_init() (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#24-25) is not in mixedCase
+Function ERC165Upgradeable.__ERC165_init_unchained() (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#27-28) is not in mixedCase
+Variable ERC165Upgradeable.__gap (node_modules/@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol#41) is not in mixedCase
+Function IRoles.ADMIN_ROLE() (contracts/interfaces/IRoles.sol#6) is not in mixedCase
+Function IRoles.OFFICER_ROLE() (contracts/interfaces/IRoles.sol#7) is not in mixedCase
+Function IRoles.MEMBER_ROLE() (contracts/interfaces/IRoles.sol#8) is not in mixedCase
+Function ITreasuryRouter.EXECUTION_DELAY() (contracts/interfaces/ITreasuryRouter.sol#22) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+Loop condition i < whitelistRequests.length (contracts/BlockchainClubMembership.sol#157) should use cached array length instead of referencing `length` member of the storage array.
+ Loop condition i_scope_0 < whitelistRequests.length (contracts/BlockchainClubMembership.sol#166) should use cached array length instead of referencing `length` member of the storage array.
+ Loop condition i < whitelistRequests.length (contracts/BlockchainClubMembership.sol#179) should use cached array length instead of referencing `length` member of the storage array.
+ Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cache-array-length
+INFO:Slither:. analyzed (36 contracts with 100 detectors), 122 result(s) found

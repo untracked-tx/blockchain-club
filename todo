@@ -1,0 +1,25 @@
+✅ UI/UX and Performance Fixes (Ranked: High → Low Impact)
+🔹 HIGH IMPACT, LOW EFFORT
+What	Why	How Hard?	Fix
+✅ Delay contract reads until wallet is connected	Prevents blank screens and failed calls	Easy	Use enabled: isConnected in useReadContract() ✅ DONE
+✅ Show skeletons/loaders instead of null	Avoids empty white pages	Easy	if (isLoading) return <Loading />; ✅ DONE
+✅ Add security headers	Boosts protection + audit score	Easy	Added to next.config.mjs ✅ DONE
+✅ Preconnect to WalletConnect / external APIs	Saves ~200–300ms	Easy	Added <link rel="preconnect"> to layout.tsx ✅ DONE
+✅ Add wallet change listener	Handles account/network changes	Easy	Added WalletChangeListener component ✅ DONE
+
+🔹 MEDIUM IMPACT, MEDIUM EFFORT
+What	Why	How Hard?	Fix
+Lazy-load heavy components	Cuts JS bloat, faster FCP	Medium	dynamic(() => import('./Heavy'), { ssr: false })
+Inline critical CSS or extract it	Improves LCP	Medium	Use @next/font or critters
+Avoid role checks in layout/app.tsx	Reduces global blocking	Medium	Move logic into per-page hooks or client components
+
+🔹 NICE TO HAVE
+What	Why	How Hard?	Fix
+Tree-shake unused JS	Reduces bundle size	Medium	Use source-map-explorer to find bloated files
+Defer non-essential scripts	Speeds up page	Easy	Use <Script strategy="lazyOnload" /> from next/script
+Cache static reads with SWR/React Query	Fewer calls, smoother UX	Medium	Wrap contract reads with caching hooks
+
+
+
+
+

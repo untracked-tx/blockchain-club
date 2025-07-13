@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle, Wallet, Zap, Coins, ArrowRight, ExternalLink, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { RequestWhitelistButton } from "@/components/ui/RequestWhitelistButton"
 
 interface NewUserOnboardingProps {
   isOpen: boolean
@@ -289,6 +290,9 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
                 <p className="text-white/70 mb-4 font-mono text-sm">
                   // NFT-based membership grants access to governance and exclusive features
                 </p>
+                <div className="mb-4">
+                  <RequestWhitelistButton className="w-full mb-2" variant="default" size="lg" />
+                </div>
                 <Button 
                   onClick={() => {
                     onClose()

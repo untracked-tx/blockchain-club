@@ -1,0 +1,5 @@
+[
+  "function getValue() view returns (uint256)",
+  "function setValue(uint256)",
+  "function value() view returns (uint256)"
+]

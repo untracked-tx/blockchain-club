@@ -1,0 +1,508 @@
+
+contracts/BlockchainClubMembership.sol
+    4:1   warning  global import of path ./interfaces/IRoles.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                                                                      no-global-import
+    5:1   warning  global import of path @openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                       no-global-import
+    6:1   warning  global import of path @openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)  no-global-import
+    7:1   warning  global import of path @openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                       no-global-import
+    8:1   warning  global import of path @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                            no-global-import
+    9:1   warning  global import of path @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                          no-global-import
+   10:1   warning  global import of path @openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                  no-global-import
+   11:1   warning  global import of path @openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                         no-global-import
+   55:5   warning  GC: For [ WhitelistRequest ] struct, packing seems inefficient. Try rearranging to achieve 32bytes slots                                                                                                                                      gas-struct-packing
+  125:5   warning  GC: [status] on Event [WhitelistUpdated] could be Indexed                                                                                                                                                                                     gas-indexed-events
+  131:5   warning  GC: [tokenCount] on Event [StatsUpdated] could be Indexed                                                                                                                                                                                     gas-indexed-events
+  142:5   warning  GC: [approved] on Event [WhitelistRequestProcessed] could be Indexed                                                                                                                                                                          gas-indexed-events
+  149:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  173:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  184:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  185:9   warning  Error message for require is too long: 35 counted / 32 allowed                                                                                                                                                                                reason-string
+  185:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  185:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  186:13  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  216:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  218:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  243:38  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                            gas-increment-by-one
+  245:17  warning  GC: For [ pendingCount ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                 gas-increment-by-one
+  252:38  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                            gas-increment-by-one
+  257:17  warning  GC: For [ index ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                        gas-increment-by-one
+  270:38  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                            gas-increment-by-one
+  300:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  322:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  335:42  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                            gas-increment-by-one
+  358:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  360:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  361:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  362:9   warning  Error message for require is too long: 39 counted / 32 allowed                                                                                                                                                                                reason-string
+  362:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  362:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  362:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  363:9   warning  Error message for require is too long: 37 counted / 32 allowed                                                                                                                                                                                reason-string
+  363:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  363:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  363:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  364:9   warning  Error message for require is too long: 40 counted / 32 allowed                                                                                                                                                                                reason-string
+  364:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  364:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  365:30  warning  GC: For [ _nextTokenId ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                 gas-increment-by-one
+  368:9   warning  GC: For [ config ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                       gas-increment-by-one
+  391:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  392:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  393:9   warning  Error message for require is too long: 39 counted / 32 allowed                                                                                                                                                                                reason-string
+  393:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  393:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  393:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  394:9   warning  Error message for require is too long: 37 counted / 32 allowed                                                                                                                                                                                reason-string
+  394:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  394:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  394:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  396:13  warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  398:13  warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  400:9   warning  Error message for require is too long: 40 counted / 32 allowed                                                                                                                                                                                reason-string
+  400:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                                   gas-small-strings
+  400:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  401:30  warning  GC: For [ _nextTokenId ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                 gas-increment-by-one
+  404:9   warning  GC: For [ config ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                       gas-increment-by-one
+  456:13  warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                                           gas-custom-errors
+  567:50  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                            gas-increment-by-one
+  571:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  571:33  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  573:24  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  573:40  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  575:24  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  575:40  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                                               gas-strict-inequalities
+  635:87  warning  Code contains empty blocks                                                                                                                                                                                                                    no-empty-blocks
+
+contracts/interfaces/IBlockchainClubMembership.sol
+   9:1  warning  Missing @author tag in contract 'IBlockchainClubMembership'                                                                                                use-natspec
+  32:5  warning  GC: For [ WhitelistRequest ] struct, packing seems inefficient. Try rearranging to achieve 32bytes slots                                                   gas-struct-packing
+  40:5  warning  Missing @notice tag in event 'TokenMinted'                                                                                                                 use-natspec
+  40:5  warning  Missing @param tag in event 'TokenMinted'                                                                                                                  use-natspec
+  40:5  warning  Mismatch in @param names for event 'TokenMinted'. Expected: [to, tokenId, tokenType], Found: []                                                            use-natspec
+  41:5  warning  Missing @notice tag in event 'TokenTypeCreated'                                                                                                            use-natspec
+  41:5  warning  Missing @param tag in event 'TokenTypeCreated'                                                                                                             use-natspec
+  41:5  warning  Mismatch in @param names for event 'TokenTypeCreated'. Expected: [typeId, name, category], Found: []                                                       use-natspec
+  42:5  warning  Missing @notice tag in event 'WhitelistUpdated'                                                                                                            use-natspec
+  42:5  warning  Missing @param tag in event 'WhitelistUpdated'                                                                                                             use-natspec
+  42:5  warning  Mismatch in @param names for event 'WhitelistUpdated'. Expected: [account, status], Found: []                                                              use-natspec
+  42:5  warning  GC: [status] on Event [WhitelistUpdated] could be Indexed                                                                                                  gas-indexed-events
+  43:5  warning  Missing @notice tag in event 'StatsUpdated'                                                                                                                use-natspec
+  43:5  warning  Missing @param tag in event 'StatsUpdated'                                                                                                                 use-natspec
+  43:5  warning  Mismatch in @param names for event 'StatsUpdated'. Expected: [member, role, tokenCount], Found: []                                                         use-natspec
+  43:5  warning  GC: [tokenCount] on Event [StatsUpdated] could be Indexed                                                                                                  gas-indexed-events
+  44:5  warning  Missing @notice tag in event 'WhitelistRequested'                                                                                                          use-natspec
+  44:5  warning  Missing @param tag in event 'WhitelistRequested'                                                                                                           use-natspec
+  44:5  warning  Mismatch in @param names for event 'WhitelistRequested'. Expected: [requester, requestId], Found: []                                                       use-natspec
+  45:5  warning  Missing @notice tag in event 'WhitelistRequestProcessed'                                                                                                   use-natspec
+  45:5  warning  Missing @param tag in event 'WhitelistRequestProcessed'                                                                                                    use-natspec
+  45:5  warning  Mismatch in @param names for event 'WhitelistRequestProcessed'. Expected: [requester, requestId, approved], Found: []                                      use-natspec
+  45:5  warning  GC: [approved] on Event [WhitelistRequestProcessed] could be Indexed                                                                                       gas-indexed-events
+  48:5  warning  Missing @notice tag in function 'MEMBER_TOKEN_TYPE'                                                                                                        use-natspec
+  48:5  warning  Missing @return tag in function 'MEMBER_TOKEN_TYPE'                                                                                                        use-natspec
+  48:5  warning  Mismatch in @return count for function 'MEMBER_TOKEN_TYPE'. Expected: 1, Found: 0                                                                          use-natspec
+  48:5  warning  Function name must be in mixedCase                                                                                                                         func-name-mixedcase
+  49:5  warning  Missing @notice tag in function 'OFFICER_TOKEN_TYPE'                                                                                                       use-natspec
+  49:5  warning  Missing @return tag in function 'OFFICER_TOKEN_TYPE'                                                                                                       use-natspec
+  49:5  warning  Mismatch in @return count for function 'OFFICER_TOKEN_TYPE'. Expected: 1, Found: 0                                                                         use-natspec
+  49:5  warning  Function name must be in mixedCase                                                                                                                         func-name-mixedcase
+  50:5  warning  Missing @notice tag in function 'REQUEST_COOLDOWN'                                                                                                         use-natspec
+  50:5  warning  Missing @return tag in function 'REQUEST_COOLDOWN'                                                                                                         use-natspec
+  50:5  warning  Mismatch in @return count for function 'REQUEST_COOLDOWN'. Expected: 1, Found: 0                                                                           use-natspec
+  50:5  warning  Function name must be in mixedCase                                                                                                                         func-name-mixedcase
+  53:5  warning  Missing @notice tag in function 'roles'                                                                                                                    use-natspec
+  53:5  warning  Missing @return tag in function 'roles'                                                                                                                    use-natspec
+  53:5  warning  Mismatch in @return count for function 'roles'. Expected: 1, Found: 0                                                                                      use-natspec
+  54:5  warning  Missing @notice tag in function 'whitelist'                                                                                                                use-natspec
+  54:5  warning  Missing @param tag in function 'whitelist'                                                                                                                 use-natspec
+  54:5  warning  Mismatch in @param names for function 'whitelist'. Expected: [account], Found: []                                                                          use-natspec
+  54:5  warning  Missing @return tag in function 'whitelist'                                                                                                                use-natspec
+  54:5  warning  Mismatch in @return count for function 'whitelist'. Expected: 1, Found: 0                                                                                  use-natspec
+  55:5  warning  Missing @notice tag in function 'memberStats'                                                                                                              use-natspec
+  55:5  warning  Missing @param tag in function 'memberStats'                                                                                                               use-natspec
+  55:5  warning  Mismatch in @param names for function 'memberStats'. Expected: [member], Found: []                                                                         use-natspec
+  55:5  warning  Missing @return tag in function 'memberStats'                                                                                                              use-natspec
+  55:5  warning  Mismatch in @return count for function 'memberStats'. Expected: 1, Found: 0                                                                                use-natspec
+  56:5  warning  Missing @notice tag in function 'tokenTypeConfigs'                                                                                                         use-natspec
+  56:5  warning  Missing @param tag in function 'tokenTypeConfigs'                                                                                                          use-natspec
+  56:5  warning  Mismatch in @param names for function 'tokenTypeConfigs'. Expected: [typeId], Found: []                                                                    use-natspec
+  56:5  warning  Missing @return tag in function 'tokenTypeConfigs'                                                                                                         use-natspec
+  56:5  warning  Mismatch in @return count for function 'tokenTypeConfigs'. Expected: 1, Found: 0                                                                           use-natspec
+  57:5  warning  Missing @notice tag in function 'tokenTypes'                                                                                                               use-natspec
+  57:5  warning  Missing @param tag in function 'tokenTypes'                                                                                                                use-natspec
+  57:5  warning  Mismatch in @param names for function 'tokenTypes'. Expected: [tokenId], Found: []                                                                         use-natspec
+  57:5  warning  Missing @return tag in function 'tokenTypes'                                                                                                               use-natspec
+  57:5  warning  Mismatch in @return count for function 'tokenTypes'. Expected: 1, Found: 0                                                                                 use-natspec
+  58:5  warning  Missing @notice tag in function 'soulbound'                                                                                                                use-natspec
+  58:5  warning  Missing @param tag in function 'soulbound'                                                                                                                 use-natspec
+  58:5  warning  Mismatch in @param names for function 'soulbound'. Expected: [tokenId], Found: []                                                                          use-natspec
+  58:5  warning  Missing @return tag in function 'soulbound'                                                                                                                use-natspec
+  58:5  warning  Mismatch in @return count for function 'soulbound'. Expected: 1, Found: 0                                                                                  use-natspec
+  59:5  warning  Missing @notice tag in function 'whitelistRequests'                                                                                                        use-natspec
+  59:5  warning  Missing @param tag in function 'whitelistRequests'                                                                                                         use-natspec
+  59:5  warning  Mismatch in @param names for function 'whitelistRequests'. Expected: [index], Found: []                                                                    use-natspec
+  59:5  warning  Missing @return tag in function 'whitelistRequests'                                                                                                        use-natspec
+  59:5  warning  Mismatch in @return count for function 'whitelistRequests'. Expected: 1, Found: 0                                                                          use-natspec
+  60:5  warning  Missing @notice tag in function 'lastRequestTime'                                                                                                          use-natspec
+  60:5  warning  Missing @param tag in function 'lastRequestTime'                                                                                                           use-natspec
+  60:5  warning  Mismatch in @param names for function 'lastRequestTime'. Expected: [account], Found: []                                                                    use-natspec
+  60:5  warning  Missing @return tag in function 'lastRequestTime'                                                                                                          use-natspec
+  60:5  warning  Mismatch in @return count for function 'lastRequestTime'. Expected: 1, Found: 0                                                                            use-natspec
+  61:5  warning  Missing @notice tag in function 'getMemberCount'                                                                                                           use-natspec
+  61:5  warning  Missing @return tag in function 'getMemberCount'                                                                                                           use-natspec
+  61:5  warning  Mismatch in @return count for function 'getMemberCount'. Expected: 1, Found: 0                                                                             use-natspec
+  62:5  warning  Missing @notice tag in function 'getOfficerCount'                                                                                                          use-natspec
+  62:5  warning  Missing @return tag in function 'getOfficerCount'                                                                                                          use-natspec
+  62:5  warning  Mismatch in @return count for function 'getOfficerCount'. Expected: 1, Found: 0                                                                            use-natspec
+  63:5  warning  Missing @notice tag in function 'getAllTokenTypeIds'                                                                                                       use-natspec
+  63:5  warning  Missing @return tag in function 'getAllTokenTypeIds'                                                                                                       use-natspec
+  63:5  warning  Mismatch in @return count for function 'getAllTokenTypeIds'. Expected: 1, Found: 0                                                                         use-natspec
+  66:5  warning  Missing @notice tag in function 'requestWhitelist'                                                                                                         use-natspec
+  67:5  warning  Missing @notice tag in function 'processWhitelistRequest'                                                                                                  use-natspec
+  67:5  warning  Missing @param tag in function 'processWhitelistRequest'                                                                                                   use-natspec
+  67:5  warning  Mismatch in @param names for function 'processWhitelistRequest'. Expected: [requestId, grantWhitelist], Found: []                                          use-natspec
+  68:5  warning  Missing @notice tag in function 'getPendingWhitelistRequests'                                                                                              use-natspec
+  68:5  warning  Missing @return tag in function 'getPendingWhitelistRequests'                                                                                              use-natspec
+  68:5  warning  Mismatch in @return names for function 'getPendingWhitelistRequests'. Expected: [requestIds, requesters, timestamps], Found: []                            use-natspec
+  73:5  warning  Missing @notice tag in function 'hasPendingRequest'                                                                                                        use-natspec
+  73:5  warning  Missing @param tag in function 'hasPendingRequest'                                                                                                         use-natspec
+  73:5  warning  Mismatch in @param names for function 'hasPendingRequest'. Expected: [user], Found: []                                                                     use-natspec
+  73:5  warning  Missing @return tag in function 'hasPendingRequest'                                                                                                        use-natspec
+  73:5  warning  Mismatch in @return count for function 'hasPendingRequest'. Expected: 1, Found: 0                                                                          use-natspec
+  76:5  warning  Missing @notice tag in function 'initialize'                                                                                                               use-natspec
+  76:5  warning  Missing @param tag in function 'initialize'                                                                                                                use-natspec
+  76:5  warning  Mismatch in @param names for function 'initialize'. Expected: [name, symbol, rolesContract], Found: []                                                     use-natspec
+  81:5  warning  Missing @notice tag in function 'createTokenType'                                                                                                          use-natspec
+  81:5  warning  Missing @param tag in function 'createTokenType'                                                                                                           use-natspec
+  81:5  warning  Mismatch in @param names for function 'createTokenType'. Expected: [typeId, typeName, typeCategory, startTime, endTime, maxSupply, mintAccess], Found: []  use-natspec
+  90:5  warning  Missing @notice tag in function 'deactivateTokenType'                                                                                                      use-natspec
+  90:5  warning  Missing @param tag in function 'deactivateTokenType'                                                                                                       use-natspec
+  90:5  warning  Mismatch in @param names for function 'deactivateTokenType'. Expected: [typeId], Found: []                                                                 use-natspec
+  91:5  warning  Missing @notice tag in function 'mint'                                                                                                                     use-natspec
+  91:5  warning  Missing @param tag in function 'mint'                                                                                                                      use-natspec
+  91:5  warning  Mismatch in @param names for function 'mint'. Expected: [to, tokenType, isSoulbound], Found: []                                                            use-natspec
+  92:5  warning  Missing @notice tag in function 'publicMint'                                                                                                               use-natspec
+  92:5  warning  Missing @param tag in function 'publicMint'                                                                                                                use-natspec
+  92:5  warning  Mismatch in @param names for function 'publicMint'. Expected: [tokenType, isSoulbound], Found: []                                                          use-natspec
+  93:5  warning  Missing @notice tag in function 'burnToken'                                                                                                                use-natspec
+  93:5  warning  Missing @param tag in function 'burnToken'                                                                                                                 use-natspec
+  93:5  warning  Mismatch in @param names for function 'burnToken'. Expected: [tokenId], Found: []                                                                          use-natspec
+  94:5  warning  Missing @notice tag in function 'updateWhitelist'                                                                                                          use-natspec
+  94:5  warning  Missing @param tag in function 'updateWhitelist'                                                                                                           use-natspec
+  94:5  warning  Mismatch in @param names for function 'updateWhitelist'. Expected: [account, status], Found: []                                                            use-natspec
+  95:5  warning  Missing @notice tag in function 'setBaseURI'                                                                                                               use-natspec
+  95:5  warning  Missing @param tag in function 'setBaseURI'                                                                                                                use-natspec
+  95:5  warning  Mismatch in @param names for function 'setBaseURI'. Expected: [newBaseURI], Found: []                                                                      use-natspec
+  96:5  warning  Missing @notice tag in function 'pause'                                                                                                                    use-natspec
+  97:5  warning  Missing @notice tag in function 'unpause'                                                                                                                  use-natspec
+
+contracts/interfaces/IRoles.sol
+   9:1  warning  Missing @author tag in contract 'IRoles'                                                                use-natspec
+  11:5  warning  Missing @notice tag in event 'VotingPowerSet'                                                           use-natspec
+  11:5  warning  Missing @param tag in event 'VotingPowerSet'                                                            use-natspec
+  11:5  warning  Mismatch in @param names for event 'VotingPowerSet'. Expected: [role, votingPower], Found: []           use-natspec
+  11:5  warning  GC: [votingPower] on Event [VotingPowerSet] could be Indexed                                            gas-indexed-events
+  12:5  warning  Missing @notice tag in event 'CustomVotingPowerSet'                                                     use-natspec
+  12:5  warning  Missing @param tag in event 'CustomVotingPowerSet'                                                      use-natspec
+  12:5  warning  Mismatch in @param names for event 'CustomVotingPowerSet'. Expected: [account, votingPower], Found: []  use-natspec
+  12:5  warning  GC: [votingPower] on Event [CustomVotingPowerSet] could be Indexed                                      gas-indexed-events
+  15:5  warning  Missing @notice tag in function 'ADMIN_ROLE'                                                            use-natspec
+  15:5  warning  Missing @return tag in function 'ADMIN_ROLE'                                                            use-natspec
+  15:5  warning  Mismatch in @return count for function 'ADMIN_ROLE'. Expected: 1, Found: 0                              use-natspec
+  15:5  warning  Function name must be in mixedCase                                                                      func-name-mixedcase
+  16:5  warning  Missing @notice tag in function 'OFFICER_ROLE'                                                          use-natspec
+  16:5  warning  Missing @return tag in function 'OFFICER_ROLE'                                                          use-natspec
+  16:5  warning  Mismatch in @return count for function 'OFFICER_ROLE'. Expected: 1, Found: 0                            use-natspec
+  16:5  warning  Function name must be in mixedCase                                                                      func-name-mixedcase
+  17:5  warning  Missing @notice tag in function 'MEMBER_ROLE'                                                           use-natspec
+  17:5  warning  Missing @return tag in function 'MEMBER_ROLE'                                                           use-natspec
+  17:5  warning  Mismatch in @return count for function 'MEMBER_ROLE'. Expected: 1, Found: 0                             use-natspec
+  17:5  warning  Function name must be in mixedCase                                                                      func-name-mixedcase
+  20:5  warning  Missing @notice tag in function 'hasRole'                                                               use-natspec
+  20:5  warning  Missing @param tag in function 'hasRole'                                                                use-natspec
+  20:5  warning  Mismatch in @param names for function 'hasRole'. Expected: [role, account], Found: []                   use-natspec
+  20:5  warning  Missing @return tag in function 'hasRole'                                                               use-natspec
+  20:5  warning  Mismatch in @return count for function 'hasRole'. Expected: 1, Found: 0                                 use-natspec
+  21:5  warning  Missing @notice tag in function 'getRoleMemberCount'                                                    use-natspec
+  21:5  warning  Missing @param tag in function 'getRoleMemberCount'                                                     use-natspec
+  21:5  warning  Mismatch in @param names for function 'getRoleMemberCount'. Expected: [role], Found: []                 use-natspec
+  21:5  warning  Missing @return tag in function 'getRoleMemberCount'                                                    use-natspec
+  21:5  warning  Mismatch in @return count for function 'getRoleMemberCount'. Expected: 1, Found: 0                      use-natspec
+  22:5  warning  Missing @notice tag in function 'getRoleMember'                                                         use-natspec
+  22:5  warning  Missing @param tag in function 'getRoleMember'                                                          use-natspec
+  22:5  warning  Mismatch in @param names for function 'getRoleMember'. Expected: [role, index], Found: []               use-natspec
+  22:5  warning  Missing @return tag in function 'getRoleMember'                                                         use-natspec
+  22:5  warning  Mismatch in @return count for function 'getRoleMember'. Expected: 1, Found: 0                           use-natspec
+  23:5  warning  Missing @notice tag in function 'grantRole'                                                             use-natspec
+  23:5  warning  Missing @param tag in function 'grantRole'                                                              use-natspec
+  23:5  warning  Mismatch in @param names for function 'grantRole'. Expected: [role, account], Found: []                 use-natspec
+  24:5  warning  Missing @notice tag in function 'revokeRole'                                                            use-natspec
+  24:5  warning  Missing @param tag in function 'revokeRole'                                                             use-natspec
+  24:5  warning  Mismatch in @param names for function 'revokeRole'. Expected: [role, account], Found: []                use-natspec
+  25:5  warning  Missing @notice tag in function 'renounceRole'                                                          use-natspec
+  25:5  warning  Missing @param tag in function 'renounceRole'                                                           use-natspec
+  25:5  warning  Mismatch in @param names for function 'renounceRole'. Expected: [role, account], Found: []              use-natspec
+  28:5  warning  Missing @notice tag in function 'grantRoleBatch'                                                        use-natspec
+  28:5  warning  Missing @param tag in function 'grantRoleBatch'                                                         use-natspec
+  28:5  warning  Mismatch in @param names for function 'grantRoleBatch'. Expected: [role, accounts], Found: []           use-natspec
+  29:5  warning  Missing @notice tag in function 'revokeRoleBatch'                                                       use-natspec
+  29:5  warning  Missing @param tag in function 'revokeRoleBatch'                                                        use-natspec
+  29:5  warning  Mismatch in @param names for function 'revokeRoleBatch'. Expected: [role, accounts], Found: []          use-natspec
+  32:5  warning  Missing @notice tag in function 'roleVotingPower'                                                       use-natspec
+  32:5  warning  Missing @param tag in function 'roleVotingPower'                                                        use-natspec
+  32:5  warning  Mismatch in @param names for function 'roleVotingPower'. Expected: [role], Found: []                    use-natspec
+  32:5  warning  Missing @return tag in function 'roleVotingPower'                                                       use-natspec
+  32:5  warning  Mismatch in @return count for function 'roleVotingPower'. Expected: 1, Found: 0                         use-natspec
+  33:5  warning  Missing @notice tag in function 'customVotingPower'                                                     use-natspec
+  33:5  warning  Missing @param tag in function 'customVotingPower'                                                      use-natspec
+  33:5  warning  Mismatch in @param names for function 'customVotingPower'. Expected: [account], Found: []               use-natspec
+  33:5  warning  Missing @return tag in function 'customVotingPower'                                                     use-natspec
+  33:5  warning  Mismatch in @return count for function 'customVotingPower'. Expected: 1, Found: 0                       use-natspec
+  34:5  warning  Missing @notice tag in function 'getVotingPower'                                                        use-natspec
+  34:5  warning  Missing @param tag in function 'getVotingPower'                                                         use-natspec
+  34:5  warning  Mismatch in @param names for function 'getVotingPower'. Expected: [account], Found: []                  use-natspec
+  34:5  warning  Missing @return tag in function 'getVotingPower'                                                        use-natspec
+  34:5  warning  Mismatch in @return count for function 'getVotingPower'. Expected: 1, Found: 0                          use-natspec
+  35:5  warning  Missing @notice tag in function 'getUserCurrentRole'                                                    use-natspec
+  35:5  warning  Missing @param tag in function 'getUserCurrentRole'                                                     use-natspec
+  35:5  warning  Mismatch in @param names for function 'getUserCurrentRole'. Expected: [account], Found: []              use-natspec
+  35:5  warning  Missing @return tag in function 'getUserCurrentRole'                                                    use-natspec
+  35:5  warning  Mismatch in @return count for function 'getUserCurrentRole'. Expected: 1, Found: 0                      use-natspec
+  38:5  warning  Missing @notice tag in function 'setVotingPower'                                                        use-natspec
+  38:5  warning  Missing @param tag in function 'setVotingPower'                                                         use-natspec
+  38:5  warning  Mismatch in @param names for function 'setVotingPower'. Expected: [role, power], Found: []              use-natspec
+  39:5  warning  Missing @notice tag in function 'setCustomVotingPower'                                                  use-natspec
+  39:5  warning  Missing @param tag in function 'setCustomVotingPower'                                                   use-natspec
+  39:5  warning  Mismatch in @param names for function 'setCustomVotingPower'. Expected: [account, power], Found: []     use-natspec
+  40:5  warning  Missing @notice tag in function 'initialize'                                                            use-natspec
+  40:5  warning  Missing @param tag in function 'initialize'                                                             use-natspec
+  40:5  warning  Mismatch in @param names for function 'initialize'. Expected: [admin], Found: []                        use-natspec
+
+contracts/interfaces/ITreasuryRouter.sol
+    9:1  warning  Missing @author tag in contract 'ITreasuryRouter'                                                                                use-natspec
+   18:5  warning  GC: For [ PendingERC20Transfer ] struct, packing seems inefficient. Try rearranging to achieve 32bytes slots                     gas-struct-packing
+   27:5  warning  GC: For [ PendingNFTTransfer ] struct, packing seems inefficient. Try rearranging to achieve 32bytes slots                       gas-struct-packing
+   44:5  warning  Missing @notice tag in event 'FundsReceived'                                                                                     use-natspec
+   44:5  warning  Missing @param tag in event 'FundsReceived'                                                                                      use-natspec
+   44:5  warning  Mismatch in @param names for event 'FundsReceived'. Expected: [sender, amount], Found: []                                        use-natspec
+   44:5  warning  GC: [amount] on Event [FundsReceived] could be Indexed                                                                           gas-indexed-events
+   45:5  warning  Missing @notice tag in event 'TransferQueued'                                                                                    use-natspec
+   45:5  warning  Missing @param tag in event 'TransferQueued'                                                                                     use-natspec
+   45:5  warning  Mismatch in @param names for event 'TransferQueued'. Expected: [transferId, amount, timestamp], Found: []                        use-natspec
+   45:5  warning  GC: [amount] on Event [TransferQueued] could be Indexed                                                                          gas-indexed-events
+   45:5  warning  GC: [timestamp] on Event [TransferQueued] could be Indexed                                                                       gas-indexed-events
+   46:5  warning  Missing @notice tag in event 'TransferExecuted'                                                                                  use-natspec
+   46:5  warning  Missing @param tag in event 'TransferExecuted'                                                                                   use-natspec
+   46:5  warning  Mismatch in @param names for event 'TransferExecuted'. Expected: [transferId, amount, treasury], Found: []                       use-natspec
+   46:5  warning  GC: [amount] on Event [TransferExecuted] could be Indexed                                                                        gas-indexed-events
+   47:5  warning  Missing @notice tag in event 'TreasuryUpdated'                                                                                   use-natspec
+   47:5  warning  Missing @param tag in event 'TreasuryUpdated'                                                                                    use-natspec
+   47:5  warning  Mismatch in @param names for event 'TreasuryUpdated'. Expected: [oldTreasury, newTreasury], Found: []                            use-natspec
+   48:5  warning  Missing @notice tag in event 'EmergencyWithdrawal'                                                                               use-natspec
+   48:5  warning  Missing @param tag in event 'EmergencyWithdrawal'                                                                                use-natspec
+   48:5  warning  Mismatch in @param names for event 'EmergencyWithdrawal'. Expected: [to, amount], Found: []                                      use-natspec
+   48:5  warning  GC: [amount] on Event [EmergencyWithdrawal] could be Indexed                                                                     gas-indexed-events
+   51:2  warning  Line length must be no more than 120 but current length is 129                                                                   max-line-length
+   51:5  warning  Missing @notice tag in event 'ERC20FundsReceived'                                                                                use-natspec
+   51:5  warning  Missing @param tag in event 'ERC20FundsReceived'                                                                                 use-natspec
+   51:5  warning  Mismatch in @param names for event 'ERC20FundsReceived'. Expected: [token, sender, amount, metadata, transferId], Found: []      use-natspec
+   51:5  warning  GC: [amount] on Event [ERC20FundsReceived] could be Indexed                                                                      gas-indexed-events
+   52:2  warning  Line length must be no more than 120 but current length is 133                                                                   max-line-length
+   52:5  warning  Missing @notice tag in event 'ERC20TransferQueued'                                                                               use-natspec
+   52:5  warning  Missing @param tag in event 'ERC20TransferQueued'                                                                                use-natspec
+   52:5  warning  Mismatch in @param names for event 'ERC20TransferQueued'. Expected: [transferId, token, amount, timestamp, metadata], Found: []  use-natspec
+   52:5  warning  GC: [amount] on Event [ERC20TransferQueued] could be Indexed                                                                     gas-indexed-events
+   52:5  warning  GC: [timestamp] on Event [ERC20TransferQueued] could be Indexed                                                                  gas-indexed-events
+   53:2  warning  Line length must be no more than 120 but current length is 125                                                                   max-line-length
+   53:5  warning  Missing @notice tag in event 'ERC20TransferExecuted'                                                                             use-natspec
+   53:5  warning  Missing @param tag in event 'ERC20TransferExecuted'                                                                              use-natspec
+   53:5  warning  Mismatch in @param names for event 'ERC20TransferExecuted'. Expected: [transferId, token, amount, treasury], Found: []           use-natspec
+   56:2  warning  Line length must be no more than 120 but current length is 123                                                                   max-line-length
+   56:5  warning  Missing @notice tag in event 'NFTReceived'                                                                                       use-natspec
+   56:5  warning  Missing @param tag in event 'NFTReceived'                                                                                        use-natspec
+   56:5  warning  Mismatch in @param names for event 'NFTReceived'. Expected: [token, sender, tokenId, metadata, transferId], Found: []            use-natspec
+   56:5  warning  GC: [tokenId] on Event [NFTReceived] could be Indexed                                                                            gas-indexed-events
+   57:2  warning  Line length must be no more than 120 but current length is 132                                                                   max-line-length
+   57:5  warning  Missing @notice tag in event 'NFTTransferQueued'                                                                                 use-natspec
+   57:5  warning  Missing @param tag in event 'NFTTransferQueued'                                                                                  use-natspec
+   57:5  warning  Mismatch in @param names for event 'NFTTransferQueued'. Expected: [transferId, token, tokenId, timestamp, metadata], Found: []   use-natspec
+   57:5  warning  GC: [tokenId] on Event [NFTTransferQueued] could be Indexed                                                                      gas-indexed-events
+   57:5  warning  GC: [timestamp] on Event [NFTTransferQueued] could be Indexed                                                                    gas-indexed-events
+   58:2  warning  Line length must be no more than 120 but current length is 124                                                                   max-line-length
+   58:5  warning  Missing @notice tag in event 'NFTTransferExecuted'                                                                               use-natspec
+   58:5  warning  Missing @param tag in event 'NFTTransferExecuted'                                                                                use-natspec
+   58:5  warning  Mismatch in @param names for event 'NFTTransferExecuted'. Expected: [transferId, token, tokenId, treasury], Found: []            use-natspec
+   61:5  warning  Missing @notice tag in event 'TransferCancelled'                                                                                 use-natspec
+   61:5  warning  Missing @param tag in event 'TransferCancelled'                                                                                  use-natspec
+   61:5  warning  Mismatch in @param names for event 'TransferCancelled'. Expected: [transferId, by, reason], Found: []                            use-natspec
+   62:5  warning  Missing @notice tag in event 'ERC20TransferCancelled'                                                                            use-natspec
+   62:5  warning  Missing @param tag in event 'ERC20TransferCancelled'                                                                             use-natspec
+   62:5  warning  Mismatch in @param names for event 'ERC20TransferCancelled'. Expected: [transferId, by, reason], Found: []                       use-natspec
+   63:5  warning  Missing @notice tag in event 'NFTTransferCancelled'                                                                              use-natspec
+   63:5  warning  Missing @param tag in event 'NFTTransferCancelled'                                                                               use-natspec
+   63:5  warning  Mismatch in @param names for event 'NFTTransferCancelled'. Expected: [transferId, by, reason], Found: []                         use-natspec
+   66:5  warning  Missing @notice tag in function 'EXECUTION_DELAY'                                                                                use-natspec
+   66:5  warning  Missing @return tag in function 'EXECUTION_DELAY'                                                                                use-natspec
+   66:5  warning  Mismatch in @return count for function 'EXECUTION_DELAY'. Expected: 1, Found: 0                                                  use-natspec
+   66:5  warning  Function name must be in mixedCase                                                                                               func-name-mixedcase
+   69:5  warning  Missing @notice tag in function 'roles'                                                                                          use-natspec
+   69:5  warning  Missing @return tag in function 'roles'                                                                                          use-natspec
+   69:5  warning  Mismatch in @return count for function 'roles'. Expected: 1, Found: 0                                                            use-natspec
+   70:5  warning  Missing @notice tag in function 'treasury'                                                                                       use-natspec
+   70:5  warning  Missing @return tag in function 'treasury'                                                                                       use-natspec
+   70:5  warning  Mismatch in @return names for function 'treasury'. Expected: [payable], Found: []                                                use-natspec
+   71:5  warning  Missing @notice tag in function 'pendingTransfers'                                                                               use-natspec
+   71:5  warning  Missing @param tag in function 'pendingTransfers'                                                                                use-natspec
+   71:5  warning  Mismatch in @param names for function 'pendingTransfers'. Expected: [transferId], Found: []                                      use-natspec
+   71:5  warning  Missing @return tag in function 'pendingTransfers'                                                                               use-natspec
+   71:5  warning  Mismatch in @return count for function 'pendingTransfers'. Expected: 1, Found: 0                                                 use-natspec
+   72:5  warning  Missing @notice tag in function 'pendingERC20Transfers'                                                                          use-natspec
+   72:5  warning  Missing @param tag in function 'pendingERC20Transfers'                                                                           use-natspec
+   72:5  warning  Mismatch in @param names for function 'pendingERC20Transfers'. Expected: [transferId], Found: []                                 use-natspec
+   72:5  warning  Missing @return tag in function 'pendingERC20Transfers'                                                                          use-natspec
+   72:5  warning  Mismatch in @return count for function 'pendingERC20Transfers'. Expected: 1, Found: 0                                            use-natspec
+   73:5  warning  Missing @notice tag in function 'pendingNFTTransfers'                                                                            use-natspec
+   73:5  warning  Missing @param tag in function 'pendingNFTTransfers'                                                                             use-natspec
+   73:5  warning  Mismatch in @param names for function 'pendingNFTTransfers'. Expected: [transferId], Found: []                                   use-natspec
+   73:5  warning  Missing @return tag in function 'pendingNFTTransfers'                                                                            use-natspec
+   73:5  warning  Mismatch in @return count for function 'pendingNFTTransfers'. Expected: 1, Found: 0                                              use-natspec
+   74:5  warning  Missing @notice tag in function 'pendingTransfersWithMeta'                                                                       use-natspec
+   74:5  warning  Missing @param tag in function 'pendingTransfersWithMeta'                                                                        use-natspec
+   74:5  warning  Mismatch in @param names for function 'pendingTransfersWithMeta'. Expected: [transferId], Found: []                              use-natspec
+   74:5  warning  Missing @return tag in function 'pendingTransfersWithMeta'                                                                       use-natspec
+   74:5  warning  Mismatch in @return count for function 'pendingTransfersWithMeta'. Expected: 1, Found: 0                                         use-natspec
+   75:5  warning  Missing @notice tag in function 'pendingTransferIds'                                                                             use-natspec
+   75:5  warning  Missing @return tag in function 'pendingTransferIds'                                                                             use-natspec
+   75:5  warning  Mismatch in @return count for function 'pendingTransferIds'. Expected: 1, Found: 0                                               use-natspec
+   78:5  warning  Missing @notice tag in function 'initialize'                                                                                     use-natspec
+   78:5  warning  Missing @param tag in function 'initialize'                                                                                      use-natspec
+   78:5  warning  Mismatch in @param names for function 'initialize'. Expected: [rolesContract, initialTreasury], Found: []                        use-natspec
+   81:5  warning  Missing @notice tag in function 'receiveFunds'                                                                                   use-natspec
+   82:5  warning  Missing @notice tag in function 'receiveFundsWithMeta'                                                                           use-natspec
+   82:5  warning  Missing @param tag in function 'receiveFundsWithMeta'                                                                            use-natspec
+   82:5  warning  Mismatch in @param names for function 'receiveFundsWithMeta'. Expected: [metadata], Found: []                                    use-natspec
+   83:5  warning  Missing @notice tag in function 'depositERC20'                                                                                   use-natspec
+   83:5  warning  Missing @param tag in function 'depositERC20'                                                                                    use-natspec
+   83:5  warning  Mismatch in @param names for function 'depositERC20'. Expected: [token, amount, metadata], Found: []                             use-natspec
+   84:5  warning  Missing @notice tag in function 'depositNFT'                                                                                     use-natspec
+   84:5  warning  Missing @param tag in function 'depositNFT'                                                                                      use-natspec
+   84:5  warning  Mismatch in @param names for function 'depositNFT'. Expected: [token, tokenId, metadata], Found: []                              use-natspec
+   87:5  warning  Missing @notice tag in function 'executeTransferBatch'                                                                           use-natspec
+   87:5  warning  Missing @param tag in function 'executeTransferBatch'                                                                            use-natspec
+   87:5  warning  Mismatch in @param names for function 'executeTransferBatch'. Expected: [transferIds], Found: []                                 use-natspec
+   88:5  warning  Missing @notice tag in function 'executeERC20TransferBatch'                                                                      use-natspec
+   88:5  warning  Missing @param tag in function 'executeERC20TransferBatch'                                                                       use-natspec
+   88:5  warning  Mismatch in @param names for function 'executeERC20TransferBatch'. Expected: [transferIds], Found: []                            use-natspec
+   89:5  warning  Missing @notice tag in function 'executeNFTTransferBatch'                                                                        use-natspec
+   89:5  warning  Missing @param tag in function 'executeNFTTransferBatch'                                                                         use-natspec
+   89:5  warning  Mismatch in @param names for function 'executeNFTTransferBatch'. Expected: [transferIds], Found: []                              use-natspec
+   92:5  warning  Missing @notice tag in function 'cancelTransfer'                                                                                 use-natspec
+   92:5  warning  Missing @param tag in function 'cancelTransfer'                                                                                  use-natspec
+   92:5  warning  Mismatch in @param names for function 'cancelTransfer'. Expected: [transferId, reason], Found: []                                use-natspec
+   93:5  warning  Missing @notice tag in function 'cancelERC20Transfer'                                                                            use-natspec
+   93:5  warning  Missing @param tag in function 'cancelERC20Transfer'                                                                             use-natspec
+   93:5  warning  Mismatch in @param names for function 'cancelERC20Transfer'. Expected: [transferId, reason], Found: []                           use-natspec
+   94:5  warning  Missing @notice tag in function 'cancelNFTTransfer'                                                                              use-natspec
+   94:5  warning  Missing @param tag in function 'cancelNFTTransfer'                                                                               use-natspec
+   94:5  warning  Mismatch in @param names for function 'cancelNFTTransfer'. Expected: [transferId, reason], Found: []                             use-natspec
+   97:5  warning  Missing @notice tag in function 'updateTreasury'                                                                                 use-natspec
+   97:5  warning  Missing @param tag in function 'updateTreasury'                                                                                  use-natspec
+   97:5  warning  Mismatch in @param names for function 'updateTreasury'. Expected: [newTreasury], Found: []                                       use-natspec
+   98:5  warning  Missing @notice tag in function 'emergencyWithdraw'                                                                              use-natspec
+  101:5  warning  Missing @notice tag in function 'upgradeTo'                                                                                      use-natspec
+  101:5  warning  Missing @param tag in function 'upgradeTo'                                                                                       use-natspec
+  101:5  warning  Mismatch in @param names for function 'upgradeTo'. Expected: [newImplementation], Found: []                                      use-natspec
+  102:5  warning  Missing @notice tag in function 'upgradeToAndCall'                                                                               use-natspec
+  102:5  warning  Missing @param tag in function 'upgradeToAndCall'                                                                                use-natspec
+  102:5  warning  Mismatch in @param names for function 'upgradeToAndCall'. Expected: [newImplementation, data], Found: []                         use-natspec
+
+contracts/Roles.sol
+    4:1   warning  global import of path @openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)  no-global-import
+    5:1   warning  global import of path @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                no-global-import
+   41:5   warning  GC: [votingPower] on Event [VotingPowerSet] could be Indexed                                                                                                                                                                        gas-indexed-events
+   46:5   warning  GC: [votingPower] on Event [CustomVotingPowerSet] could be Indexed                                                                                                                                                                  gas-indexed-events
+  139:50  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                  gas-increment-by-one
+  155:50  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                                  gas-increment-by-one
+  166:98  warning  Code contains empty blocks                                                                                                                                                                                                          no-empty-blocks
+
+contracts/TreasuryRouter.sol
+    4:1   warning  global import of path ./interfaces/IRoles.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)                                                      no-global-import
+    5:1   warning  global import of path @openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)       no-global-import
+    6:1   warning  global import of path @openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)            no-global-import
+    7:1   warning  global import of path @openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)          no-global-import
+    8:1   warning  global import of path @openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)  no-global-import
+    9:1   warning  global import of path @openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)             no-global-import
+   10:1   warning  global import of path @openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)        no-global-import
+   11:1   warning  global import of path @openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol is not allowed. Specify names to import individually or bind all exports of the module into a name (import "path" as Name)      no-global-import
+   71:5   warning  GC: For [ PendingERC20Transfer ] struct, packing seems inefficient. Try rearranging to achieve 32bytes slots                                                                                                                  gas-struct-packing
+   85:5   warning  GC: For [ PendingNFTTransfer ] struct, packing seems inefficient. Try rearranging to achieve 32bytes slots                                                                                                                    gas-struct-packing
+  102:5   warning  GC: [amount] on Event [FundsReceived] could be Indexed                                                                                                                                                                        gas-indexed-events
+  108:5   warning  GC: [amount] on Event [TransferQueued] could be Indexed                                                                                                                                                                       gas-indexed-events
+  108:5   warning  GC: [timestamp] on Event [TransferQueued] could be Indexed                                                                                                                                                                    gas-indexed-events
+  114:5   warning  GC: [amount] on Event [TransferExecuted] could be Indexed                                                                                                                                                                     gas-indexed-events
+  124:5   warning  GC: [amount] on Event [EmergencyWithdrawal] could be Indexed                                                                                                                                                                  gas-indexed-events
+  134:2   warning  Line length must be no more than 120 but current length is 129                                                                                                                                                                max-line-length
+  134:5   warning  GC: [amount] on Event [ERC20FundsReceived] could be Indexed                                                                                                                                                                   gas-indexed-events
+  142:2   warning  Line length must be no more than 120 but current length is 133                                                                                                                                                                max-line-length
+  142:5   warning  GC: [amount] on Event [ERC20TransferQueued] could be Indexed                                                                                                                                                                  gas-indexed-events
+  142:5   warning  GC: [timestamp] on Event [ERC20TransferQueued] could be Indexed                                                                                                                                                               gas-indexed-events
+  149:2   warning  Line length must be no more than 120 but current length is 125                                                                                                                                                                max-line-length
+  159:2   warning  Line length must be no more than 120 but current length is 123                                                                                                                                                                max-line-length
+  159:5   warning  GC: [tokenId] on Event [NFTReceived] could be Indexed                                                                                                                                                                         gas-indexed-events
+  167:2   warning  Line length must be no more than 120 but current length is 132                                                                                                                                                                max-line-length
+  167:5   warning  GC: [tokenId] on Event [NFTTransferQueued] could be Indexed                                                                                                                                                                   gas-indexed-events
+  167:5   warning  GC: [timestamp] on Event [NFTTransferQueued] could be Indexed                                                                                                                                                                 gas-indexed-events
+  174:2   warning  Line length must be no more than 120 but current length is 124                                                                                                                                                                max-line-length
+  201:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  221:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  222:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  236:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  243:9   warning  GC: For [ transferNonce ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                gas-increment-by-one
+  262:5   warning  Fallback function must be simple                                                                                                                                                                                              no-complex-fallback
+  263:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  270:9   warning  GC: For [ transferNonce ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                gas-increment-by-one
+  294:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  295:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  296:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  301:9   warning  GC: For [ transferNonce ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                gas-increment-by-one
+  327:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  333:9   warning  GC: For [ transferNonce ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                gas-increment-by-one
+  357:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  358:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  359:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  359:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                               gas-strict-inequalities
+  384:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  385:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  386:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  386:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                               gas-strict-inequalities
+  389:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  403:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  404:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  404:17  warning  GC: Non strict inequality found. Try converting to a strict one                                                                                                                                                               gas-strict-inequalities
+  420:14  warning  Rule is set with explicit type [var/s: uint]                                                                                                                                                                                  explicit-types
+  420:50  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                            gas-increment-by-one
+  431:14  warning  Rule is set with explicit type [var/s: uint]                                                                                                                                                                                  explicit-types
+  431:50  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                            gas-increment-by-one
+  442:14  warning  Rule is set with explicit type [var/s: uint]                                                                                                                                                                                  explicit-types
+  442:50  warning  GC: For [ i ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                            gas-increment-by-one
+  454:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  468:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  483:2   warning  Line length must be no more than 120 but current length is 130                                                                                                                                                                max-line-length
+  483:5   warning  Mismatch in @param count for function 'cancelTransfer'. Expected: 2, Found: 1                                                                                                                                                 use-natspec
+  485:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  489:9   warning  Error message for revert is too long: 75 counted / 32 allowed                                                                                                                                                                 reason-string
+  489:9   warning  GC: String exceeds 32 bytes                                                                                                                                                                                                   gas-small-strings
+  489:9   warning  GC: Use Custom Errors instead of revert statements                                                                                                                                                                            gas-custom-errors
+  501:2   warning  Line length must be no more than 120 but current length is 129                                                                                                                                                                max-line-length
+  503:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  505:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  517:2   warning  Line length must be no more than 120 but current length is 127                                                                                                                                                                max-line-length
+  519:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  546:9   warning  GC: Use Custom Errors instead of require statements                                                                                                                                                                           gas-custom-errors
+  553:9   warning  GC: For [ transferNonce ] variable, increment/decrement by 1 using: [ ++variable ] to save gas                                                                                                                                gas-increment-by-one
+  573:87  warning  Code contains empty blocks                                                                                                                                                                                                    no-empty-blocks
+
+✖ 489 problems (0 errors, 489 warnings)
+
+ -------------------------------------------------------------------------- 
+ ===> Join SOLHINT Community at: https://discord.com/invite/4TYGq3zpjs <=== 
+ -------------------------------------------------------------------------- 
+

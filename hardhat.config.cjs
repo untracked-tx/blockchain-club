@@ -1,8 +1,12 @@
+
 require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
 require("@openzeppelin/hardhat-upgrades");
 require("solidity-coverage");
 require("ts-node/register");
+require("hardhat-contract-sizer");
+require("hardhat-gas-reporter");
+require("hardhat-abi-exporter");
 
 module.exports = {
   solidity: {
@@ -34,5 +38,25 @@ module.exports = {
         },
       },
     ],
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
+  },
+  gasReporter: {
+    enabled: true,
+    currency: 'USD',
+    coinmarketcap: process.env.COINMARKETCAP_API_KEY || '',
+    showTimeSpent: true,
+    excludeContracts: [],
+  },
+  abiExporter: {
+    path: './abi',
+    runOnCompile: true,
+    clear: true,
+    flat: true,
+    spacing: 2,
+    pretty: true,
   },
 };

@@ -1,0 +1,45 @@
+ +  BlockchainClubMembership [90m(Initializable, ERC721Upgradeable, ERC721EnumerableUpgradeable, Ownable2StepUpgradeable, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable)[39m
+    - [32m[Pub][39m initialize[31m #[39m
+       - modifiers: initializer
+    - [34m[Ext][39m requestWhitelist[31m #[39m
+       - modifiers: whenNotPaused
+    - [34m[Ext][39m processWhitelistRequest[31m #[39m
+       - modifiers: onlyRole,nonReentrant
+    - [34m[Ext][39m getPendingWhitelistRequests
+    - [34m[Ext][39m hasPendingRequest
+    - [34m[Ext][39m createTokenType[31m #[39m
+       - modifiers: onlyRole
+    - [34m[Ext][39m deactivateTokenType[31m #[39m
+       - modifiers: onlyRole
+    - [90m[Int][39m _hasTokenOfType
+    - [34m[Ext][39m mint[31m #[39m
+       - modifiers: onlyRole,whenNotPaused,nonReentrant
+    - [34m[Ext][39m publicMint[31m #[39m
+       - modifiers: whenNotPaused,nonReentrant
+    - [34m[Ext][39m burnToken[31m #[39m
+       - modifiers: onlyRole,nonReentrant
+    - [90m[Int][39m _beforeTokenTransfer[31m #[39m
+       - modifiers: whenNotPaused
+    - [34m[Ext][39m updateWhitelist[31m #[39m
+       - modifiers: onlyRole,nonReentrant
+    - [90m[Int][39m _updateMemberStats[31m #[39m
+    - [32m[Pub][39m setBaseURI[31m #[39m
+       - modifiers: onlyRole,nonReentrant
+    - [90m[Int][39m _baseURI
+    - [32m[Pub][39m tokenURI
+    - [90m[Int][39m _toUrlSafe
+    - [34m[Ext][39m getMemberCount
+    - [34m[Ext][39m getOfficerCount
+    - [34m[Ext][39m getAllTokenTypeIds
+    - [34m[Ext][39m pause[31m #[39m
+       - modifiers: onlyOwner
+    - [34m[Ext][39m unpause[31m #[39m
+       - modifiers: onlyOwner
+    - [90m[Int][39m _authorizeUpgrade[31m #[39m
+       - modifiers: onlyOwner
+    - [32m[Pub][39m supportsInterface
+
+
+[33m ($)[39m = payable function
+[31m #[39m = non-constant function
+  

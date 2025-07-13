@@ -10,6 +10,15 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 
+/**
+ * @title TreasuryRouter
+ * @notice Manages delayed transfers of ETH, ERC20 tokens, and NFTs to the club treasury
+ * @dev Implements time-delayed execution for security, supports multiple asset types
+ * @dev All transfers are queued with a 24-hour delay before execution
+ * @dev Uses UUPS upgrade pattern and includes comprehensive security features
+ * @author Blockchain Club Development Team
+ * @custom:security-contact Liam.Murphy@ucdenver.edu
+ */
 contract TreasuryRouter is 
     Initializable, 
     Ownable2StepUpgradeable, 
@@ -18,83 +27,189 @@ contract TreasuryRouter is
     
     using AddressUpgradeable for address payable;
     
-    // Reference to Roles contract
+    /// @notice Reference to the Roles contract for access control
     IRoles public roles;
     
-    // Treasury address
+    /// @notice The treasury address where funds are ultimately sent
     address payable public treasury;
     
-    /// @notice The delay (in seconds) before a transfer can be executed. Hard-coded to 24 hours. To change, upgrade the contract.
+    /// @notice The delay (in seconds) before a transfer can be executed. Hard-coded to 24 hours.
+    /// @dev To change this value, a contract upgrade is required
     uint256 public constant EXECUTION_DELAY = 24 hours;
     
-    // Nonce for transfer ID generation
+    /// @notice Nonce for generating unique transfer IDs
     uint256 private transferNonce;
     
-    // Pending transfer tracking
+    /// @notice Structure for pending ETH transfers
+    /// @dev Tracks basic information about queued ETH transfers
     struct PendingTransfer {
-        uint256 amount;
-        uint256 timestamp;
-        bool executed;
-        address from;
+        uint256 amount;       /// @dev Amount of ETH to transfer
+        uint256 timestamp;    /// @dev When the transfer was queued
+        bool executed;        /// @dev Whether the transfer has been executed
+        address from;         /// @dev Address that initiated the transfer
     }
     
+    /// @notice Mapping of transfer IDs to pending ETH transfers
     mapping(bytes32 => PendingTransfer) public pendingTransfers;
+    
+    /// @notice Array of all pending transfer IDs for enumeration
     bytes32[] private _pendingTransferIds;
+    
+    /// @notice Mapping of transfer IDs to their index in _pendingTransferIds
     mapping(bytes32 => uint256) private _pendingTransferIdIndex;
 
+    /**
+     * @notice Returns all pending transfer IDs
+     * @return Array of pending transfer IDs
+     */
     function pendingTransferIds() public view returns (bytes32[] memory) {
         return _pendingTransferIds;
     }
 
-    // Pending ERC20 transfer tracking
+    /// @notice Structure for pending ERC20 token transfers
+    /// @dev Includes metadata for better tracking and categorization
     struct PendingERC20Transfer {
-        address token;
-        address from;
-        uint256 amount;
-        uint256 timestamp;
-        bool executed;
-        string metadata;
+        address token;        /// @dev ERC20 token contract address
+        address from;         /// @dev Address that initiated the transfer
+        uint256 amount;       /// @dev Amount of tokens to transfer
+        uint256 timestamp;    /// @dev When the transfer was queued
+        bool executed;        /// @dev Whether the transfer has been executed
+        string metadata;      /// @dev Additional information about the transfer
     }
+    
+    /// @notice Mapping of transfer IDs to pending ERC20 transfers
     mapping(bytes32 => PendingERC20Transfer) public pendingERC20Transfers;
 
-    // Pending NFT transfer tracking
+    /// @notice Structure for pending NFT transfers
+    /// @dev Supports any ERC721-compliant NFT
     struct PendingNFTTransfer {
-        address token;
-        address from;
-        uint256 tokenId;
-        uint256 timestamp;
-        bool executed;
-        string metadata;
+        address token;        /// @dev NFT contract address
+        address from;         /// @dev Address that initiated the transfer
+        uint256 tokenId;      /// @dev Specific token ID to transfer
+        uint256 timestamp;    /// @dev When the transfer was queued
+        bool executed;        /// @dev Whether the transfer has been executed
+        string metadata;      /// @dev Additional information about the NFT
     }
+    
+    /// @notice Mapping of transfer IDs to pending NFT transfers
     mapping(bytes32 => PendingNFTTransfer) public pendingNFTTransfers;
 
     // Events
+    
+    /// @notice Emitted when ETH is received by the contract
+    /// @param sender Address that sent the ETH
+    /// @param amount Amount of ETH received
     event FundsReceived(address indexed sender, uint256 amount);
+    
+    /// @notice Emitted when an ETH transfer is queued
+    /// @param transferId Unique identifier for the transfer
+    /// @param amount Amount of ETH queued
+    /// @param timestamp When the transfer was queued
     event TransferQueued(bytes32 indexed transferId, uint256 amount, uint256 timestamp);
+    
+    /// @notice Emitted when an ETH transfer is executed
+    /// @param transferId Unique identifier for the transfer
+    /// @param amount Amount of ETH transferred
+    /// @param treasury Address that received the ETH
     event TransferExecuted(bytes32 indexed transferId, uint256 amount, address indexed treasury);
+    
+    /// @notice Emitted when the treasury address is updated
+    /// @param oldTreasury Previous treasury address
+    /// @param newTreasury New treasury address
     event TreasuryUpdated(address indexed oldTreasury, address indexed newTreasury);
+    
+    /// @notice Emitted when an emergency withdrawal is performed
+    /// @param to Address that received the emergency withdrawal
+    /// @param amount Amount withdrawn
     event EmergencyWithdrawal(address indexed to, uint256 amount);
     
-    // --- New Events ---
+    // ERC20 Events
+    
+    /// @notice Emitted when ERC20 tokens are received
+    /// @param token Token contract address
+    /// @param sender Address that sent the tokens
+    /// @param amount Amount of tokens received
+    /// @param metadata Additional information about the deposit
+    /// @param transferId Unique identifier for the transfer
     event ERC20FundsReceived(address indexed token, address indexed sender, uint256 amount, string metadata, bytes32 transferId);
+    
+    /// @notice Emitted when an ERC20 transfer is queued
+    /// @param transferId Unique identifier for the transfer
+    /// @param token Token contract address
+    /// @param amount Amount of tokens queued
+    /// @param timestamp When the transfer was queued
+    /// @param metadata Additional information about the transfer
     event ERC20TransferQueued(bytes32 indexed transferId, address indexed token, uint256 amount, uint256 timestamp, string metadata);
+    
+    /// @notice Emitted when an ERC20 transfer is executed
+    /// @param transferId Unique identifier for the transfer
+    /// @param token Token contract address
+    /// @param amount Amount of tokens transferred
+    /// @param treasury Address that received the tokens
     event ERC20TransferExecuted(bytes32 indexed transferId, address indexed token, uint256 amount, address indexed treasury);
 
+    // NFT Events
+    
+    /// @notice Emitted when an NFT is received
+    /// @param token NFT contract address
+    /// @param sender Address that sent the NFT
+    /// @param tokenId ID of the NFT received
+    /// @param metadata Additional information about the NFT
+    /// @param transferId Unique identifier for the transfer
     event NFTReceived(address indexed token, address indexed sender, uint256 tokenId, string metadata, bytes32 transferId);
+    
+    /// @notice Emitted when an NFT transfer is queued
+    /// @param transferId Unique identifier for the transfer
+    /// @param token NFT contract address
+    /// @param tokenId ID of the NFT queued
+    /// @param timestamp When the transfer was queued
+    /// @param metadata Additional information about the NFT
     event NFTTransferQueued(bytes32 indexed transferId, address indexed token, uint256 tokenId, uint256 timestamp, string metadata);
+    
+    /// @notice Emitted when an NFT transfer is executed
+    /// @param transferId Unique identifier for the transfer
+    /// @param token NFT contract address
+    /// @param tokenId ID of the NFT transferred
+    /// @param treasury Address that received the NFT
     event NFTTransferExecuted(bytes32 indexed transferId, address indexed token, uint256 tokenId, address indexed treasury);
 
+    // Cancellation Events
+    
+    /// @notice Emitted when an ETH transfer is cancelled
+    /// @param transferId Unique identifier for the transfer
+    /// @param by Address that cancelled the transfer
+    /// @param reason Reason for cancellation
     event TransferCancelled(bytes32 indexed transferId, address indexed by, string reason);
+    
+    /// @notice Emitted when an ERC20 transfer is cancelled
+    /// @param transferId Unique identifier for the transfer
+    /// @param by Address that cancelled the transfer
+    /// @param reason Reason for cancellation
     event ERC20TransferCancelled(bytes32 indexed transferId, address indexed by, string reason);
+    
+    /// @notice Emitted when an NFT transfer is cancelled
+    /// @param transferId Unique identifier for the transfer
+    /// @param by Address that cancelled the transfer
+    /// @param reason Reason for cancellation
     event NFTTransferCancelled(bytes32 indexed transferId, address indexed by, string reason);
 
-    // Modifiers
+    /**
+     * @notice Modifier to check if caller has a specific role
+     * @param role The role to check for
+     */
     modifier onlyRole(bytes32 role) {
         require(roles.hasRole(role, msg.sender), "Missing required role");
        _;
     }
     
-    // Initialize
+    /**
+     * @notice Initializes the TreasuryRouter contract
+     * @dev Sets up the roles contract reference and initial treasury address
+     * @dev Can only be called once due to the initializer modifier
+     * @param rolesContract Address of the Roles contract for access control
+     * @param initialTreasury Address where funds will ultimately be sent
+     * @custom:oz-upgrades-unsafe-allow constructor
+     */
     function initialize(
         address rolesContract,
         address payable initialTreasury
@@ -110,7 +225,13 @@ contract TreasuryRouter is
         treasury = initialTreasury;
     }
     
-    // Receive funds
+    /**
+     * @notice Deposits ETH and queues it for delayed transfer to treasury
+     * @dev Creates a unique transfer ID and queues the transfer with current timestamp
+     * @dev Anyone can call this function to contribute ETH to the treasury
+     * @custom:emits FundsReceived
+     * @custom:emits TransferQueued
+     */
     function receiveFunds() external payable nonReentrant {
         require(msg.value > 0, "No ETH sent");
         bytes32 transferId = keccak256(abi.encodePacked(
@@ -132,7 +253,12 @@ contract TreasuryRouter is
         emit TransferQueued(transferId, msg.value, block.timestamp);
     }
 
-    /// @notice Accept Ether sent directly to the contract and queue it as a pending transfer.
+    /**
+     * @notice Accepts Ether sent directly to the contract and queues it as a pending transfer
+     * @dev Automatically processes direct ETH transfers to the contract
+     * @custom:emits FundsReceived
+     * @custom:emits TransferQueued
+     */
     receive() external payable {
         require(msg.value > 0, "No ETH sent");
         bytes32 transferId = keccak256(abi.encodePacked(
@@ -154,7 +280,16 @@ contract TreasuryRouter is
         emit TransferQueued(transferId, msg.value, block.timestamp);
     }
     
-    // --- ERC20 Deposit ---
+    /**
+     * @notice Deposits ERC20 tokens and queues them for delayed transfer to treasury
+     * @dev Requires prior approval of tokens to this contract
+     * @dev Anyone can call this function to contribute ERC20 tokens to the treasury
+     * @param token Address of the ERC20 token contract
+     * @param amount Amount of tokens to deposit
+     * @param metadata Additional information about the deposit (e.g., purpose, source)
+     * @custom:emits ERC20FundsReceived
+     * @custom:emits ERC20TransferQueued
+     */
     function depositERC20(address token, uint256 amount, string calldata metadata) external nonReentrant {
         require(amount > 0, "No tokens sent");
         require(token != address(0), "Invalid token");
@@ -178,7 +313,16 @@ contract TreasuryRouter is
         emit ERC20TransferQueued(transferId, token, amount, block.timestamp, metadata);
     }
 
-    // --- NFT Deposit ---
+    /**
+     * @notice Deposits an NFT and queues it for delayed transfer to treasury
+     * @dev Requires prior approval of the NFT to this contract
+     * @dev Anyone can call this function to contribute NFTs to the treasury
+     * @param token Address of the NFT contract
+     * @param tokenId ID of the specific NFT to deposit
+     * @param metadata Additional information about the NFT (e.g., description, provenance)
+     * @custom:emits NFTReceived
+     * @custom:emits NFTTransferQueued
+     */
     function depositNFT(address token, uint256 tokenId, string calldata metadata) external nonReentrant {
         require(token != address(0), "Invalid NFT contract");
         IERC721Upgradeable(token).safeTransferFrom(msg.sender, address(this), tokenId);
@@ -201,7 +345,13 @@ contract TreasuryRouter is
         emit NFTTransferQueued(transferId, token, tokenId, block.timestamp, metadata);
     }
 
-    // Execute pending transfer
+    /**
+     * @notice Executes a pending ETH transfer after the delay period
+     * @dev Internal function that handles the actual transfer execution
+     * @dev Includes gas-efficient removal from pending transfers array
+     * @param transferId Unique identifier of the transfer to execute
+     * @custom:emits TransferExecuted
+     */
     function executeTransfer(bytes32 transferId) internal nonReentrant {
         PendingTransfer storage transfer = pendingTransfers[transferId];
         require(transfer.amount > 0, "Transfer does not exist");
@@ -223,7 +373,12 @@ contract TreasuryRouter is
         delete _pendingTransferIdIndex[transferId];
     }
     
-    // --- ERC20 Release ---
+    /**
+     * @notice Executes a pending ERC20 transfer after the delay period
+     * @dev Internal function that handles ERC20 token transfer execution
+     * @param transferId Unique identifier of the transfer to execute
+     * @custom:emits ERC20TransferExecuted
+     */
     function executeERC20Transfer(bytes32 transferId) internal nonReentrant {
         PendingERC20Transfer storage transfer = pendingERC20Transfers[transferId];
         require(transfer.amount > 0, "Transfer does not exist");
@@ -237,7 +392,12 @@ contract TreasuryRouter is
         delete pendingERC20Transfers[transferId];
     }
 
-    // --- NFT Release ---
+    /**
+     * @notice Executes a pending NFT transfer after the delay period
+     * @dev Internal function that handles NFT transfer execution
+     * @param transferId Unique identifier of the transfer to execute
+     * @custom:emits NFTTransferExecuted
+     */
     function executeNFTTransfer(bytes32 transferId) internal nonReentrant {
         PendingNFTTransfer storage transfer = pendingNFTTransfers[transferId];
         require(!transfer.executed, "Already executed");
@@ -250,25 +410,46 @@ contract TreasuryRouter is
         delete pendingNFTTransfers[transferId];
     }
     
-    // Batch transfer execution (safe: does not modify the array being iterated)
+    /**
+     * @notice Executes multiple pending ETH transfers in a single transaction
+     * @dev More gas-efficient than individual execution calls
+     * @dev Safe to use as it doesn't modify the array being iterated
+     * @param transferIds Array of transfer IDs to execute
+     */
     function executeTransferBatch(bytes32[] calldata transferIds) external nonReentrant {
         for (uint i = 0; i < transferIds.length; i++) {
             executeTransfer(transferIds[i]); // O(1) removal inside executeTransfer
         }
     }
-    // --- Batch Release ---
+    
+    /**
+     * @notice Executes multiple pending ERC20 transfers in a single transaction
+     * @dev More gas-efficient than individual execution calls
+     * @param transferIds Array of ERC20 transfer IDs to execute
+     */
     function executeERC20TransferBatch(bytes32[] calldata transferIds) external nonReentrant {
         for (uint i = 0; i < transferIds.length; i++) {
             executeERC20Transfer(transferIds[i]); // O(1) removal inside executeERC20Transfer
         }
     }
+    
+    /**
+     * @notice Executes multiple pending NFT transfers in a single transaction
+     * @dev More gas-efficient than individual execution calls
+     * @param transferIds Array of NFT transfer IDs to execute
+     */
     function executeNFTTransferBatch(bytes32[] calldata transferIds) external nonReentrant {
         for (uint i = 0; i < transferIds.length; i++) {
             executeNFTTransfer(transferIds[i]); // O(1) removal inside executeNFTTransfer
         }
     }
 
-    // Update treasury address
+    /**
+     * @notice Updates the treasury address where funds are sent
+     * @dev Only admins can call this function
+     * @param newTreasury New treasury address
+     * @custom:emits TreasuryUpdated
+     */
     function updateTreasury(address payable newTreasury) external onlyRole(roles.ADMIN_ROLE()) {
         require(newTreasury != address(0), "Invalid treasury address");
         address oldTreasury = treasury;
@@ -276,7 +457,12 @@ contract TreasuryRouter is
         emit TreasuryUpdated(oldTreasury, newTreasury);
     }
     
-    // Emergency withdrawal
+    /**
+     * @notice Emergency function to withdraw all ETH from the contract
+     * @dev Only admins can call this function
+     * @dev Should only be used in emergency situations
+     * @custom:emits EmergencyWithdrawal
+     */
     function emergencyWithdraw() external onlyRole(roles.ADMIN_ROLE()) nonReentrant {
         uint256 balance = address(this).balance;
         require(balance > 0, "No funds to withdraw");
@@ -287,7 +473,13 @@ contract TreasuryRouter is
         emit EmergencyWithdrawal(admin, balance);
     }
     
-    // --- Refund/Cancellation ---
+    /**
+     * @notice Cancels a pending ETH transfer and potentially refunds to sender
+     * @dev Only admins can call this function
+     * @dev Currently reverts as sender tracking needs to be improved
+     * @param transferId Unique identifier of the transfer to cancel
+     * @custom:emits TransferCancelled
+     */
     function cancelTransfer(bytes32 transferId, string calldata /* reason */) external onlyRole(roles.ADMIN_ROLE()) nonReentrant {
         PendingTransfer storage transfer = pendingTransfers[transferId];
         require(transfer.amount > 0 && !transfer.executed, "Not pending");
@@ -298,6 +490,14 @@ contract TreasuryRouter is
         // emit TransferCancelled(transferId, msg.sender, reason);
         // delete pendingTransfers[transferId];
     }
+    
+    /**
+     * @notice Cancels a pending ERC20 transfer and refunds tokens to sender
+     * @dev Only admins can call this function
+     * @param transferId Unique identifier of the transfer to cancel
+     * @param reason Reason for cancellation
+     * @custom:emits ERC20TransferCancelled
+     */
     function cancelERC20Transfer(bytes32 transferId, string calldata reason) external onlyRole(roles.ADMIN_ROLE()) nonReentrant {
         PendingERC20Transfer storage transfer = pendingERC20Transfers[transferId];
         require(transfer.amount > 0 && !transfer.executed, "Not pending");
@@ -306,6 +506,14 @@ contract TreasuryRouter is
         emit ERC20TransferCancelled(transferId, msg.sender, reason);
         delete pendingERC20Transfers[transferId];
     }
+    
+    /**
+     * @notice Cancels a pending NFT transfer and returns NFT to sender
+     * @dev Only admins can call this function
+     * @param transferId Unique identifier of the transfer to cancel
+     * @param reason Reason for cancellation
+     * @custom:emits NFTTransferCancelled
+     */
     function cancelNFTTransfer(bytes32 transferId, string calldata reason) external onlyRole(roles.ADMIN_ROLE()) nonReentrant {
         PendingNFTTransfer storage transfer = pendingNFTTransfers[transferId];
         require(!transfer.executed, "Not pending");
@@ -315,15 +523,25 @@ contract TreasuryRouter is
         delete pendingNFTTransfers[transferId];
     }
 
-    // --- Per-Deposit Metadata for ETH ---
+    /// @notice Structure for pending ETH transfers with metadata
+    /// @dev Alternative to PendingTransfer that includes metadata field
     struct PendingTransferWithMeta {
-        uint256 amount;
-        uint256 timestamp;
-        bool executed;
-        string metadata;
+        uint256 amount;       /// @dev Amount of ETH to transfer
+        uint256 timestamp;    /// @dev When the transfer was queued
+        bool executed;        /// @dev Whether the transfer has been executed
+        string metadata;      /// @dev Additional information about the transfer
     }
+    
+    /// @notice Mapping of transfer IDs to pending ETH transfers with metadata
     mapping(bytes32 => PendingTransferWithMeta) public pendingTransfersWithMeta;
 
+    /**
+     * @notice Deposits ETH with metadata and queues it for delayed transfer to treasury
+     * @dev Alternative to receiveFunds() that includes metadata
+     * @param metadata Additional information about the deposit
+     * @custom:emits FundsReceived
+     * @custom:emits TransferQueued
+     */
     function receiveFundsWithMeta(string calldata metadata) external payable nonReentrant {
         require(msg.value > 0, "No ETH sent");
         bytes32 transferId = keccak256(abi.encodePacked(
@@ -346,7 +564,12 @@ contract TreasuryRouter is
     // --- Analytics: Add more events as needed for dashboard integration ---
     // ...existing code...
     
-    // Upgrade authorization
+    /**
+     * @notice Authorizes contract upgrades
+     * @dev Only the contract owner can authorize upgrades
+     * @dev Required by UUPSUpgradeable
+     * @param newImplementation Address of the new implementation contract
+     */
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {
         // Authorization logic handled by onlyOwner modifier
     }

@@ -38,6 +38,7 @@ export function useMembershipVerification() {
         if (!isConnected || !address || !contract || !rolesContract) {
           setIsMember(false)
           setMembershipTier(null)
+          setIsLoading(false) // Set loading to false when no wallet is connected
           return
         }
 

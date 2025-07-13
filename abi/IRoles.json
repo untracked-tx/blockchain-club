@@ -1,0 +1,22 @@
+[
+  "event CustomVotingPowerSet(address indexed,uint256)",
+  "event VotingPowerSet(bytes32 indexed,uint256)",
+  "function ADMIN_ROLE() pure returns (bytes32)",
+  "function MEMBER_ROLE() pure returns (bytes32)",
+  "function OFFICER_ROLE() pure returns (bytes32)",
+  "function customVotingPower(address) view returns (uint256)",
+  "function getRoleMember(bytes32,uint256) view returns (address)",
+  "function getRoleMemberCount(bytes32) view returns (uint256)",
+  "function getUserCurrentRole(address) view returns (bytes32)",
+  "function getVotingPower(address) view returns (uint256)",
+  "function grantRole(bytes32,address)",
+  "function grantRoleBatch(bytes32,address[])",
+  "function hasRole(bytes32,address) view returns (bool)",
+  "function initialize(address)",
+  "function renounceRole(bytes32,address)",
+  "function revokeRole(bytes32,address)",
+  "function revokeRoleBatch(bytes32,address[])",
+  "function roleVotingPower(bytes32) view returns (uint256)",
+  "function setCustomVotingPower(address,uint256)",
+  "function setVotingPower(bytes32,uint256)"
+]

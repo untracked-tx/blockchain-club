@@ -10,8 +10,10 @@ export function useVotingPower(address?: string) {
   const config = useConfig();
 
   useEffect(() => {
+    // Don't load voting power if no address is provided
     if (!address) {
       setVotingPower(0);
+      setIsLoading(false);
       return;
     }
     

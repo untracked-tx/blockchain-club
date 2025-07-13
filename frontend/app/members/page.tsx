@@ -66,12 +66,15 @@ export default function MembersPage() {
     setMounted(true);
   }, []);
 
-  // Fetch balanceOf using wagmi
+  // Fetch balanceOf using wagmi - only when connected
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
+    query: {
+      enabled: isConnected && !!address, // Only execute when wallet is connected
+    },
   });
 
   const { tokens, isLoading, error } = useMyTokens(address);
@@ -214,8 +217,9 @@ export default function MembersPage() {
       
       <div className="container mx-auto px-4 py-12">
 
-      {/* Hydration guard: only render wallet/token UI after client mount */}
+      {/* Conditional content based on connection and officer status */}
       {!mounted ? (
+        // Initial loading state
         <div className="mx-auto max-w-md text-center">
           <Card className="border-gray-200 bg-white shadow-sm">
             <CardHeader>
@@ -229,27 +233,29 @@ export default function MembersPage() {
             </CardContent>
           </Card>
         </div>
-      ) :
-      !isConnected ? (
+      ) : !isConnected ? (
+        // Not connected - show connect wallet prompt
         <div className="mx-auto max-w-md text-center">
           <Card className="border-gray-200 bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="text-gray-900">Connect Your Wallet</CardTitle>
               <CardDescription className="text-gray-600">
-                You need to connect your wallet to view your membership details.
+                Connect your wallet to access member features and view your membership tokens.
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-center">
               <Button 
-                onClick={() => window.localStorage.setItem("walletConnected", "true")}
+                onClick={() => window.location.reload()} 
                 className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
               >
+                <Wallet className="mr-2 h-4 w-4" />
                 Connect Wallet
               </Button>
             </CardFooter>
           </Card>
         </div>
       ) : wrongNetwork ? (
+        // Wrong network
         <div className="mx-auto max-w-md text-center">
           <Card className="border-red-200 bg-white shadow-sm">
             <CardHeader>
@@ -264,7 +270,9 @@ export default function MembersPage() {
           </Card>
         </div>
       ) : (
+        // Connected and ready - show main content
         <div>
+          {/* Stats Cards */}
           <div className="mb-8 grid gap-6 md:grid-cols-3">
             <Card className="border-gray-200 bg-white shadow-sm">
               <CardHeader className="pb-2">

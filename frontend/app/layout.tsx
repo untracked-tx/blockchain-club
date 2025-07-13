@@ -63,6 +63,7 @@ export const metadata = {
 import { WagmiConfigProvider } from "@/components/providers/wagmi-provider"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
+import { WalletChangeListener } from "@/components/wallet-change-listener"
 
 if (typeof window !== "undefined") {
   localStorage.setItem("debug", "walletconnect:*");
@@ -75,8 +76,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://bridge.walletconnect.org" />
+        <link rel="preconnect" href="https://registry.walletconnect.com" />
+        <link rel="preconnect" href="https://rpc-amoy.polygon.technology" />
+        <link rel="preconnect" href="https://polygon-rpc.com" />
+        <link rel="preconnect" href="https://ipfs.io" />
+      </head>
       <body>
         <WagmiConfigProvider>
+          <WalletChangeListener />
           <Navbar />
           {children}
           <Footer />

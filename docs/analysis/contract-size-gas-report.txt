@@ -1,0 +1,23 @@
+# Hardhat Contract Sizer & Gas Reporter Output
+
+This file contains the output from Hardhat's contract sizer and gas reporter plugins, captured from the last successful compilation.
+
+```
+Nothing to compile
+ ·----------------------------|--------------------------------|--------------------------------·
+ |  Solc version: 0.8.20      ·  Optimizer enabled: true       ·  Runs: 200                     │
+ ·····························|································|·································
+ |  Contract Name             ·  Deployed size (KiB) (change)  ·  Initcode size (KiB) (change)  │
+ ·····························|································|·································
+ |  AddressUpgradeable        ·                 0.084 (0.000)  ·                 0.138 (0.000)  │
+ |  BlockchainClubMembership  ·                22.768 (0.000)  ·                22.843 (0.000)  │
+ |  EnumerableSetUpgradeable  ·                 0.084 (0.000)  ·                 0.138 (0.000)  │
+ |  ERC721Upgradeable         ·                 4.237 (0.000)  ·                 4.269 (0.000)  │
+ |  MathUpgradeable           ·                 0.084 (0.000)  ·                 0.138 (0.000)  │
+ |  Roles                     ·                 6.707 (0.000)  ·                 6.781 (0.000)  │
+ |  SignedMathUpgradeable     ·                 0.084 (0.000)  ·                 0.138 (0.000)  │
+ |  StorageSlotUpgradeable    ·                 0.084 (0.000)  ·                 0.138 (0.000)  │
+ |  StringsUpgradeable        ·                 0.084 (0.000)  ·                 0.138 (0.000)  │
+ |  TreasuryRouter            ·                14.526 (0.000)  ·                14.601 (0.000)  │
+ ·----------------------------|--------------------------------|--------------------------------·
+```

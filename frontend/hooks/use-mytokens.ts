@@ -26,7 +26,12 @@ export function useMyTokens(address?: string) {
   const config = useConfig();
 
   useEffect(() => {
-    if (!address) return;
+    // Don't load tokens if no address is provided  
+    if (!address) {
+      setTokens([]);
+      setIsLoading(false);
+      return;
+    }
     let active = true;
 
     async function loadTokens() {

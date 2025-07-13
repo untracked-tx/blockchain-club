@@ -1,0 +1,8 @@
+BlockchainClubMembership
+  ↖ PausableUpgradeable
+  ↖ ReentrancyGuardUpgradeable
+  ↖ UUPSUpgradeable
+  ↖ Ownable2StepUpgradeable
+  ↖ ERC721EnumerableUpgradeable
+  ↖ ERC721Upgradeable
+  ↖ Initializable

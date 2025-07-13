@@ -1,6 +1,8 @@
 # Blockchain Club NFT Membership System
 
-This repository contains the MVP implementation of an on-chain membership system for blockchain student organizations. The system uses ERC-721 NFTs to verify active members, collect dues, and lay the foundation for decentralized governance and treasury management.
+This repository contains the production implementation of an institutional-grade membership protocol for blockchain organizations. The system utilizes ERC-721 NFTs for member verification, governance participation, and decentralized treasury management.
+
+**Project Website:** https://untrackedtx.xyz
 
 ---
 
