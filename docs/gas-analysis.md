@@ -39,3 +39,6 @@ Based on Hardhat contract sizer analysis with Solidity 0.8.20 and optimizer enab
 **Analysis Date**: July 2025  
 **Compiler**: Solidity 0.8.20 with optimizer (200 runs)  
 **Network Target**: Polygon (low gas costs)
+
+---
+**Raw report:** [analysis/contract-size-gas-report.txt](./analysis/contract-size-gas-report.txt)

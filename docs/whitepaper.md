@@ -74,22 +74,49 @@ Blockchain infrastructure provides cryptographically verifiable record-keeping, 
 
 ## 4. Governance Model
 
+### Dual-Layer Architecture
+
+The protocol implements a sophisticated **two-layer governance system** that separates organizational identity from technical permissions, enabling institutional flexibility while maintaining smart contract security.
+
+**Layer 1: Smart Contract Roles (Technical Permissions)**
+* `ADMIN_ROLE` — Protocol upgrades, role management, treasury configuration
+* `OFFICER_ROLE` — Token minting, whitelist governance, operational control  
+* `MEMBER_ROLE` — Participation rights, governance voting, asset custody
+
+**Layer 2: Token Types (Organizational Identity)**
+* `President`, `Vice President`, `CFO`, `Treasurer` — Officer-level organizational positions
+* `Officer`, `Major Key Alert` — Generic officer designations
+* `Trader`, `Rhodes Scholar`, `The Graduate` — Member-level achievements and specializations
+
+### Strategic Benefits of Separation:
+
+**Organizational Agility:** New executive positions can be created via NFT metadata without smart contract modifications, enabling rapid adaptation to institutional needs.
+
+**Social Recognition:** Individual achievements and organizational roles receive permanent verification while maintaining appropriate technical access controls.
+
+**Governance Scalability:** Multiple organizational titles can map to the same permission level, supporting complex institutional hierarchies without contract complexity.
+
+**Frontend Integration:** Applications can simultaneously display meaningful organizational roles while enforcing appropriate blockchain-level permissions based on token type mapping.
+
 ### Current Tiered Roles:
 
-* **Admin**
+* **Admin** (ADMIN_ROLE)
+* **Officer** (OFFICER_ROLE) 
+* **Member** (MEMBER_ROLE)
 
 ### Hierarchical Access Control:
 
 **Role Definitions:**
-* **President**
+* **Admin** (ADMIN_ROLE)
   * Protocol upgrades and contract modifications
   * Officer appointment and role assignment
   * Treasury routing configuration
-* **Officer**
+  * Custom voting power assignment
+* **Officer** (OFFICER_ROLE)
   * Token type creation and configuration
   * Membership minting and issuance
   * Whitelist governance and management
-* **Member**
+* **Member** (MEMBER_ROLE)
   * NFT ownership and custody
   * Governance participation rights
 
@@ -102,9 +129,38 @@ Blockchain infrastructure provides cryptographically verifiable record-keeping, 
 
 ### Governance Evolution Roadmap:
 
+The protocol roadmap focuses on progressive enhancement of governance capabilities and institutional adoption:
+
 1. **Snapshot Integration** — Token-weighted off-chain governance (Q3 2025)
-2. **On-Chain DAO** — Automated proposal execution with treasury authority (Q4 2025)
-3. **Multi-Institutional Protocol** — Cross-university governance framework (2026)
+2. **Production Deployment** — Polygon mainnet with institutional treasury management (Q4 2025)
+3. **Multi-Institutional Framework** — Cross-university governance protocols (2026+)
+
+📍 [Complete strategic roadmap and future vision](./roadmap.md)
+
+### Implementation Pattern:
+
+The dual-layer architecture enables sophisticated permission mapping in frontend applications:
+
+```typescript
+// Frontend Logic: Token Type → Role Mapping
+function getPermissionLevel(tokenMetadata: string): Role {
+  if (tokenMetadata.includes('president') || 
+      tokenMetadata.includes('cfo') || 
+      tokenMetadata.includes('officer')) {
+    return 'OFFICER_ROLE';  // Technical permission
+  }
+  return 'MEMBER_ROLE';
+}
+
+// Display: Shows organizational title for social recognition
+function getDisplayTitle(tokenMetadata: string): string {
+  return tokenMetadata.includes('president') ? 'Club President' : 
+         tokenMetadata.includes('cfo') ? 'Chief Financial Officer' :
+         'Officer';  // Social identity preserved
+}
+```
+
+This pattern allows the protocol to **evolve organizationally without smart contract upgrades** while maintaining **precise access control** through immutable blockchain roles.
 
 ---
 
@@ -157,7 +213,7 @@ Blockchain infrastructure provides cryptographically verifiable record-keeping, 
 
 **Protocol Implementation:**
 
-**Upgradeability Framework:** UUPS proxy pattern with role-based upgrade authorization via `onlyRole(ADMIN)`
+**Upgradeability Framework:** UUPS proxy pattern with role-based upgrade authorization via `onlyRole(ADMIN_ROLE)`
 
 **Data Structures:** NFT type configuration utilizing `TokenTypeConfig` struct with comprehensive metadata
 

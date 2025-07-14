@@ -61,4 +61,7 @@ Based on comprehensive static analysis:
 
 **Analysis Date**: July 2025  
 **Tool**: Solhint v4.x with security ruleset  
-**Scope**: All production contracts
+**Scope**: All production contracts  
+
+---
+**Raw report:** [analysis/solhint-report.txt](./analysis/solhint-report.txt)
