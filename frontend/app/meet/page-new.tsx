@@ -48,8 +48,8 @@ export default function MeetPage() {
       bio: "Sam is a senior product manager and MBA candidate who's led teams at S&P Global and top SaaS firms. With 15+ years connecting technology and finance, he helps the club link classroom concepts to industry trends—offering real-world insights on digital platforms, product strategy, and what it takes to succeed in finance.",
       image: "/sam.jpg",
       tokenType: "Member",
-      email: "Samuel.Sherrow@Ucdenver.edu",
-      linkedin: "https://www.linkedin.com/in/ssherrow/",
+      email: "samuel.sherrow@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/samuel-sherrow-a8476a32/",
     },
   ]
 

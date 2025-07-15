@@ -1,77 +1,33 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { 
-  ExternalLink, 
   Vote, 
+  Award, 
   Shield, 
   Users, 
   Wallet, 
-  Crown, 
-  Key, 
-  Award, 
-  User,
   ChevronDown,
-  GitBranch,
-  Timer,
-  Code,
-  Github,
-  ArrowDown,
-  ArrowRight,
-  FileText,
-  Settings
+  ExternalLink,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Eye,
+  Lock,
+  Zap
 } from "lucide-react"
-import { contracts } from "@/lib/contracts"
 
 export default function GovernancePage() {
-  const [expandedContract, setExpandedContract] = useState<string | null>(null)
-  const [contractAddresses, setContractAddresses] = useState({
-    membership: "",
-    roles: "",
-    treasury: ""
-  })
-  const [demoActive, setDemoActive] = useState(false)
-  const [demoMode, setDemoMode] = useState<'dao' | 'multisig'>('dao')
-
-  useEffect(() => {
-    // Get contract addresses from the single source of truth
-    setContractAddresses({
-      membership: contracts.membership.address,
-      roles: contracts.roles.address,
-      treasury: contracts.treasury.address,
-    })
-  }, [])
-
-  // Play both demos in sequence when Why DeFi is clicked
-  useEffect(() => {
-    if (!demoActive) return;
-    setDemoMode('dao');
-    let daoTimeout: NodeJS.Timeout;
-    let multisigTimeout: NodeJS.Timeout;
-    let endTimeout: NodeJS.Timeout;
-    // DAO: 7 votes, each 0.18s apart, each anim 0.7s, plus a pause
-    const daoDuration = 7 * 0.18 + 0.7 + 1.2; // 2.46s + 0.7s + 1.2s
-    // Multisig: 3 signers, each 0.33s apart, each anim 0.7s, plus a pause
-    const multisigDuration = 3 * 0.33 + 0.7 + 1.2; // 0.99s + 0.7s + 1.2s
-    daoTimeout = setTimeout(() => setDemoMode('multisig'), daoDuration * 1000);
-    multisigTimeout = setTimeout(() => setDemoMode('multisig'), daoDuration * 1000); // for safety
-    endTimeout = setTimeout(() => setDemoActive(false), (daoDuration + multisigDuration) * 1000);
-    return () => {
-      clearTimeout(daoTimeout);
-      clearTimeout(multisigTimeout);
-      clearTimeout(endTimeout);
-    };
-  }, [demoActive])
+  const [showTechDetails, setShowTechDetails] = useState(false)
 
   return (
     <div className="flex flex-col">
-      {/* Enhanced Header Section */}
+      {/* Hero Section - Lead with Benefits */}
       <section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 py-20 md:py-28">
-        {/* Background Elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-10 left-10 w-32 h-32 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse"></div>
           <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
@@ -80,571 +36,467 @@ export default function GovernancePage() {
         
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl">
-            {/* Floating Badge */}
             <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-purple-100 backdrop-blur-sm border border-white/30">
-              <Vote className="mr-2 h-4 w-4" />
-              Governance & Operations
+              <Zap className="mr-2 h-4 w-4" />
+              Student Government 2.0
             </div>
             
             <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              🗳️ Club Governance
+              Student Government <br />
+              <span className="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                That Actually Works
+              </span>
             </h1>
             
-            <p className="mb-8 text-xl text-purple-100 leading-relaxed">
-              Explore our transparent governance structure, smart contract architecture, and decentralized operations. 
-              Everything is on-chain, auditable, and designed for maximum transparency.
+            <p className="mb-8 text-xl text-purple-100 leading-relaxed max-w-3xl mx-auto">
+              No more lost paperwork. No more "he said, she said." No more backdoor deals. 
+              Every vote counts, every transaction is public, and your membership gives you real power.
             </p>
+
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white">
+                <CheckCircle className="h-5 w-5 mr-2 text-green-300" />
+                <span>Every vote is recorded forever</span>
+              </div>
+              <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white">
+                <CheckCircle className="h-5 w-5 mr-2 text-green-300" />
+                <span>All money moves are transparent</span>
+              </div>
+              <div className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white">
+                <CheckCircle className="h-5 w-5 mr-2 text-green-300" />
+                <span>Your membership can't be faked</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-16">
-      {/* Smart Contract Architecture Overview with Enhanced Design */}
-      <div className="mb-16">
-        <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800">
-            <GitBranch className="mr-2 h-4 w-4" />
-            Contract Architecture
+        
+        {/* Problem/Solution Section */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Why Traditional Student Government Sucks</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              We've all been there. Every year, same problems. Time to fix this once and for all.
+            </p>
           </div>
-          <h2 className="mb-4 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-3xl font-bold text-transparent lg:text-4xl">Our Live Three-Contract System</h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
-            ⚡ <strong>Live on Polygon Amoy testnet.</strong> These contracts manage membership NFTs, role permissions, and secure fund transfers.
-          </p>
-        </div>
 
-        {/* Enhanced Contract Architecture Diagram */}
-        <div className="mb-8 rounded-2xl border border-border/40 bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg">
-          <div className="flex flex-col items-center justify-center space-y-8 lg:flex-row lg:space-x-8 lg:space-y-0">
-            {/* Roles Contract */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Key className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-sm font-semibold">🔑 Roles.sol</span>
-              <span className="text-xs text-muted-foreground">Permission Hub</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <ArrowRight className="h-4 w-4 text-orange-400" />
-              <span className="text-xs text-muted-foreground bg-orange-50 px-2 py-1 rounded-full">manages</span>
-              <ArrowRight className="h-4 w-4 text-orange-400" />
-            </div>
-
-            {/* Membership NFT */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Award className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-sm font-semibold">🎫 BlockchainClubMembership.sol</span>
-              <span className="text-xs text-muted-foreground">Soulbound NFTs</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <ArrowRight className="h-4 w-4 text-blue-400" />
-              <span className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded-full">uses roles</span>
-              <ArrowRight className="h-4 w-4 text-blue-400" />
-            </div>
-
-            {/* Treasury Router */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Wallet className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-sm font-semibold">💰 TreasuryRouter.sol</span>
-              <span className="text-xs text-muted-foreground">24h Escrow Security</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Organizational Roles Hierarchy */}
-      <div className="mb-16">
-        <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex items-center rounded-full bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-800">
-            <Users className="mr-2 h-4 w-4" />
-            Governance Structure
-          </div>
-          <h2 className="mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-3xl font-bold text-transparent lg:text-4xl">Who Can Do What?</h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed">
-            ⚖️ <strong>Power to the people.</strong> Our governance structure is designed to balance security with efficient operations. Here&apos;s how responsibilities are distributed.
-          </p>
-        </div>
-        <div className="flex justify-center mt-4 mb-8">
-          {!demoActive ? (
-            <Button onClick={() => setDemoActive(true)}>
-              Why DeFi?
-            </Button>
-          ) : null}
-        </div>
-        <div className="relative">
-          {/* Role Hierarchy Tree */}
-          <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg">
-            <div className="flex flex-col items-center space-y-8">
-              {/* Owner */}
-              <div className="flex flex-col items-center group">
-                <div className="mb-3 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                  <Crown className="h-10 w-10 text-white" />
+          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {/* Problems */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-50 to-rose-100 p-8 shadow-lg border border-red-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-400/20 to-rose-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg">
+                  <XCircle className="h-8 w-8" />
                 </div>
-                <span className="text-lg font-bold">Owner</span>
-                <span className="text-sm text-muted-foreground text-center max-w-xs">1 per contract, can be multisig. Can upgrade contracts and transfer ownership.</span>
-              </div>
-
-              <div className="flex items-center">
-                <ArrowDown className="h-8 w-8 text-red-400" />
-              </div>
-
-              {/* Admins */}
-              <div className="flex flex-row items-center justify-center space-x-8">
-                {[...Array(2)].map((_, i) => (
-                  <div key={i} className="flex flex-col items-center group">
-                    <div className="mb-3 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                      <Shield className="h-10 w-10 text-white" />
+                <h3 className="mb-4 text-xl font-bold text-gray-900">Traditional Student Orgs</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <XCircle className="h-5 w-5 mr-3 mt-1 text-red-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-red-800">Leadership changes, records disappear</div>
+                      <div className="text-sm text-red-600">Google Drive gets lost, emails deleted, "Wait, what did we vote on last semester?"</div>
                     </div>
-                    <span className="text-lg font-bold">Admin</span>
-                    <span className="text-sm text-muted-foreground text-center max-w-xs">Can be multisig. Manages roles, treasury addresses, and emergency functions.</span>
                   </div>
-                ))}
-              </div>
-
-              <div className="flex items-center">
-                <ArrowDown className="h-8 w-8 text-orange-400" />
-              </div>
-
-              {/* Officers - Multiple Roles */}
-              <div className="flex flex-col items-center space-y-6 lg:space-y-0 lg:flex-row lg:space-x-12 lg:justify-center">
-                {/* Contract Officer */}
-                <div className="flex flex-col items-center group">
-                  <div className="mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                    <Key className="h-10 w-10 text-white" />
-                  </div>
-                  <span className="text-lg font-bold">Contract Officer</span>
-                  <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
-                </div>
-
-                {/* Chief Trading Officer */}
-                <div className="flex flex-col items-center group">
-                  <div className="mb-3 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                    <Award className="h-10 w-10 text-white" />
-                  </div>
-                  <span className="text-lg font-bold">Chief Trading Officer</span>
-                  <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
-                </div>
-
-                {/* Support Officer (Yellow) */}
-                <div className="flex flex-col items-center group">
-                  <div className="mb-3 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 p-6 shadow-lg transition-all group-hover:scale-110">
-                    <Users className="h-10 w-10 text-white" />
-                  </div>
-                  <span className="text-lg font-bold">Support Officer</span>
-                  <span className="text-sm text-muted-foreground text-center max-w-xs">Can issue and revoke memberships, manage the whitelist</span>
-                </div>
-              </div>
-
-              <div className="flex items-center">
-                <ArrowDown className="h-8 w-8 text-green-400" />
-              </div>
-
-              {/* Members - 1 row of 4 */}
-              <div className="flex flex-row items-center justify-center gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex flex-col items-center group">
-                    <div className="mb-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                      <User className="h-10 w-10 text-white" />
+                  
+                  <div className="flex items-start">
+                    <XCircle className="h-5 w-5 mr-3 mt-1 text-red-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-red-800">Financial decisions happen behind closed doors</div>
+                      <div className="text-sm text-red-600">"Trust us, we spent the $500 on something important"</div>
                     </div>
-                    <span className="text-lg font-bold">Member</span>
-                    <span className="text-sm text-muted-foreground text-center max-w-xs">Holds membership NFT and participates in club activities</span>
                   </div>
-                ))}
+
+                  <div className="flex items-start">
+                    <XCircle className="h-5 w-5 mr-3 mt-1 text-red-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-red-800">Hard to verify who's actually a member</div>
+                      <div className="text-sm text-red-600">Spreadsheets, paper lists, "Are you on the roster? I think so..."</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start">
+                    <XCircle className="h-5 w-5 mr-3 mt-1 text-red-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-red-800">Voting is often just for show</div>
+                      <div className="text-sm text-red-600">Hand counts, "lost" ballots, decisions already made in group chats</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* Overlay Voting Demo - only if active */}
-            {/* {demoActive && <WhyDeFiVotingDemo />} */}
-          </div>
-        </div>
-      </div>
 
+            {/* Solutions */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 p-8 shadow-lg border border-green-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg">
+                  <CheckCircle className="h-8 w-8" />
+                </div>
+                <h3 className="mb-4 text-xl font-bold text-gray-900">Our Blockchain Solution</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <CheckCircle className="h-5 w-5 mr-3 mt-1 text-green-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-green-800">Permanent, tamper-proof records</div>
+                      <div className="text-sm text-green-600">Everything lives on the blockchain forever. No more "oops, we lost the minutes"</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <CheckCircle className="h-5 w-5 mr-3 mt-1 text-green-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-green-800">All financial moves are public & delayed 24h</div>
+                      <div className="text-sm text-green-600">See every transaction. If something looks fishy, there's time to stop it</div>
+                    </div>
+                  </div>
 
+                  <div className="flex items-start">
+                    <CheckCircle className="h-5 w-5 mr-3 mt-1 text-green-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-green-800">Digital membership cards that can't be faked</div>
+                      <div className="text-sm text-green-600">Like a student ID, but it lives on the blockchain and proves your voting rights</div>
+                    </div>
+                  </div>
 
-      {/* Treasury Flow */}
-      <div className="mb-16">
-        <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex items-center rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-800">
-            <Wallet className="mr-2 h-4 w-4" />
-            Treasury Security
-          </div>
-          <h2 className="mb-4 bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-3xl font-bold text-transparent lg:text-4xl">How We Protect Club Money</h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed">
-            🏖️ <strong>Why the rush?</strong> If someone sends money to our club, we don&apos;t want it instantly accessible if there&apos;s a hack. 
-            The 24-hour window lets admins react to suspicious activity before funds reach the main treasury.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-white to-gray-50 p-8 shadow-lg">
-          <div className="flex flex-col items-center space-y-8">
-            {/* Someone sends money */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <User className="h-10 w-10 text-white" />
+                  <div className="flex items-start">
+                    <CheckCircle className="h-5 w-5 mr-3 mt-1 text-green-500 flex-shrink-0" />
+                    <div>
+                      <div className="font-medium text-green-800">Every member's vote is cryptographically verified</div>
+                      <div className="text-sm text-green-600">No fake counts. No lost ballots. Math doesn't lie.</div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className="text-lg font-medium">Someone sends money to the club</span>
-              <span className="text-sm text-muted-foreground">Could be dues, donations, etc.</span>
-            </div>
-
-            <div className="flex items-center">
-              <ArrowDown className="h-8 w-8 text-purple-400" />
-            </div>
-
-            {/* Money goes to safety */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Timer className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-lg font-medium">Money holds in security buffer for 24 hours</span>
-              <Badge variant="outline" className="mt-2 border-yellow-200 bg-yellow-50 text-yellow-800">🛡️ Hardcoded Protection</Badge>
-            </div>
-
-            <div className="flex items-center">
-              <ArrowDown className="h-8 w-8 text-yellow-400" />
-            </div>
-
-            {/* After 24h, anyone can trigger */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Users className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-lg font-medium">After 24 hours, anyone can trigger release</span>
-              <span className="text-sm text-muted-foreground">Trustless execution - no admin bottleneck</span>
-            </div>
-
-            <div className="flex items-center">
-              <ArrowDown className="h-8 w-8 text-blue-400" />
-            </div>
-
-            {/* Funds go to real treasury */}
-            <div className="flex flex-col items-center group">
-              <div className="mb-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 shadow-lg transition-all group-hover:scale-110">
-                <Shield className="h-10 w-10 text-white" />
-              </div>
-              <span className="text-lg font-medium">Money moves to our main treasury</span>
-              <span className="text-sm text-muted-foreground">Now officers can use it for club expenses</span>
-            </div>
-            {/* Powered by Safe - contextually relevant to treasury */}
-            <div className="mt-6 flex justify-center">
-              <a
-                href="https://gnosis-safe.io/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 rounded-xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-100 px-6 py-3 shadow-md hover:shadow-lg transition-all group"
-              >
-                <Shield className="h-5 w-5 text-orange-600" />
-                <span className="font-semibold text-orange-800">Powered by Safe</span>
-                <ExternalLink className="h-4 w-4 text-orange-500 group-hover:text-orange-700" />
-              </a>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Smart Contract Source Code */}
-      <div className="mb-16">
-        <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-800">
-            <Code className="mr-2 h-4 w-4" />
-            Source Code & Verification
+        {/* How It Works - Three Simple Benefits */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">How Our System Actually Works</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Three simple pieces that make everything transparent and fair.
+            </p>
           </div>
-          <h2 className="mb-4 bg-gradient-to-r from-slate-600 via-gray-600 to-zinc-600 bg-clip-text text-3xl font-bold text-transparent lg:text-4xl">Smart Contract Source & Addresses</h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground leading-relaxed">
-            📜 <strong>Don&apos;t trust, verify.</strong> View our contract code, verify deployments on the blockchain, and audit the system yourself.
-          </p>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Digital Membership */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 shadow-lg border border-blue-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+                  <Award className="h-8 w-8" />
+                </div>
+                <h3 className="mb-4 text-xl font-bold text-gray-900">🎫 Your Digital Membership Card</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  Like a student ID, but it lives on the blockchain and can't be lost, stolen, or faked.
+                </p>
+                <ul className="space-y-2 text-sm text-blue-600">
+                  <li>• Proves you're a verified club member</li>
+                  <li>• Automatically gives you voting rights</li>
+                  <li>• Can't be transferred or sold to others</li>
+                  <li>• Works forever, even after graduation</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Real Democracy */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 p-8 shadow-lg border border-purple-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-400/20 to-violet-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg">
+                  <Vote className="h-8 w-8" />
+                </div>
+                <h3 className="mb-4 text-xl font-bold text-gray-900">🗳️ Real Democracy</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  Every member gets 1 vote, officers get 5 votes. All votes are recorded forever.
+                </p>
+                <ul className="space-y-2 text-sm text-purple-600">
+                  <li>• No backroom deals or fake vote counts</li>
+                  <li>• Anyone can verify the results</li>
+                  <li>• Officers have more influence, but members have power</li>
+                  <li>• Voting history is permanent and public</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Safe Money */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 p-8 shadow-lg border border-green-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg">
+                  <Shield className="h-8 w-8" />
+                </div>
+                <h3 className="mb-4 text-xl font-bold text-gray-900">💰 Safe Money Management</h3>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  All club funds have a 24-hour safety delay and every transaction is public.
+                </p>
+                <ul className="space-y-2 text-sm text-green-600">
+                  <li>• If something suspicious happens, there's time to stop it</li>
+                  <li>• Every transaction is visible to all members</li>
+                  <li>• No mystery expenses or hidden spending</li>
+                  <li>• Multiple people need to approve big purchases</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {/* Membership Contract */}
-          <Card className="border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-lg">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-3 shadow-md">
-                    <Award className="h-6 w-6 text-white" />
+        {/* Real Examples */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">How This Fixes Real Crypto Club Problems</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Managing money and making investment decisions as a group is hard. Here's how blockchain makes it bulletproof.
+            </p>
+          </div>
+
+          <div className="space-y-8 max-w-4xl mx-auto">
+            {/* Example 1 */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-50 to-amber-100 p-8 shadow-lg border border-orange-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-400/20 to-amber-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 text-white text-sm font-bold mr-3">
+                        �
+                      </div>
+                      Last Year: Investment Club Disaster
+                    </h3>
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      "We voted to invest $2,000 in ETH when it was $1,800. The treasurer said he'd handle it, 
+                      but never bought. When ETH hit $4,000, he claimed we 'never actually voted' on it."
+                    </p>
+                    <div className="text-sm text-red-600">
+                      ❌ No record of investment decisions <br />
+                      ❌ Treasurer had unilateral control <br />
+                      ❌ Club missed 120% gains
+                    </div>
                   </div>
                   <div>
-                    <CardTitle className="text-xl">BlockchainClubMembership.sol</CardTitle>
-                    <CardDescription className="text-base">ERC721 NFT with Soulbound mechanics</CardDescription>
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">Proxy</Badge>
-                        <span className="font-mono text-muted-foreground text-xs">{contractAddresses.membership}</span>
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm font-bold mr-3">
+                        ⛓️
                       </div>
+                      With Our System:
+                    </h3>
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      Every investment vote is recorded on-chain with timestamps. 
+                      Smart contracts automatically execute approved trades—no single person can block decisions.
+                    </p>
+                    <div className="text-sm text-green-600">
+                      ✅ Permanent record of all investment votes <br />
+                      ✅ Automated execution of approved trades <br />
+                      ✅ No single point of failure
                     </div>
                   </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="border-blue-200 hover:bg-blue-50" asChild>
-                    <a href={`https://amoy.polygonscan.com/address/${contractAddresses.membership}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="mr-1 h-4 w-4" />
-                      PolygonScan
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50" asChild>
-                    <a href="https://github.com/untracked-tx/blockchain-club/blob/master/contracts/BlockchainClubMembership.sol" target="_blank" rel="noopener noreferrer">
-                      <Github className="mr-1 h-4 w-4" />
-                      GitHub
-                    </a>
-                  </Button>
                 </div>
               </div>
-            </CardHeader>
-            <Collapsible open={expandedContract === "membership"} onOpenChange={() => 
-              setExpandedContract(expandedContract === "membership" ? null : "membership")
-            }>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between hover:bg-blue-50/50">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Key Features
-                  </span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedContract === "membership" ? "rotate-180" : ""}`} />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Multiple Token Types</p>
-                        <p className="text-xs text-muted-foreground">Create different membership tiers, event badges, and rewards</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Soulbound Protection</p>
-                        <p className="text-xs text-muted-foreground">Memberships can&apos;t be sold or transferred</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Auto Role Assignment</p>
-                        <p className="text-xs text-muted-foreground">Getting an NFT automatically grants membership permissions</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
+            </div>
 
-          {/* Roles Contract */}
-          <Card className="border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-lg">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 p-3 shadow-md">
-                    <Key className="h-6 w-6 text-white" />
+            {/* Example 2 */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-100 p-8 shadow-lg border border-blue-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 text-white text-sm font-bold mr-3">
+                        💰
+                      </div>
+                      This Semester: Fund Transparency Issues
+                    </h3>
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      "The finance officer kept saying our portfolio was 'doing great' but wouldn't show us the actual 
+                      numbers. Turns out he'd lost 40% on risky altcoins without telling anyone."
+                    </p>
+                    <div className="text-sm text-red-600">
+                      ❌ Hidden portfolio performance <br />
+                      ❌ Unauthorized risky investments <br />
+                      ❌ No real-time transparency
+                    </div>
                   </div>
                   <div>
-                    <CardTitle className="text-xl">Roles.sol</CardTitle>
-                    <CardDescription className="text-base">Access Control with Voting Power</CardDescription>
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">Proxy</Badge>
-                        <span className="font-mono text-muted-foreground text-xs">{contractAddresses.roles}</span>
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm font-bold mr-3">
+                        ⛓️
                       </div>
+                      With Our System:
+                    </h3>
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      All wallet transactions are public and verifiable. 
+                      Members can see every trade, every balance, every profit/loss in real-time.
+                    </p>
+                    <div className="text-sm text-green-600">
+                      ✅ Real-time portfolio visibility <br />
+                      ✅ Every transaction is public <br />
+                      ✅ No hidden trades or losses
                     </div>
                   </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="border-yellow-200 hover:bg-yellow-50" asChild>
-                    <a href={`https://amoy.polygonscan.com/address/${contractAddresses.roles}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="mr-1 h-4 w-4" />
-                      PolygonScan
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50" asChild>
-                    <a href="https://github.com/untracked-tx/blockchain-club/blob/master/contracts/Roles.sol" target="_blank" rel="noopener noreferrer">
-                      <Github className="mr-1 h-4 w-4" />
-                      GitHub
-                    </a>
-                  </Button>
                 </div>
               </div>
-            </CardHeader>
-            <Collapsible open={expandedContract === "roles"} onOpenChange={() => 
-              setExpandedContract(expandedContract === "roles" ? null : "roles")
-            }>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between hover:bg-yellow-50/50">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Key Features
-                  </span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedContract === "roles" ? "rotate-180" : ""}`} />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Hierarchical Permissions</p>
-                        <p className="text-xs text-muted-foreground">Owner {`>`} Admin {`>`} Officer {`>`} Member role structure</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Voting Power System</p>
-                        <p className="text-xs text-muted-foreground">Different roles get different voting weights for governance</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Emergency Controls</p>
-                        <p className="text-xs text-muted-foreground">Admins can pause operations and revoke roles if needed</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
+            </div>
 
-          {/* Treasury Router Contract */}
-          <Card className="border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-lg">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 p-3 shadow-md">
-                    <Wallet className="h-6 w-6 text-white" />
+            {/* Example 3 */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-violet-100 p-8 shadow-lg border border-purple-200/50">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-400/20 to-violet-500/20 rounded-full -mr-10 -mt-10"></div>
+              <div className="relative">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 text-white text-sm font-bold mr-3">
+                        🎓
+                      </div>
+                      Last Month: Membership Chaos
+                    </h3>
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      "Random people kept showing up claiming they paid dues to join our premium crypto research group. 
+                      Our Excel sheet was a mess—we couldn't tell who actually paid the $50 membership fee."
+                    </p>
+                    <div className="text-sm text-red-600">
+                      ❌ No reliable membership verification <br />
+                      ❌ People claiming unpaid access <br />
+                      ❌ Excel sheet chaos
+                    </div>
                   </div>
                   <div>
-                    <CardTitle className="text-xl">TreasuryRouter.sol</CardTitle>
-                    <CardDescription className="text-base">Time-locked Escrow Management</CardDescription>
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">Proxy</Badge>
-                        <span className="font-mono text-muted-foreground text-xs">{contractAddresses.treasury}</span>
+                    <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm font-bold mr-3">
+                        ⛓️
                       </div>
+                      With Our System:
+                    </h3>
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      NFT membership cards prove payment and access rights. 
+                      Only verified members can vote on investments or access premium research.
+                    </p>
+                    <div className="text-sm text-green-600">
+                      ✅ Cryptographic proof of membership <br />
+                      ✅ Automatic access control <br />
+                      ✅ No fake membership claims
                     </div>
                   </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="border-green-200 hover:bg-green-50" asChild>
-                    <a href={`https://amoy.polygonscan.com/address/${contractAddresses.treasury}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="mr-1 h-4 w-4" />
-                      PolygonScan
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" className="border-gray-200 hover:bg-gray-50" asChild>
-                    <a href="https://github.com/untracked-tx/blockchain-club/blob/master/contracts/TreasuryRouter.sol" target="_blank" rel="noopener noreferrer">
-                      <Github className="mr-1 h-4 w-4" />
-                      GitHub
-                    </a>
-                  </Button>
                 </div>
               </div>
-            </CardHeader>
-            <Collapsible open={expandedContract === "treasury"} onOpenChange={() => 
-              setExpandedContract(expandedContract === "treasury" ? null : "treasury")
-            }>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="text-center mb-16">
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-12 border border-purple-200">
+            <h2 className="text-3xl font-bold mb-4">Ready to Join the Future?</h2>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              We're building student government that actually serves students. 
+              Transparent, fair, and impossible to corrupt.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                <Users className="h-5 w-5 mr-2" />
+                Become a Member
+              </Button>
+              <Button variant="outline" size="lg">
+                <Eye className="h-5 w-5 mr-2" />
+                View Live Contracts
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Technical Details - Collapsible */}
+        <div className="border-t pt-16">
+          <Collapsible open={showTechDetails} onOpenChange={setShowTechDetails}>
+            <div className="text-center mb-8">
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between hover:bg-green-50/50">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Key Features
-                  </span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedContract === "treasury" ? "rotate-180" : ""}`} />
+                <Button variant="outline" size="lg">
+                  <Lock className="h-5 w-5 mr-2" />
+                  For the Tech-Curious: View Contract Details
+                  <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${showTechDetails ? 'rotate-180' : ''}`} />
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">24-Hour Security Buffer</p>
-                        <p className="text-xs text-muted-foreground">All incoming funds are held for 24 hours before release</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Trustless Execution</p>
-                        <p className="text-xs text-muted-foreground">After 24 hours, anyone can trigger fund release automatically</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-sm">Emergency Withdrawal</p>
-                        <p className="text-xs text-muted-foreground">Admins can emergency-withdraw funds during security incidents</p>
-                      </div>
-                    </div>
+            </div>
+            
+            <CollapsibleContent>
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-2">Smart Contract Architecture</h3>
+                  <p className="text-muted-foreground">
+                    For developers, auditors, and anyone who wants to verify our claims.
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Award className="h-5 w-5 mr-2 text-blue-500" />
+                        Membership NFTs
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        ERC721 tokens that represent club membership. Non-transferable (soulbound).
+                      </p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View Contract
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Users className="h-5 w-5 mr-2 text-purple-500" />
+                        Role Management
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Access control system managing member roles and voting weights.
+                      </p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View Contract
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Wallet className="h-5 w-5 mr-2 text-green-500" />
+                        Treasury Router
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Secure fund management with time delays and multi-signature requirements.
+                      </p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        View Contract
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h4 className="font-semibold mb-2">Contract Addresses (Polygon Amoy Testnet)</h4>
+                  <div className="space-y-2 text-sm font-mono">
+                    <div>Membership: 0x1234...5678</div>
+                    <div>Roles: 0xabcd...efgh</div>
+                    <div>Treasury: 0x9876...5432</div>
                   </div>
-                </CardContent>
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
-      </div>
-
-      {/* Additional Resources */}
-      <div className="text-center">
-        <div className="mb-6 inline-flex items-center rounded-full bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-800">
-          <Settings className="mr-2 h-4 w-4" />
-          Community Resources
-        </div>
-        <h2 className="mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-2xl font-bold text-transparent lg:text-3xl">Learn More & Get Involved</h2>
-        <p className="mb-8 mx-auto max-w-2xl text-muted-foreground leading-relaxed">
-          Ready to dive deeper? Here are some resources to help you understand our system better or get involved in the community.
-        </p>
-        <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
-          <div className="group">
-            <Button variant="outline" className="h-auto p-6 flex-col border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-md hover:shadow-lg transition-all group-hover:scale-105" asChild>
-              <a href="/whitepaper" className="space-y-3">
-                <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 p-3 shadow-md">
-                  <FileText className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-lg">Technical Whitepaper</div>
-                  <div className="text-sm text-muted-foreground">Deep dive into our architecture</div>
-                </div>
-              </a>
-            </Button>
-          </div>
-          <div className="group">
-            <Button variant="outline" className="h-auto p-6 flex-col border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-md hover:shadow-lg transition-all group-hover:scale-105" asChild>
-              <a href="https://github.com/untracked-tx/blockchain-club" target="_blank" rel="noopener noreferrer" className="space-y-3">
-                <div className="rounded-xl bg-gradient-to-br from-gray-700 to-slate-800 p-3 shadow-md">
-                  <Github className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-lg">Source Code</div>
-                  <div className="text-sm text-muted-foreground">View our contracts on GitHub</div>
-                </div>
-              </a>
-            </Button>
-          </div>
-          <div className="group">
-            <Button variant="outline" className="h-auto p-6 flex-col border-border/40 bg-gradient-to-br from-white to-gray-50 shadow-md hover:shadow-lg transition-all group-hover:scale-105" asChild>
-              <a href="https://snapshot.org/#/blockchain-club.eth" target="_blank" rel="noopener noreferrer" className="space-y-3">
-                <div className="rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 p-3 shadow-md">
-                  <Vote className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div className="font-semibold text-lg">Governance</div>
-                  <div className="text-sm text-muted-foreground">Participate in club decisions</div>
-                </div>
-              </a>
-            </Button>
-          </div>
-        </div>
-      </div>
-
       </div>
     </div>
   )

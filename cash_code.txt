@@ -85,3 +85,6 @@ https://www.cryptoaltruism.org/blog/using-blockchain-and-cryptocurrency-to-suppo
 https://www.hackernoon.com/educational-byte-exploring-offline
 https://www.bcg.com/publications/2019/how-mobile-money-agents-can-expand-financial-inclusion#:~:text=Some%201,way%20to%20provide%20those%20services
 https://www.worldbank.org/en/publication/globalfindex/brief/data-from-the-global-findex-2021-the-impact-of-mobile-money-in-sub-saharan-africa#:~:text=phone%20is%20a%20reason%20they,not%20having%20a%20mobile%20phone
+
+
+rpw_dataset_2011_2024_q3.xlsx
