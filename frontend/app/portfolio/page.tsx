@@ -36,6 +36,7 @@ import { MULTISIG_WALLET, getExplorerAddressUrl, getExplorerTokenUrl } from "@/l
 import { EducationalInsights } from "@/components/educational-insights"
 import { TransactionHistory } from "@/components/transaction-history"
 import { PageLoadingSkeleton, PortfolioSummarySkeleton } from "@/components/ui/loading-skeleton"
+import CryptoMarketWidget from "@/components/crypto-market-widget-new"
 
 // Helper function to get appropriate icon for each asset
 const getAssetIcon = (symbol: string) => {
@@ -1298,6 +1299,11 @@ export default function PortfolioPage() {
         <EducationalInsights 
           assets={portfolio.assets} 
         />
+      </div>
+
+      {/* Crypto Market Analysis Widget */}
+      <div className="mb-8">
+        <CryptoMarketWidget />
       </div>
 
       {/* Additional info section */}
