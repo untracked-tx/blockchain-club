@@ -1,6 +1,6 @@
-"use client"
 import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css';
+
 
 export const metadata = {
   title: 'University Blockchain & Crypto Investing Club',
@@ -61,13 +61,7 @@ export const metadata = {
   },
 }
 
-import { WagmiConfigProvider } from "@/components/providers/wagmi-provider"
-import Navbar from "@/components/navbar"
-import Footer from "@/components/footer"
-
-if (typeof window !== "undefined") {
-  localStorage.setItem("debug", "walletconnect:*");
-}
+import Providers from './providers'
 
 export default function RootLayout({
   children,
@@ -84,11 +78,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://ipfs.io" />
       </head>
       <body>
-        <WagmiConfigProvider>
-          <Navbar />
+        <Providers>
           {children}
-          <Footer />
-        </WagmiConfigProvider>
+        </Providers>
       </body>
     </html>
   )
