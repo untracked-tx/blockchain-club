@@ -3,8 +3,16 @@
 import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, X, ZoomIn, ZoomOut } from "lucide-react"
+import { ExternalLink, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+
+// Utility to convert ipfs:// to https://ipfs.io/ipfs/
+function ipfsToHttp(url?: string) {
+  if (!url) return "";
+  return url.startsWith("ipfs://")
+    ? url.replace("ipfs://", "https://ipfs.io/ipfs/")
+    : url;
+}
 
 interface OwnedNFTModalProps {
   isOpen: boolean
@@ -28,18 +36,18 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
   useEffect(() => {
     if (isOpen && token.imageUri) {
       setIsLoadingMetadata(true);
-      
+
       // Construct metadata URL from imageUri
       let metadataUrl = '';
-      if (token.imageUri.includes('ipfs://')) {
-        const ipfsPath = token.imageUri.replace('ipfs://', 'https://ipfs.io/ipfs/');
+      if (token.imageUri.startsWith('ipfs://')) {
+        const ipfsPath = ipfsToHttp(token.imageUri);
         const basePath = ipfsPath.substring(0, ipfsPath.lastIndexOf('/'));
         const tokenName = token.name?.toLowerCase()
           .replace(/\s+/g, '_')
           .replace(/[^a-z0-9_]/g, '');
         metadataUrl = `${basePath}/${tokenName}.json`;
       }
-      
+
       if (metadataUrl) {
         fetch(metadataUrl)
           .then(res => res.json())
@@ -58,32 +66,20 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
   }, [isOpen, token]);
 
   const getDisplayAttributes = () => {
-    console.log("Modal Debug - token object:", token);
-    console.log("Modal Debug - token.metadata:", token.metadata);
-    console.log("Modal Debug - fetched metadata:", metadata);
-    
-    // First, try to use metadata from the token if it's already available
     if (token.metadata?.attributes) {
-      console.log("Modal Debug - Using token.metadata.attributes:", token.metadata.attributes);
       return token.metadata.attributes
         .map((attr: any) => ({
           label: attr.trait_type,
           value: attr.value
         }));
     }
-    
-    // Fallback to fetched metadata
     if (metadata?.attributes) {
-      console.log("Modal Debug - Using fetched metadata.attributes:", metadata.attributes);
       return metadata.attributes
         .map((attr: any) => ({
           label: attr.trait_type,
           value: attr.value
         }));
     }
-    
-    // If no attributes available, return some basic info
-    console.log("Modal Debug - No attributes found, using fallback");
     const basicAttributes = [];
     if (token.type && token.type !== "Member Token") {
       basicAttributes.push({ label: "Type", value: token.type });
@@ -91,15 +87,7 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
     if (token.votingPower) {
       basicAttributes.push({ label: "Voting Power", value: token.votingPower.toString() });
     }
-    
     return basicAttributes;
-  };
-
-  const handleImageLoad = (e: any) => {
-    // Convert IPFS to gateway URL if needed
-    if (e.target.src.startsWith('ipfs://')) {
-      e.target.src = e.target.src.replace('ipfs://', 'https://ipfs.io/ipfs/');
-    }
   };
 
   const formatDate = (dateString: string) => {
@@ -139,19 +127,16 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
                       <div className="relative">
                         <img
                           ref={imgRef}
-                          src={token.imageUri || "/placeholder.svg"}
+                          src={ipfsToHttp(token.imageUri) || "/placeholder.svg"}
                           alt={token.name}
                           className="w-full h-auto rounded-lg cursor-zoom-in"
                           onClick={() => setZoomOpen(true)}
-                          onLoad={handleImageLoad}
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = "/placeholder.svg";
                           }}
                         />
                       </div>
                     </motion.div>
-                    
-
                   </div>
                 </div>
 
@@ -232,7 +217,7 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
           >
             <X size={28} />
           </button>
-          <MagnifierImage imageUrl={token.imageUri || "/placeholder.svg"} alt={token.name} />
+          <MagnifierImage imageUrl={ipfsToHttp(token.imageUri) || "/placeholder.svg"} alt={token.name} />
         </DialogContent>
       </Dialog>
     </Dialog>

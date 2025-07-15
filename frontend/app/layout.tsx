@@ -63,7 +63,6 @@ export const metadata = {
 import { WagmiConfigProvider } from "@/components/providers/wagmi-provider"
 import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
-import { WalletChangeListener } from "@/components/wallet-change-listener"
 
 if (typeof window !== "undefined") {
   localStorage.setItem("debug", "walletconnect:*");
@@ -85,7 +84,6 @@ export default function RootLayout({
       </head>
       <body>
         <WagmiConfigProvider>
-          <WalletChangeListener />
           <Navbar />
           {children}
           <Footer />
