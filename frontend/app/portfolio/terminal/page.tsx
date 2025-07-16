@@ -736,15 +736,38 @@ const Terminal: React.FC = () => {
         if (chart && chart.prices) {
           print(`\n📈 ${args[0].toUpperCase()} Price Chart (${days}d)`);
           print("─".repeat(60));
-          // ASCII sparkline
           const prices = chart.prices.map((p: any) => p[1]);
           const min = Math.min(...prices), max = Math.max(...prices);
-          const spark = prices.map((v: number) => {
-            const level = Math.round(((v - min) / (max - min || 1)) * 7);
-            return '▁▂▃▄▅▆▇█'[level];
-          }).join('');
-          print(spark);
-          print(`Min: $${min.toFixed(2)}  Max: $${max.toFixed(2)}`);
+          const first = prices[0], last = prices[prices.length - 1];
+          const pctChange = ((last - first) / first) * 100;
+          // Downsample if too many points
+          const maxWidth = 48;
+          let sampled = prices;
+          if (prices.length > maxWidth) {
+            const step = Math.ceil(prices.length / maxWidth);
+            sampled = prices.filter((_: number, i: number) => i % step === 0);
+          }
+          // Build ASCII chart with Y axis
+          const levels = 8;
+          const chars = ['▁','▂','▃','▄','▅','▆','▇','█'];
+          let chartLines = [];
+          for (let l = levels - 1; l >= 0; l--) {
+            let line = '';
+            for (let v of sampled) {
+              const level = Math.round(((v - min) / (max - min || 1)) * (levels - 1));
+              line += (level >= l) ? chars[level] : ' ';
+            }
+            // Add Y axis label to left
+            if (l === levels - 1) line = `${max.toFixed(2).padStart(8)} ┤` + line;
+            else if (l === 0) line = `${min.toFixed(2).padStart(8)} ┤` + line;
+            else line = '         │' + line;
+            chartLines.push(line);
+          }
+          chartLines.forEach(print);
+          // X axis
+          print('         └' + '─'.repeat(sampled.length));
+          print(`         ${' '.repeat(0)}▲ Start   ${' '.repeat(Math.max(0, sampled.length-14))}▲ End`);
+          print(`Min: $${min.toFixed(2)}  Max: $${max.toFixed(2)}  Change: ${pctChange >= 0 ? '+' : ''}${pctChange.toFixed(2)}%`);
         } else {
           print("❌ Failed to fetch chart");
         }
