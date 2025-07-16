@@ -247,9 +247,6 @@ class DataCache {
             safe: data.result.SafeGasPrice,
             standard: data.result.ProposeGasPrice,
             fast: data.result.FastGasPrice
-          polygon: { safe: 30, standard: 35, fast: 45 },
-          bsc: { safe: 3, standard: 5, fast: 8 },
-          arbitrum: { safe: 0.1, standard: 0.2, fast: 0.5 }
           }
         };
         
@@ -288,9 +285,8 @@ class DataCache {
       this.apiCache.set(cacheKey, { data, timestamp: Date.now() });
       return data;
     } catch (error) {
-        success: false, 
-        error: error instanceof Error ? error.message : errorMessage 
-      };
+      console.error('Trending data fetch error:', error);
+      return null;
     }
   }
 
@@ -302,10 +298,15 @@ class DataCache {
       return cached.data;
     }
 
-  static formatOutput(title: string, data: any[], formatter: (item: any) => string): string[] {
-    const lines = [title];
-    data.forEach(item => lines.push(formatter(item)));
-    return lines;
+    try {
+      const response = await this.rateLimitedFetch(
+        'https://api.coingecko.com/api/v3/global'
+      );
+      
+      if (!response.ok) throw new Error('Global data fetch failed');
+      
+      const data = await response.json();
+      this.apiCache.set(cacheKey, { data, timestamp: Date.now() });
       return data;
     } catch (error) {
       console.error('Global data fetch error:', error);
@@ -313,8 +314,6 @@ class DataCache {
     }
   }
 
-// Matrix-style rain effect with crypto symbols and binary
-const DataRain = ({ data }: { data?: any[] }) => {
   async getCompanyHoldings(coin: string): Promise<any | null> {
     const cacheKey = `company-holdings-${coin}`;
     const cached = this.apiCache.get(cacheKey);
