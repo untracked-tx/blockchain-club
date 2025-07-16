@@ -33,9 +33,29 @@ This document summarizes the system’s security posture, protections, and known
 - Protected operations include token minting, burning, and treasury asset flows.
 
 ### Temporal Security Protocol
-- `TreasuryRouter.sol` enforces 24-hour temporal delays on all outbound transfers (ETH, ERC-20, ERC-721).
+- `TreasuryRouter.sol` enforces 24-hour temporal delays on all outbound transfers (ETH, ERC-20, ERC-721) prevents hasty or malicious withdrawals.
 - Provides security window for unauthorized or erroneous transaction cancellation.
 - Complete escrow metadata and operational logs maintain public verifiability.
+
+#### Treasury Transaction Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant TreasuryRouter
+    participant Roles
+    participant Treasury
+    
+    User->>TreasuryRouter: Deposit Funds
+    TreasuryRouter->>TreasuryRouter: Start 24h Timer
+    Note over TreasuryRouter: Funds Locked for 24 hours<br/>Prevents hasty withdrawals
+    
+    User->>TreasuryRouter: Request Execution (after 24h)
+    TreasuryRouter->>Roles: Check Permissions
+    Roles-->>TreasuryRouter: Permission Granted
+    TreasuryRouter->>Treasury: Transfer Funds
+    Treasury-->>User: Confirmation
+```
 
 ### Emergency Protocol Controls
 - Critical contracts implement pause/resume functionality for emergency response.

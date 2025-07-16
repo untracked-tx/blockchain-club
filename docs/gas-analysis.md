@@ -10,6 +10,16 @@ Based on Hardhat contract sizer analysis with Solidity 0.8.20 and optimizer enab
 | **TreasuryRouter** | 14.53 KiB | 14.60 KiB | ✅ Optimized |
 | **Roles** | 6.71 KiB | 6.78 KiB | ✅ Lightweight |
 
+### Gas Cost Distribution
+
+```mermaid
+pie title Contract Deployment Costs (KiB)
+    "BlockchainClubMembership" : 22.77
+    "TreasuryRouter" : 14.53
+    "Roles" : 6.71
+    "Available Capacity" : 3.99
+```
+
 ## Performance Analysis
 
 ### 🎯 **Deployment Optimization**

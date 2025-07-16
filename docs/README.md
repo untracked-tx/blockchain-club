@@ -22,6 +22,13 @@ Complete technical specification and system overview for the blockchain membersh
 - System architecture visualizations
 - Protocol interaction flows
 
+### 📊 [System Diagrams](diagrams.md)
+- **Complete Architecture Overview** - Full system visualization with all components
+- **User Journey Maps** - Member onboarding and participation flows  
+- **Treasury Security Flow** - 24-hour time-lock transaction visualization
+- **Role Hierarchy & Token Mapping** - Permission structure and NFT type relationships
+- **State Machines** - Whitelist requests and NFT lifecycle flows
+
 ---
 
 ## 🚀 **Quick Start**

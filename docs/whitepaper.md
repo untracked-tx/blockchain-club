@@ -51,23 +51,55 @@ Blockchain infrastructure provides cryptographically verifiable record-keeping, 
 
 **Infrastructure:** Polygon provides low-cost execution with Ethereum Virtual Machine compatibility. Implementation utilizes OpenZeppelin's UUPS proxy pattern for upgradeability without compromising decentralization.
 
-**Diagram:**
+### User Journey
 
+```mermaid
+journey
+    title Member Onboarding Journey
+    section Discovery
+      Find Club Website: 5: Student
+      Read About Benefits: 4: Student
+    section Application
+      Request Whitelist: 3: Student
+      Wait for Approval: 2: Student
+      Get Approved: 5: Student, Officer
+    section Activation
+      Connect Wallet: 3: Student
+      Mint Membership NFT: 4: Student
+      Access Dashboard: 5: Student
+    section Participation
+      Vote on Proposals: 5: Student
+      Attend Meetings: 5: Student
+      Earn Achievements: 5: Student
 ```
-┌─────────────────┐    manages    ┌──────────────────────────┐
-│   Roles.sol     │◄──────────────┤ BlockchainClubMembership │
-│ (Permission Hub)│               │         .sol             │
-└─────────────────┘               │    (Soulbound NFTs)      │
-         ▲                        └──────────────────────────┘
-         │                                     │
-         │uses roles                          │
-         │                                     │
-         ▼                                     ▼
-┌─────────────────┐               ┌──────────────────────────┐
-│ TreasuryRouter  │               │      Member Stats        │
-│     .sol        │               │    & Token Tracking      │
-│ (24h Escrow)    │               └──────────────────────────┘
-└─────────────────┘
+
+### System Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend"
+        A[Web Interface]
+    end
+    
+    subgraph "Smart Contracts"
+        B[Membership NFTs]
+        C[Access Control]
+        D[Treasury Router]
+    end
+    
+    subgraph "External"
+        E[Polygon Network]
+        F[Snapshot Voting]
+    end
+    
+    A --> B
+    B --> C
+    D --> C
+    B --> F
+    
+    style B fill:#e1f5fe
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
 ```
 
 ---
@@ -97,6 +129,60 @@ The protocol implements a sophisticated **two-layer governance system** that sep
 **Governance Scalability:** Multiple organizational titles can map to the same permission level, supporting complex institutional hierarchies without contract complexity.
 
 **Frontend Integration:** Applications can simultaneously display meaningful organizational roles while enforcing appropriate blockchain-level permissions based on token type mapping.
+
+### Role Hierarchy Visualization
+
+```mermaid
+graph TD
+    A[ADMIN_ROLE]
+    B[OFFICER_ROLE]
+    C[MEMBER_ROLE]
+    
+    A -->|manages| B
+    A -->|manages| C
+    B -->|operates| C
+    
+    A -.->|Can: Upgrade Contracts<br/>Set Voting Power<br/>Emergency Controls| A1[Admin Powers]
+    B -.->|Can: Mint Tokens<br/>Process Whitelist<br/>Create Token Types| B1[Officer Powers]
+    C -.->|Can: Vote<br/>Hold NFTs<br/>Make Proposals| C1[Member Powers]
+    
+    style A fill:#ff6b6b
+    style B fill:#4ecdc4
+    style C fill:#45b7d1
+```
+
+### Token Type Mapping
+
+```mermaid
+graph LR
+    subgraph "Smart Contract Roles"
+        SCR1[MEMBER_ROLE]
+        SCR2[OFFICER_ROLE]
+    end
+    
+    subgraph "NFT Token Types"
+        T1[President]
+        T2[Vice President]
+        T3[Treasurer]
+        T4[Trader]
+        T5[Rhodes Scholar]
+        T6[The Graduate]
+    end
+    
+    T1 -->|maps to| SCR2
+    T2 -->|maps to| SCR2
+    T3 -->|maps to| SCR2
+    T4 -->|maps to| SCR1
+    T5 -->|maps to| SCR1
+    T6 -->|maps to| SCR1
+    
+    style T1 fill:#ffd93d
+    style T2 fill:#ffd93d
+    style T3 fill:#ffd93d
+    style T4 fill:#a8e6cf
+    style T5 fill:#a8e6cf
+    style T6 fill:#a8e6cf
+```
 
 ### Current Tiered Roles:
 
@@ -143,7 +229,7 @@ The dual-layer architecture enables sophisticated permission mapping in frontend
 
 ```typescript
 // Frontend Logic: Token Type → Role Mapping
-function getPermissionLevel(tokenMetadata: string): Role {
+function getPermissionLevel(tokenMetadata: string): string {
   if (tokenMetadata.includes('president') || 
       tokenMetadata.includes('cfo') || 
       tokenMetadata.includes('officer')) {
@@ -323,3 +409,4 @@ graph TB
     style SC2 fill:#fff3e0
     style SC3 fill:#f3e5f5
     style G1 fill:#e8f5e9
+```

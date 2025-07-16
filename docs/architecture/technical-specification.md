@@ -14,6 +14,66 @@ The system uses modular, upgradeable smart contracts to handle:
 
 All contracts follow the UUPS proxy upgrade standard and enforce granular access control through `AccessControlEnumerable`.
 
+### System Architecture
+
+```mermaid
+graph TB
+    subgraph "User Layer"
+        U1[Students/Members]
+        U2[Officers]
+        U3[Alumni]
+    end
+
+    subgraph "Frontend dApp"
+        W1[Next.js Interface]
+        W2[RainbowKit Wallet]
+        W3[Member Dashboard]
+    end
+
+    subgraph "Smart Contract Layer"
+        SC1[BlockchainClubMembership.sol<br/>ERC-721 Soulbound NFTs]
+        SC2[Roles.sol<br/>Access Control Hub]
+        SC3[TreasuryRouter.sol<br/>24h Time-Lock Escrow]
+        
+        SC1 -->|reads roles| SC2
+        SC3 -->|checks permissions| SC2
+        SC1 -->|auto-assigns roles| SC2
+    end
+
+    subgraph "Governance Layer"
+        G1[Snapshot Voting]
+        G2[Proposal System]
+        G3[Token-Weighted Polls]
+    end
+
+    subgraph "External Integrations"
+        E1[Polygon Network]
+        E2[IPFS Metadata]
+        E3[Gnosis Safe]
+        E4[ENS Domains]
+    end
+
+    U1 --> W1
+    U2 --> W1
+    U3 --> W1
+    
+    W1 --> SC1
+    W1 --> SC3
+    W3 --> SC2
+    
+    SC1 --> G1
+    SC2 --> G1
+    
+    SC1 --> E2
+    SC3 --> E3
+    SC1 --> E1
+    
+    style SC1 fill:#e1f5fe
+    style SC2 fill:#fff3e0
+    style SC3 fill:#f3e5f5
+    style G1 fill:#e8f5e9
+```
+
 ---
 
 ## Contracts
@@ -161,7 +221,7 @@ Time-delayed multi-asset management protocol supporting ETH, ERC20, and ERC721 t
 
 ## Protocol Considerations
 
-- Temporal constraints utilize `block.timestamp`; edge case scenarios require monitoring
+- Temporal constraints utilize `block.timestamp`. Edge-case scenarios require monitoring
 - Off-chain whitelist synchronization requires state consistency with smart contract storage
 - ERC721 tokens implement soulbound functionality when flagged during minting (transfer restrictions)
 
@@ -175,3 +235,101 @@ This specification documents the production version deployed on Polygon Amoy tes
 * Website: https://untrackedtx.xyz
 * Repository: https://github.com/untracked-tx/blockchain-club
 * Technical Contact: Liam.Murphy@ucdenver.edu
+
+---
+
+## Error Handling
+
+### Contract Failure Management
+
+The smart contracts implement comprehensive error handling patterns to ensure robust operation and clear failure modes:
+
+**Access Control Errors:**
+- `AccessControl: account X is missing role Y` - Thrown when unauthorized accounts attempt privileged operations
+- `Roles: caller not authorized` - Custom error for role verification failures
+- `Pausable: paused` - Emitted when operations are attempted on paused contracts
+
+**Membership Contract Errors:**
+- `TokenType: not found` - Invalid token type hash provided
+- `Whitelist: cooldown active` - Premature whitelist request submission
+- `Mint: public access disabled` - Attempting public mint on restricted token types
+- `Transfer: soulbound token` - Attempt to transfer non-transferable NFTs
+
+**Treasury Router Errors:**
+- `Transfer: insufficient balance` - Asset transfer exceeds available balance
+- `Transfer: temporal lock active` - Execution attempted before 24-hour delay completion
+- `Transfer: already executed` - Duplicate execution attempt on completed transfer
+
+### Recovery Mechanisms
+
+**Emergency Protocols:**
+- Pause functionality enables immediate halt of operations during critical issues
+- Admin role maintains emergency withdrawal capabilities for asset recovery
+- Upgrade patterns allow bug fixes through proxy implementation updates
+
+---
+
+## Event Emissions
+
+### Frontend Integration Events
+
+The protocol emits comprehensive events for frontend synchronization and monitoring:
+
+**Membership Events:**
+```solidity
+event TokenMinted(address indexed to, uint256 indexed tokenId, string tokenType, bool isSoulbound);
+event WhitelistRequested(address indexed user, uint256 indexed requestId);
+event WhitelistProcessed(uint256 indexed requestId, bool approved);
+event TokenTypeCraeted(string indexed tokenType, bool publicAccess);
+```
+
+**Role Management Events:**
+```solidity
+event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
+event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
+event VotingPowerUpdated(bytes32 indexed role, uint256 newWeight);
+```
+
+**Treasury Events:**
+```solidity
+event ETHDeposited(uint256 indexed transferId, uint256 amount, string metadata);
+event TransferExecuted(uint256 indexed transferId, address indexed recipient, uint256 amount);
+event TransferCancelled(uint256 indexed transferId, string reason);
+event EmergencyWithdraw(address indexed admin, uint256 amount);
+```
+
+---
+
+## Storage Layout
+
+### Upgrade Safety Considerations
+
+The contracts follow strict storage layout patterns to ensure safe upgrades:
+
+**Base Storage Structure:**
+- Inherited OpenZeppelin contracts maintain fixed storage positions
+- Custom variables append to existing layout without gaps
+- Storage gaps reserved for future extensions
+
+**Critical Storage Variables:**
+```solidity
+// BlockchainClubMembership.sol
+mapping(string => TokenTypeConfig) private _tokenTypes;
+mapping(address => WhitelistRequest) private _whitelistRequests;
+uint256 private _tokenCounter;
+uint256[47] private __gap; // Reserved storage
+
+// TreasuryRouter.sol  
+mapping(uint256 => TransferRequest) private _transfers;
+uint256 private _transferCounter;
+address private _treasury;
+uint256[47] private __gap; // Reserved storage
+```
+
+**Upgrade Protocol:**
+1. Deploy new implementation contract
+2. Verify storage layout compatibility
+3. Execute upgrade through Admin multisig
+4. Validate post-upgrade state integrity
+
+---

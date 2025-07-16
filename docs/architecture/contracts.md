@@ -40,6 +40,20 @@ The NFT-based membership system for the Blockchain Club with role integration an
 - `setBaseURI()` – Admins update metadata base path
 - `initialize(name, symbol, rolesAddr)` – Sets initial state
 
+#### Whitelist Request Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> NotWhitelisted
+    NotWhitelisted --> RequestSubmitted: requestWhitelist()
+    RequestSubmitted --> UnderReview: 24h cooldown
+    UnderReview --> Approved: Officer approves
+    UnderReview --> Rejected: Officer rejects
+    Approved --> Whitelisted: Added to whitelist
+    Rejected --> NotWhitelisted: Can retry after cooldown
+    Whitelisted --> [*]
+```
+
 **Access Control:**
 - Only Admins can set base URI and authorize upgrades
 - Officers can mint tokens, create token types, and manage whitelist
@@ -143,7 +157,7 @@ Time-delayed multi-asset management protocol supporting ETH, ERC20, and ERC721 t
 
 ## Protocol Considerations
 
-- Temporal constraints utilize `block.timestamp`; edge case scenarios require monitoring
+- Temporal constraints utilize `block.timestamp`. Edge-case scenarios require monitoring
 - Off-chain whitelist synchronization requires state consistency with smart contract storage
 - ERC721 tokens implement soulbound functionality when flagged during minting (transfer restrictions)
 

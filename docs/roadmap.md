@@ -6,9 +6,9 @@
 
 ## Our Vision
 
-We've built something pretty cool with our governance system - now let's use it to create real impact. This doc outlines project ideas we can tackle as a club, from humanitarian blockchain initiatives to advanced technical experiments. Think of this as our "what's possible" list.
+We've built an innovative governance system - now let's use it to create real impact. This doc outlines project ideas we can tackle as a club, from humanitarian blockchain initiatives to advanced technical experiments. Think of this as our "what's possible" list.
 
-Remember: We're a small club, which means we can move fast, experiment freely, and build meaningful projects without bureaucratic overhead.
+Remember: Our small team size enables rapid iteration and experimentation, allowing us to build meaningful projects without bureaucratic overhead.
 
 ---
 
@@ -40,7 +40,7 @@ const PROJECT_LEAD_ACCESS = {
 };
 ```
 
-**Cool Experiments:**
+**Innovative Experiments:**
 - **Project-Based Tokens**: NFTs for leading specific initiatives
 - **Skill Verification**: Tokens for completing trading challenges, coding contributions
 - **Cross-Club Collaboration**: Shared tokens with other university blockchain clubs
@@ -178,7 +178,7 @@ const calculateVotingPower = (member) => {
 ## Resources & Getting Started
 
 ### **For New Project Leaders:**
-1. **Propose in Discord**: Share your project idea with the club
+1. **Propose through club channels**: Share your project idea with the club
 2. **Create Proposal**: Use our governance system to get club approval
 3. **Form Team**: Use member skills directory to recruit collaborators
 4. **Get Tokens**: Receive project-specific NFTs for your initiative
@@ -202,17 +202,17 @@ const calculateVotingPower = (member) => {
 
 We're not just building a governance system - we're creating a model for how student organizations can operate in the digital age. Every project we ship, every experiment we try, every problem we solve becomes a blueprint for other clubs, other schools, other communities.
 
-Plus, this stuff looks amazing on resumes and gives us real blockchain development experience that most students never get.
+Plus, these experiences look impressive on resumes and provide real blockchain development experience that most students never get.
 
 **Most importantly:** We're proving that small teams can build meaningful, impactful technology when they have the right tools and governance structures.
 
 ---
 
 **Project Coordination:**
-* Discord: [Club invite link]
+* Website: https://untrackedtx.xyz
 * GitHub: https://github.com/untracked-tx/blockchain-club
 * Weekly Meetings: [Day/Time/Location]
 
 ---
 
-*This roadmap evolves based on member interests, available time, and cool ideas that emerge from our experiments.*
+*This roadmap evolves based on member interests, available time, and innovative ideas that emerge from our experiments.*
