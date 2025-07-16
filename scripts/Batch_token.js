@@ -18,21 +18,21 @@ const wallet = new ethers.Wallet(privateKey, provider);
 const contract = new ethers.Contract(CONTRACT_ADDRESS, abi, wallet);
 
 const types = [
-  // Governance - Officer tokens (OFFICER_ONLY = 0)
-  { typeName: "CFO", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
-  { typeName: "Major Key Alert", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
-  { typeName: "Officer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
-  { typeName: "President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
-  { typeName: "Treasurer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
-  { typeName: "Vice President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER" },
+  // Governance - Officer tokens (OFFICER_ONLY = 0, soulbound)
+  { typeName: "CFO", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER", soulbound: true },
+  { typeName: "Major Key Alert", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER", soulbound: true },
+  { typeName: "Officer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER", soulbound: true },
+  { typeName: "President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER", soulbound: true },
+  { typeName: "Treasurer", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER", soulbound: true },
+  { typeName: "Vice President", category: "Governance", maxSupply: 2, mintAccess: 0, expiresIn: 31536000, role: "OFFICER", soulbound: true },
 
-  // Governance - Member tokens (WHITELIST_ONLY = 1)
-  { typeName: "Custom Membership", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
-  { typeName: "Let's Get This Party Started", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
-  { typeName: "Trader", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
-  { typeName: "Trader Chill", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER" },
+  // Governance - Member tokens (WHITELIST_ONLY = 1, soulbound)
+  { typeName: "Custom Membership", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER", soulbound: true },
+  { typeName: "Let's Get This Party Started", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER", soulbound: true },
+  { typeName: "Trader", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER", soulbound: true },
+  { typeName: "Trader Chill", category: "Governance", maxSupply: 10, mintAccess: 1, expiresIn: 31536000, role: "MEMBER", soulbound: true },
 
-  // Supporter tokens (PUBLIC = 2)
+  // Supporter tokens (PUBLIC = 2, transferable)
   { typeName: "Digital Art", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 315360000, role: null },
   { typeName: "Rhodes Scholar", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 315360000, role: null },
   { typeName: "The Graduate", category: "Supporter", maxSupply: 100000, mintAccess: 2, expiresIn: 315360000, role: null },
@@ -42,10 +42,11 @@ const types = [
   { typeName: "Quad", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
   { typeName: "Secret Sauce", category: "POAP", maxSupply: 1000, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
 
-  // Awards & Recognition (OFFICER_ONLY = 0, soulbound)
+  // Awards & Recognition (OFFICER_ONLY = 0, soulbound)  
   { typeName: "Founders Series", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
   { typeName: "Gold Star", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
   { typeName: "Long Run", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
+  { typeName: "Historical Glitch", category: "Award", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true },
 
   // Replacement (OFFICER_ONLY = 0, soulbound)
   { typeName: "The Fool", category: "Replacement", maxSupply: 100, mintAccess: 0, expiresIn: 315360000, role: null, soulbound: true }

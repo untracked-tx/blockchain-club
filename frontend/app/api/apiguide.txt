@@ -1,64 +1,72 @@
 Public API (Demo Plan) Endpoints
 The CoinGecko Public API v3.0.1 provides access to the following endpoints on the free tier1:
 
-Coins Endpoints
-/ping - Check the API server status
-/simple/price - Query the prices of one or more coins by using their unique Coin API IDs
-/simple/token_price/{id} - Query the prices of one or more coins by using their unique Coin API IDs
-/simple/supported_vs_currencies - Query all the supported currencies on CoinGecko
-/coins/list - Query all the supported coins on CoinGecko with coins ID, name and symbol
-/coins/markets - Query all the supported coins with price, market cap, volume and market related data
-/coins/{id} - Query all the metadata (image, websites, socials, description, contract address, etc.) from the CoinGecko coin page based on a particular coin ID
-/coins/{id}/tickers - Query the coin tickers on both centralized exchange (CEX) and decentralized exchange (DEX) based on a particular coin ID
-/coins/{id}/history - Query the historical data (price, market cap, 24hr volume, ...) at a given date for a coin based on a particular coin ID
-/coins/{id}/market_chart - Get the historical chart data of a coin including time in UNIX, price, market cap and 24hr volume based on particular coin ID
-/coins/{id}/market_chart/range - Get the historical chart data of a coin within certain time range in UNIX along with price, market cap and 24hr volume based on particular coin ID
-/coins-id-ohlc - Get the OHLC chart (Open, High, Low, Close) of a coin based on particular coin ID
-/coins/../contract/.. - Query all the metadata (image, websites, socials, description, contract address, etc.) from the CoinGecko coin page based on an asset platform and a particular token contract address
-/coins/../contract/../market_chart - Get the historical chart data including time in UNIX, price, market cap and 24hr volume based on asset platform and particular token contract address
-/coins/../contract/../market_chart/range - Get the historical chart data within certain time range in UNIX along with price, market cap and 24hr volume based on asset platform and particular token contract address
-/coins/categories/list - Query all the coins categories on CoinGecko
-/coins/categories - Query all the coins categories with market data (market cap, volume, ...) on CoinGecko
-NFT Endpoints
-/nfts/list - Query all supported NFTs with ID, contract address, name, asset platform ID and symbol on CoinGecko
-/nfts/.. - Query all the NFT data (name, floor price, 24hr volume, ...) based on the NFT collection ID
-/nfts/../contract/.. - Query all the NFT data (name, floor price, 24hr volume, ...) based on the NFT collection contract address and respective asset platform
-Exchanges & Derivatives Endpoints
-/exchanges - Query all the supported exchanges with exchanges' data (ID, name, country, ...) that have active trading volumes on CoinGecko
-/exchanges/list - Query all the exchanges with ID and name
-/exchanges/{id} - Query exchange's data (name, year established, country, ...), exchange volume in BTC and tickers based on exchange's ID
-/exchanges/{id}/tickers - Query exchange's tickers based on exchange's ID
-/exchanges/{id}/volume_chart - Query the historical volume chart data with time in UNIX and trading volume data in BTC based on exchange's ID
-/derivatives - Query all the tickers from derivatives exchanges on CoinGecko
-/derivatives/exchanges - Query all the derivatives exchanges with related data (ID, name, open interest, ...) on CoinGecko
-/derivatives/exchanges/{id} - Query the derivatives exchange's related data (ID, name, open interest, ...) based on the exchanges' ID
-/derivatives/exchanges/list - Query all the derivatives exchanges with ID and name on CoinGecko
-General Endpoints
-/exchange_rates - Query BTC exchange rates with other currencies
-/asset_platforms - Query all the asset platforms (blockchain networks) on CoinGecko
-/search - Search for coins, categories and markets listed on CoinGecko
-/search/trending - Query trending search coins, NFTs and categories on CoinGecko in the last 24 hours
-/global - Query cryptocurrency global data including active cryptocurrencies, markets, total crypto market cap and etc.
-/global/decentralized_finance_defi - Query cryptocurrency global decentralized finance (DeFi) data including DeFi market cap, trading volume
-/companies/public_treasury/{coin_id} - Query public companies' Bitcoin or Ethereum holdings
+CoinGecko Endpoints: Coins
+Endpoint	Description
+/ping	Check the API server status
+/simple/price	Query the prices of one or more coins by using their unique Coin API IDs
+/simple/token_price/{id}	Query the prices of one or more coins by using their unique Coin API IDs
+/simple/supported_vs_currencies	Query all the supported currencies on CoinGecko
+/coins/list	Query all the supported coins on CoinGecko with coins ID, name and symbol
+/coins/markets	Query all the supported coins with price, market cap, volume and market related data
+/coins/{id}	Query all the metadata (image, websites, socials, description, contract address, etc.) from the CoinGecko coin page based on a particular coin ID
+/coins/{id}/tickers	Query the coin tickers on both centralized exchange (CEX) and decentralized exchange (DEX) based on a particular coin ID
+/coins/{id}/history	Query the historical data (price, market cap, 24hr volume, ...) at a given date for a coin based on a particular coin ID
+/coins/{id}/market_chart	Get the historical chart data of a coin including time in UNIX, price, market cap and 24hr volume based on particular coin ID
+/coins/{id}/market_chart/range	Get the historical chart data of a coin within certain time range in UNIX along with price, market cap and 24hr volume based on particular coin ID
+/coins-id-ohlc	Get the OHLC chart (Open, High, Low, Close) of a coin based on particular coin ID
+/coins/../contract/..	Query all the metadata (image, websites, socials, description, contract address, etc.) from the CoinGecko coin page based on an asset platform and a particular token contract address
+/coins/../contract/../market_chart	Get the historical chart data including time in UNIX, price, market cap and 24hr volume based on asset platform and particular token contract address
+/coins/../contract/../market_chart/range	Get the historical chart data within certain time range in UNIX along with price, market cap and 24hr volume based on asset platform and particular token contract address
+/coins/categories/list	Query all the coins categories on CoinGecko
+/coins/categories	Query all the coins categories with market data (market cap, volume, ...) on CoinGecko
+
+CoinGecko Endpoints: NFT
+Endpoint	Description
+/nfts/list	Query all supported NFTs with ID, contract address, name, asset platform ID and symbol on CoinGecko
+/nfts/..	Query all the NFT data (name, floor price, 24hr volume, ...) based on the NFT collection ID
+/nfts/../contract/..	Query all the NFT data (name, floor price, 24hr volume, ...) based on the NFT collection contract address and respective asset platform
+
+CoinGecko Endpoints: Exchanges & Derivatives
+Endpoint	Description
+/exchanges	Query all the supported exchanges with exchanges' data (ID, name, country, ...) that have active trading volumes on CoinGecko
+/exchanges/list	Query all the exchanges with ID and name
+/exchanges/{id}	Query exchange's data (name, year established, country, ...), exchange volume in BTC and tickers based on exchange's ID
+/exchanges/{id}/tickers	Query exchange's tickers based on exchange's ID
+/exchanges/{id}/volume_chart	Query the historical volume chart data with time in UNIX and trading volume data in BTC based on exchange's ID
+/derivatives	Query all the tickers from derivatives exchanges on CoinGecko
+/derivatives/exchanges	Query all the derivatives exchanges with related data (ID, name, open interest, ...) on CoinGecko
+/derivatives/exchanges/{id}	Query the derivatives exchange's related data (ID, name, open interest, ...) based on the exchanges' ID
+/derivatives/exchanges/list	Query all the derivatives exchanges with ID and name on CoinGecko
+CoinGecko Endpoints: General
+Endpoint	Description
+/exchange_rates	Query BTC exchange rates with other currencies
+/asset_platforms	Query all the asset platforms (blockchain networks) on CoinGecko
+/search	Search for coins, categories and markets listed on CoinGecko
+/search/trending	Query trending search coins, NFTs and categories on CoinGecko in the last 24 hours
+/global	Query cryptocurrency global data including active cryptocurrencies, markets, total crypto market cap and etc.
+/global/decentralized_finance_defi	Query cryptocurrency global decentralized finance (DeFi) data including DeFi market cap, trading volume
+/companies/public_treasury/{coin_id}	Query public companies' Bitcoin or Ethereum holdings
+
 Onchain DEX Endpoints (GeckoTerminal)
-/onchain/simple/networks/../token_price/.. - Get token price based on the provided token contract address on a network
-/onchain/networks - Query all the supported networks on GeckoTerminal
-/onchain/networks/../dexes - Query all the supported decentralized exchanges (DEXs) based on the provided network on GeckoTerminal
-/onchain/networks/trending_pools - Query all the trending pools across all networks on GeckoTerminal
-/onchain/networks/../trending_pools - Query the trending pools based on the provided network
-/onchain/networks/../pools/.. - Query the specific pool based on the provided network and pool address
-/onchain/networks/../pools/multi/.. - Query multiple pools based on the provided network and pool address
-/onchain/networks/../pools - Query all the top pools based on the provided network
-/onchain/networks/../dexes/../pools - Query all the top pools based on the provided network and decentralized exchange (DEX)
-/onchain/networks/../new_pools - Query all the latest pools based on provided network
-/onchain/networks/new_pools - Query all the latest pools across all networks on GeckoTerminal
-/onchain/search/pools - Search for pools on a network
-/onchain/networks/../tokens/../pools - Query top pools based on the provided token contract address on a network
-/onchain/networks/../tokens/.. - Query specific token data based on the provided token contract address on a network
-/onchain/networks/../tokens/multi/.. - Query multiple tokens data based on the provided token contract addresses on a network
-/onchain/networks/../tokens/../info - Query token metadata (name, symbol, CoinGecko ID, image, socials, websites, description, etc.) based on a provided token contract address on a network
-/onchain/networks/../pools/../info - Query pool metadata (base and quote token details, image, socials, websites, description, contract address, etc.) based on a provided pool contract address on a network
-/onchain/tokens/info_recently_updated - Query 100 most recently updated tokens info across all networks on GeckoTerminal
-/onchain/networks/../pools/../ohlcv/.. - Get the OHLCV chart (Open, High, Low, Close, Volume) of a pool based on the provided pool address on a network
-/onchain/networks/../pools/../trades - Query the last 300 trades in the past 24 hours based on the provided pool address
+Endpoint	Description
+/onchain/simple/networks/../token_price/..	Get token price based on the provided token contract address on a network
+/onchain/networks	Query all the supported networks on GeckoTerminal
+/onchain/networks/../dexes	Query all the supported decentralized exchanges (DEXs) based on the provided network on GeckoTerminal
+/onchain/networks/trending_pools	Query all the trending pools across all networks on GeckoTerminal
+/onchain/networks/../trending_pools	Query the trending pools based on the provided network
+/onchain/networks/../pools/..	Query the specific pool based on the provided network and pool address
+/onchain/networks/../pools/multi/..	Query multiple pools based on the provided network and pool address
+/onchain/networks/../pools	Query all the top pools based on the provided network
+/onchain/networks/../dexes/../pools	Query all the top pools based on the provided network and decentralized exchange (DEX)
+/onchain/networks/../new_pools	Query all the latest pools based on provided network
+/onchain/networks/new_pools	Query all the latest pools across all networks on GeckoTerminal
+/onchain/search/pools	Search for pools on a network
+/onchain/networks/../tokens/../pools	Query top pools based on the provided token contract address on a network
+/onchain/networks/../tokens/..	Query specific token data based on the provided token contract address on a network
+/onchain/networks/../tokens/multi/..	Query multiple tokens data based on the provided token contract addresses on a network
+/onchain/networks/../tokens/../info	Query token metadata (name, symbol, CoinGecko ID, image, socials, websites, description, etc.) based on a provided token contract address on a network
+/onchain/networks/../pools/../info	Query pool metadata (base and quote token details, image, socials, websites, description, contract address, etc.) based on a provided pool contract address on a network
+/onchain/tokens/info_recently_updated	Query 100 most recently updated tokens info across all networks on GeckoTerminal
+/onchain/networks/../pools/../ohlcv/..	Get the OHLCV chart (Open, High, Low, Close, Volume) of a pool based on the provided pool address on a network
+/onchain/networks/../pools/../trades	Query the last 300 trades in the past 24 hours based on the provided pool address

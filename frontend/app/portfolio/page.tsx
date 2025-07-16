@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -27,16 +28,16 @@ import {
   Gem,
   Hexagon,
   CircleDot,
+  Terminal,
 } from "lucide-react"
 import { PortfolioDistribution } from "@/components/portfolio-distribution"
-import CryptoTicker from "@/components/optimized-crypto-ticker"
-import LightCryptoTicker from "@/components/light-crypto-ticker"
 import { useWalletPortfolio } from "@/hooks/use-wallet-portfolio"
 import { MULTISIG_WALLET, getExplorerAddressUrl, getExplorerTokenUrl } from "@/lib/multichain-wallet-service"
 import { EducationalInsights } from "@/components/educational-insights"
 import { TransactionHistory } from "@/components/transaction-history"
 import { PageLoadingSkeleton, PortfolioSummarySkeleton } from "@/components/ui/loading-skeleton"
 import CryptoMarketWidget from "@/components/crypto-market-widget-new"
+import { BitcoinLoadingScreen } from "@/components/bitcoin-loading-screen"
 
 // Helper function to get appropriate icon for each asset
 const getAssetIcon = (symbol: string) => {
@@ -68,26 +69,91 @@ const formatCurrency = (value: number) => {
 
 export default function PortfolioPage() {
   const { portfolio, isLoading, error, refetch, lastUpdated } = useWalletPortfolio()
+  const [marketDataLoaded, setMarketDataLoaded] = useState(false)
 
   const handleRefresh = async () => {
     console.log('🔄 User requested portfolio refresh')
     await refetch()
   }
 
+  // Callback for when market widget has loaded all its data
+  const handleMarketDataLoaded = (loaded: boolean) => {
+    console.log('📊 Market data loaded callback:', loaded)
+    setMarketDataLoaded(loaded)
+  }
+
+  // Show the Bitcoin loading screen until BOTH portfolio and market data are ready
+  const showLoading = isLoading || !marketDataLoaded
+  
+  console.log('🏦 Portfolio loading:', isLoading)
+  console.log('📈 Market data loaded:', marketDataLoaded) 
+  console.log('⏳ Show Bitcoin loader:', showLoading)
+
   // Show loading state
-  if (isLoading) {
+  if (showLoading) {
     return (
-      <PageLoadingSkeleton 
-        title="Treasury Dashboard" 
-        showStats={true}
-        showContent={true}
-        showBanner={true}
-        bannerGradient="from-green-600 via-emerald-600 to-teal-600"
-        bannerIcon={TrendingUp}
-        bannerBadgeText="Investment Portfolio"
-        className="bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50"
-      />
+      <>
+        {/* Hidden market widget to start loading data immediately */}
+        <div style={{ display: 'none' }}>
+          <CryptoMarketWidget onDataLoaded={handleMarketDataLoaded} />
+        </div>
+        <BitcoinLoadingScreen />
+      </>
     )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="text-red-600 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Error Loading Portfolio
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={handleRefresh} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Show empty state if no portfolio data
+  if (!portfolio) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>No Portfolio Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">No portfolio data found for the wallet address.</p>
+              <Button onClick={handleRefresh} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+  console.log('📈 Market data loaded:', marketDataLoaded) 
+  console.log('⏳ Show Bitcoin loader:', showLoading)
+
+  // Show loading state
+  if (showLoading) {
+    return <BitcoinLoadingScreen />
   }
 
   // Show error state
@@ -206,110 +272,96 @@ export default function PortfolioPage() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50">
         <div className="container mx-auto px-4 py-12">
 
-      {/* Live Crypto Ticker */}
-      <div className="mb-8">
-        <LightCryptoTicker />
-      </div>
+    
 
       {/* Portfolio Summary */}
-      <div className="mb-8 grid gap-6 md:grid-cols-4">
-        <Card className="border-gray-200 bg-white shadow-sm md:col-span-2">
-          <CardHeader className="pb-2">
+      <div className="mb-8">
+        <Card className="border-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700 shadow-2xl overflow-hidden relative">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iNCIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
+          
+          {/* Floating orbs */}
+          <div className="absolute top-6 right-8 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+          <div className="absolute bottom-8 left-6 w-16 h-16 bg-yellow-300/20 rounded-full blur-lg"></div>
+          <div className="absolute top-1/2 left-1/3 w-8 h-8 bg-emerald-300/30 rounded-full blur-md"></div>
+          
+          <CardHeader className="pb-6 relative z-10">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-gray-900">Total Treasury Value</CardTitle>
-                <CardDescription className="text-gray-600">All assets combined</CardDescription>
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm border border-white/30">
+                  <TrendingUp className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-white text-xl font-bold">Total Treasury Value</CardTitle>
+                  <CardDescription className="text-emerald-100">All assets combined • Real-time data</CardDescription>
+                </div>
               </div>
-              <Button variant="outline" size="icon" className="h-8 w-8 border-gray-200">
-                <RefreshCw className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 px-3 py-1.5 bg-white/20 rounded-full text-white text-xs font-medium backdrop-blur-sm border border-white/30">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  Live
+                </div>
+                <Button variant="outline" size="icon" className="h-10 w-10 border-white/30 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm">
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
+          
+          <CardContent className="relative z-10 pb-8">
             {isLoading ? (
-              <Skeleton className="h-10 w-40" />
+              <div className="space-y-4">
+                <Skeleton className="h-16 w-80 bg-white/20" />
+                <Skeleton className="h-6 w-48 bg-white/20" />
+              </div>
             ) : (
-              <div className="space-y-1">
-                <div className="flex items-end gap-2">
-                  <span className="text-3xl font-bold text-gray-900">{formatCurrency(portfolio.totalValue)}</span>
-                  <div
-                    className={`flex items-center ${portfolio.dailyChange >= 0 ? "text-green-600" : "text-red-600"}`}
-                  >
+              <div className="space-y-4">
+                {/* Main Value Display */}
+                <div className="flex items-end gap-4">
+                  <div className="text-6xl font-black text-white tracking-tight font-mono">
+                    {formatCurrency(portfolio.totalValue)}
+                  </div>
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-sm border ${
+                    portfolio.dailyChange >= 0 
+                      ? "bg-green-500/20 border-green-400/30 text-green-100" 
+                      : "bg-red-500/20 border-red-400/30 text-red-100"
+                  }`}>
                     {portfolio.dailyChange >= 0 ? (
-                      <ArrowUpRight className="mr-1 h-4 w-4" />
+                      <ArrowUpRight className="h-5 w-5" />
                     ) : (
-                      <ArrowDownRight className="mr-1 h-4 w-4" />
+                      <ArrowDownRight className="h-5 w-5" />
                     )}
-                    <span className="text-sm font-medium">
-                      {formatPercentage(portfolio.dailyChangePercentage)} (24h)
+                    <span className="text-lg font-bold">
+                      {formatPercentage(portfolio.dailyChangePercentage)}
                     </span>
+                    <span className="text-sm opacity-80">(24h)</span>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {portfolio.dailyChange >= 0 ? "+" : ""}
-                  {formatCurrency(portfolio.dailyChange)} today
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-gray-200 bg-white shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-gray-900">Weekly Change</CardTitle>
-            <CardDescription className="text-gray-600">Last 7 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              <div className="space-y-1">
-                <div
-                  className={`flex items-center text-xl font-bold ${
-                    portfolio.weeklyChange >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {portfolio.weeklyChange >= 0 ? (
-                    <TrendingUp className="mr-1 h-5 w-5" />
-                  ) : (
-                    <TrendingDown className="mr-1 h-5 w-5" />
-                  )}
-                  <span>{formatPercentage(portfolio.weeklyChangePercentage)}</span>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {portfolio.weeklyChange >= 0 ? "+" : ""}
-                  {formatCurrency(portfolio.weeklyChange)}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-gray-200 bg-white shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-gray-900">Monthly Change</CardTitle>
-            <CardDescription className="text-gray-600">Last 30 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              <div className="space-y-1">
-                <div
-                  className={`flex items-center text-xl font-bold ${
-                    portfolio.monthlyChange >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {portfolio.monthlyChange >= 0 ? (
-                    <TrendingUp className="mr-1 h-5 w-5" />
-                  ) : (
-                    <TrendingDown className="mr-1 h-5 w-5" />
-                  )}
-                  <span>{formatPercentage(portfolio.monthlyChangePercentage)}</span>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {portfolio.monthlyChange >= 0 ? "+" : ""}
-                  {formatCurrency(portfolio.monthlyChange)}
+                
+                {/* Secondary Info */}
+                <div className="flex items-center justify-between">
+                  <div className="text-emerald-100">
+                    <span className="text-lg font-semibold">
+                      {portfolio.dailyChange >= 0 ? "+" : ""}
+                      {formatCurrency(portfolio.dailyChange)}
+                    </span>
+                    <span className="text-sm opacity-80"> today</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-6 text-emerald-100">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{portfolio.assets.filter(a => a.value > 0).length}</div>
+                      <div className="text-xs opacity-80">Assets</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{new Set(portfolio.chainBreakdown?.map(c => c.chainName)).size || 0}</div>
+                      <div className="text-xs opacity-80">Chains</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">24/7</div>
+                      <div className="text-xs opacity-80">Monitoring</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -1301,29 +1353,24 @@ export default function PortfolioPage() {
         />
       </div>
 
-      {/* Crypto Market Analysis Widget */}
+      {/* Crypto Market Analysis Widget - Now rendered here since loading is complete */}
       <div className="mb-8">
-        <CryptoMarketWidget />
+        <CryptoMarketWidget onDataLoaded={handleMarketDataLoaded} />
       </div>
 
-      {/* Additional info section */}
-      <div className="mt-8 mb-12">
-        <Card className="border-gray-200 shadow-sm overflow-hidden p-6">
-          <div className="flex items-center gap-4">
-            <div className="rounded-full bg-blue-100 p-2 text-blue-600">
-              <Shield className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="mb-2 text-lg font-semibold text-gray-900">Treasury Security</h3>
-              <p className="text-gray-600">
-                Our treasury is secured with industry-standard security practices. All transactions require
-                multi-signature verification from club officers, and we follow strict protocols for all investment activities.
-              </p>
-            </div>
-          </div>
-        </Card>
+      {/* Try Terminal Mode Button */}
+      <div className="mb-8 text-center">
+        <Link href="/portfolio/terminal">
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          >
+            <Terminal className="h-5 w-5 mr-2" />
+            Try Terminal Mode!
+          </Button>
+        </Link>
       </div>
-      </div>
+        </div>
       </div>
     </div>
   );

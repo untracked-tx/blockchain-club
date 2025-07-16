@@ -41,3 +41,11 @@ Complete technical specification and system overview for the blockchain membersh
 ---
 
 *Last updated: July 2025*
+
+
+
+
+
+Made with love for learning and caffeine for fuel.
+
+![Powered by Coffee](https://img.shields.io/badge/Powered%20by-Coffee-FFDD00?style=flat&logo=buymeacoffee)

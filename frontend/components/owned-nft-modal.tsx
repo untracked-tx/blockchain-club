@@ -112,11 +112,11 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3 }}
           >
-            <DialogContent className="max-w-5xl p-0 overflow-hidden rounded-2xl bg-white shadow-2xl border-0">
+            <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] p-0 overflow-y-auto rounded-2xl bg-white shadow-2xl border-0">
               <DialogTitle className="sr-only">{token.name} NFT Details</DialogTitle>
               <div className="flex flex-col lg:flex-row">
                 {/* Left side - Artwork */}
-                <div className="lg:w-3/5 bg-gradient-to-br from-slate-50 to-gray-100 p-8 flex items-center justify-center min-h-[500px]">
+                <div className="lg:w-3/5 bg-gradient-to-br from-slate-50 to-gray-100 p-4 sm:p-8 flex items-center justify-center min-h-[300px] sm:min-h-[500px]">
                   <div className="relative max-w-md w-full">
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
@@ -141,13 +141,13 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
                 </div>
 
                 {/* Right side - Details */}
-                <div className="lg:w-2/5 p-6 space-y-6">
+                <div className="lg:w-2/5 p-4 sm:p-6 space-y-4 sm:space-y-6">
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
                       {token.name}
                     </h1>
                   </motion.div>
@@ -157,7 +157,7 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="space-y-4"
+                    className="space-y-3 sm:space-y-4"
                   >
                     <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 space-y-3">
                       <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">
@@ -209,13 +209,13 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
 
       {/* Zoom Modal with Magnifier */}
       <Dialog open={zoomOpen} onOpenChange={() => setZoomOpen(false)}>
-        <DialogContent className="flex flex-col items-center justify-center bg-black/90 max-w-3xl p-0">
+        <DialogContent className="flex flex-col items-center justify-center bg-black/90 w-[95vw] max-w-3xl max-h-[90vh] p-0">
           <button
-            className="absolute top-4 right-4 z-10 text-white hover:text-gray-300"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 text-white hover:text-gray-300"
             onClick={() => setZoomOpen(false)}
             aria-label="Close zoom"
           >
-            <X size={28} />
+            <X size={24} className="sm:w-7 sm:h-7" />
           </button>
           <MagnifierImage imageUrl={ipfsToHttp(token.imageUri) || "/placeholder.svg"} alt={token.name} />
         </DialogContent>

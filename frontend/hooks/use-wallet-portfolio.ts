@@ -24,7 +24,12 @@ export function useWalletPortfolio(
       setIsLoading(true)
       setError(null)
       
-      const portfolioData = await multichainWalletService.getMultichainPortfolio(walletAddress)
+      // Add minimum loading time to show the fun loading messages
+      const [portfolioData] = await Promise.all([
+        multichainWalletService.getMultichainPortfolio(walletAddress),
+        new Promise(resolve => setTimeout(resolve, 1500)) // Minimum 1.5 seconds
+      ])
+      
       setPortfolio(portfolioData)
       setLastUpdated(new Date())
     } catch (err) {

@@ -170,12 +170,13 @@ class WalletService {
         return priceData
       }
 
+      // Use our API route instead of direct CoinGecko calls
       const response = await fetch(
-        `${COINGECKO_API}/simple/price?ids=${geckoIds}&vs_currencies=usd&include_24hr_change=true`
+        `/api/prices?ids=${geckoIds}&vs_currencies=usd&include_24hr_change=true`
       )
 
       if (!response.ok) {
-        throw new Error(`CoinGecko API error: ${response.status}`)
+        throw new Error(`Price API error: ${response.status}`)
       }
 
       const data = await response.json()

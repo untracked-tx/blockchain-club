@@ -21,7 +21,7 @@ const tokenTypeConfigs = {
     maxSupply: 10,
     mintAccess: "WHITELIST_ONLY",
     cost: "0.01 ETH",
-    soulbound: false,
+    soulbound: true,
     category: "governance"
   },
   OFFICER: {
@@ -30,7 +30,7 @@ const tokenTypeConfigs = {
     maxSupply: 2,
     mintAccess: "OFFICER_ONLY",
     cost: "Free",
-    soulbound: false,
+    soulbound: true,
     category: "governance"
   },
   SUPPORTER: {
@@ -60,6 +60,42 @@ const tokenTypeConfigs = {
     soulbound: true,
     category: "culture"
   },
+  "HISTORICAL_GLITCH": {
+    roleGranted: "None",
+    expires: "Never",
+    maxSupply: "Limited",
+    mintAccess: "OFFICER_ONLY", 
+    cost: "Free",
+    soulbound: true,
+    category: "culture"
+  },
+  "GOLD_STAR": {
+    roleGranted: "None",
+    expires: "Never",
+    maxSupply: "Limited",
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free", 
+    soulbound: true,
+    category: "culture"
+  },
+  "LONG_RUN": {
+    roleGranted: "None",
+    expires: "Never",
+    maxSupply: "Limited",
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free",
+    soulbound: true,
+    category: "culture"
+  },
+  "THE_FOOL": {
+    roleGranted: "None",
+    expires: "Never", 
+    maxSupply: "Limited",
+    mintAccess: "OFFICER_ONLY",
+    cost: "Free",
+    soulbound: true,
+    category: "culture"
+  },
   REPLACEMENT: {
     roleGranted: "None",
     expires: "N/A",
@@ -72,7 +108,9 @@ const tokenTypeConfigs = {
 };
 
 function getTokenConfig(tokenType: string) {
-  return tokenTypeConfigs[tokenType as keyof typeof tokenTypeConfigs] || tokenTypeConfigs.MEMBER;
+  const config = tokenTypeConfigs[tokenType as keyof typeof tokenTypeConfigs] || tokenTypeConfigs.MEMBER;
+  // Ensure we always return an object, not a string
+  return typeof config === 'object' ? config : tokenTypeConfigs.MEMBER;
 }
 
 function getContractRole(token: any): string {
@@ -302,29 +340,29 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           >
-            <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl bg-white shadow-xl border-0">
+            <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] p-0 overflow-y-auto rounded-2xl bg-white shadow-xl border-0">
               {/* Header */}
-              <div className={`p-6 bg-gradient-to-r ${getRoleColor()} text-white relative`}>
+              <div className={`p-4 sm:p-6 bg-gradient-to-r ${getRoleColor()} text-white relative`}>
                 <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                      <div className="w-5 h-5 bg-white rounded-full"></div>
+                  <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+                    <div className="p-1 sm:p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full"></div>
                     </div>
                     {token.name}
                   </DialogTitle>
-                  <DialogDescription className="text-white/90 text-base">
+                  <DialogDescription className="text-white/90 text-sm sm:text-base">
                     {token.description}
                   </DialogDescription>
                 </DialogHeader>
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Status Alerts - Simplified */}
                 {!isConnected && (
                   <Alert className="border-l-4 border-blue-500 bg-blue-50">
                     <AlertCircle className="h-4 w-4 text-blue-600" />
-                    <AlertDescription className="text-blue-800 font-medium">
+                    <AlertDescription className="text-blue-800 font-medium text-sm">
                       Connect your wallet to mint tokens
                     </AlertDescription>
                   </Alert>
@@ -334,7 +372,7 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
                   <Alert className="border-l-4 border-blue-500 bg-blue-50">
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-                      <AlertDescription className="text-blue-800 font-medium">{step}</AlertDescription>
+                      <AlertDescription className="text-blue-800 font-medium text-sm">{step}</AlertDescription>
                     </div>
                   </Alert>
                 )}
@@ -342,7 +380,7 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
                 {isSuccess && (
                   <Alert className="border-l-4 border-green-500 bg-green-50">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800 font-medium">
+                    <AlertDescription className="text-green-800 font-medium text-sm">
                       Token minted successfully!
                       {txHash && (
                         <a 
@@ -361,63 +399,111 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
                 {error && (
                   <Alert className="border-l-4 border-red-500 bg-red-50">
                     <AlertCircle className="h-4 w-4 text-red-600" />
-                    <AlertDescription className="text-red-800 font-medium">
+                    <AlertDescription className="text-red-800 font-medium text-sm">
                       {error}
                     </AlertDescription>
                   </Alert>
                 )}
 
                 {/* Main content */}
-                <div className="grid gap-6 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
                   {/* Image */}
-                  <div className="lg:col-span-2 rounded-xl bg-gray-50 border border-gray-200 p-6 flex items-center justify-center">
+                  <div className="lg:col-span-2 rounded-xl bg-gray-50 border border-gray-200 p-3 sm:p-6 flex items-center justify-center">
                     <img 
                       src={token.imageUri || "/placeholder.svg"} 
                       alt={token.name} 
-                      className="max-h-80 max-w-full object-contain rounded-lg cursor-zoom-in"
+                      className="max-h-60 sm:max-h-80 max-w-full object-contain rounded-lg cursor-zoom-in"
                       onClick={() => setZoomOpen(true)}
                     />
                   </div>
 
                   {/* Info and actions */}
-                  <div className="space-y-4">
-                    {/* Token info */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3">Token Info</h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Type</span>
+                  <div className="space-y-3 sm:space-y-4">
+                    {/* Description */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4">
+                      <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">About This Token</h3>
+                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                        {token.tokenType === 'MEMBER' && "Official membership token that grants voting rights, access to exclusive events, and represents your active participation in the Blockchain Club community."}
+                        {token.tokenType === 'OFFICER' && "Officer governance token providing leadership privileges, administrative access, and enhanced voting weight in club decisions and proposals."}
+                        {token.tokenType === 'SUPPORTER' && "Community supporter token recognizing your contribution to the club. Shows your commitment to advancing blockchain education and innovation."}
+                        {token.tokenType === 'POAP' && "Proof of Attendance Protocol token commemorating your participation in a special blockchain club event or achievement milestone."}
+                        {!['MEMBER', 'OFFICER', 'SUPPORTER', 'POAP'].includes(token.tokenType) && `${token.tokenType} token with unique benefits and access privileges within the Blockchain Club ecosystem.`}
+                      </p>
+                    </div>
+
+                    {/* Comprehensive Token Details */}
+                    <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 p-3 sm:p-4">
+                      <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base uppercase tracking-wide">
+                        Token Details
+                      </h3>
+                      <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-600 font-medium">Type</span>
                           <Badge className={`${getRoleBgColor()} ${getRoleTextColor()} text-xs`}>
                             {token.tokenType}
                           </Badge>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Cost</span>
-                          <span className="font-medium text-gray-900">{getCostText()}</span>
+                        
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-600 font-medium">Mint Cost</span>
+                          <span className="font-semibold text-gray-900">{getCostText()}</span>
                         </div>
+                        
                         {contractConfig && (
                           <>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-600">Supply</span>
-                              <span className="font-medium text-gray-900">
-                                {contractConfig.currentSupply}/{contractConfig.maxSupply}
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-gray-600 font-medium">Supply</span>
+                              <span className="font-semibold text-gray-900">
+                                {contractConfig.currentSupply} / {contractConfig.maxSupply}
                               </span>
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-600">Access</span>
-                              <span className="font-medium text-gray-900">
+                            
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-gray-600 font-medium">Access Level</span>
+                              <span className="font-semibold text-gray-900">
                                 {contractConfig.mintAccess === 0 ? 'Officers Only' : 
-                                 contractConfig.mintAccess === 1 ? 'Whitelist Only' : 'Public'}
+                                 contractConfig.mintAccess === 1 ? 'Whitelist Only' : 'Public Mint'}
                               </span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-gray-600 font-medium">Status</span>
+                              <Badge className={contractConfig.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} variant="secondary">
+                                {contractConfig.isActive ? 'Active' : 'Inactive'}
+                              </Badge>
                             </div>
                           </>
                         )}
-                        {getTokenConfig(token?.tokenType || 'MEMBER').soulbound && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-600">Transferable</span>
+                        
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-600 font-medium">Role Granted</span>
+                          <span className="font-semibold text-gray-900">
+                            {getTokenConfig(token?.tokenType || 'MEMBER').roleGranted || 'None'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-600 font-medium">Transferable</span>
+                          {getTokenConfig(token?.tokenType || 'MEMBER').soulbound ? (
                             <Badge className="bg-red-100 text-red-800 text-xs">Soulbound</Badge>
-                          </div>
-                        )}
+                          ) : (
+                            <Badge className="bg-green-100 text-green-800 text-xs">Yes</Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-600 font-medium">Category</span>
+                          <span className="font-semibold text-gray-900 capitalize">
+                            {getTokenConfig(token?.tokenType || 'MEMBER').category}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-600 font-medium">Validity</span>
+                          <span className="font-semibold text-gray-900">
+                            {getTokenConfig(token?.tokenType || 'MEMBER').expires}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -488,54 +574,20 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
                   </div>
                 </div>
               </div>
-
-              {/* Technical details - collapsed by default */}
-              <div className="bg-gray-50 border-t border-gray-200">
-                <details className="group">
-                  <summary className="p-4 cursor-pointer hover:bg-gray-100 flex items-center transition-colors">
-                    <Code className="h-4 w-4 text-gray-600 mr-2" />
-                    <span className="text-sm font-medium text-gray-700">Technical Details</span>
-                    <ChevronRight className="ml-auto h-4 w-4 text-gray-500 transition-transform group-open:rotate-90" />
-                  </summary>
-                  <div className="px-4 pb-4 text-xs">
-                    <div className="bg-white rounded-lg p-3 space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Wallet:</span>
-                        <span className="font-mono text-gray-800">
-                          {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not connected'}
-                        </span>
-                      </div>
-                      {txHash && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Transaction:</span>
-                          <a
-                            href={`https://amoy.polygonscan.com/tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-mono text-blue-600 hover:text-blue-800"
-                          >
-                            {txHash.slice(0, 6)}...{txHash.slice(-4)}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </details>
-              </div>
             </DialogContent>
           </motion.div>
         )}
       </AnimatePresence>
       {/* Zoom Modal with Magnifier */}
       <Dialog open={zoomOpen} onOpenChange={() => setZoomOpen(false)}>
-        <DialogContent className="flex flex-col items-center justify-center bg-black/90 max-w-3xl p-0">
+        <DialogContent className="flex flex-col items-center justify-center bg-black/90 w-[95vw] max-w-3xl max-h-[90vh] p-0">
           <DialogTitle className="sr-only">Zoomed NFT Image</DialogTitle>
           <button
-            className="absolute top-4 right-4 z-10 text-white hover:text-gray-300"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 text-white hover:text-gray-300"
             onClick={() => setZoomOpen(false)}
             aria-label="Close zoom"
           >
-            <X size={28} />
+            <X size={24} className="sm:w-7 sm:h-7" />
           </button>
           <MagnifierImage imageUrl={token.imageUri || "/placeholder.svg"} alt={token.name} />
         </DialogContent>

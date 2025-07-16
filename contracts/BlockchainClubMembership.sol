@@ -472,6 +472,24 @@ contract BlockchainClubMembership is
     }
     
     /**
+     * @notice Updates whitelist status for multiple addresses in a single transaction
+     * @dev More gas-efficient than individual updateWhitelist calls
+     * @dev Only officers can modify whitelist status
+     * @param accounts Array of addresses to update whitelist status for
+     * @param status New whitelist status for all accounts (true = add, false = remove)
+     * @custom:emits WhitelistUpdated for each address
+     */
+    function updateWhitelistBatch(
+        address[] calldata accounts, 
+        bool status
+    ) external onlyRole(roles.OFFICER_ROLE()) nonReentrant {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            whitelist[accounts[i]] = status;
+            emit WhitelistUpdated(accounts[i], status);
+        }
+    }
+    
+    /**
      * @notice Internal function to update member statistics
      * @dev Automatically called when tokens are minted/burned to keep stats current
      * @dev Updates join date, token count, current role, and active status
