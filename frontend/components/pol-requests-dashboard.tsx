@@ -26,7 +26,11 @@ export default function PolRequestsDashboard() {
   const fetchRequests = async () => {
     setLoading(true)
     try {
-      const response = await fetch("/api/admin/pol-requests")
+      const response = await fetch("/api/admin/pol-requests", {
+        headers: {
+          'Authorization': 'Bearer blockchain-club-admin-2025'
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setRequests(data.requests)
@@ -47,7 +51,10 @@ export default function PolRequestsDashboard() {
     try {
       const response = await fetch("/api/admin/pol-requests", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          'Authorization': 'Bearer blockchain-club-admin-2025'
+        },
         body: JSON.stringify({ requestId, status })
       })
 
