@@ -213,7 +213,7 @@ contract TreasuryRouter is
     function initialize(
         address rolesContract,
         address payable initialTreasury
-    ) public initializer onlyOwner {
+    ) public initializer {
         __Ownable2Step_init();
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();

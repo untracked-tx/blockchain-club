@@ -52,7 +52,7 @@ contract Roles is
      * @param admin Address to be granted the admin role
      * @custom:oz-upgrades-unsafe-allow constructor
      */
-    function initialize(address admin) public initializer onlyRole(ADMIN_ROLE) {
+    function initialize(address admin) public initializer {
         __AccessControlEnumerable_init();
         __UUPSUpgradeable_init();
         

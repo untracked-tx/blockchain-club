@@ -10,7 +10,6 @@ const loadingMessages = [
    "🌍 Borderless money syncing...",
    "💸 Fun fact: USD lost 95% value since Federal Reserve creation!",
    "🌐 Peer-to-peer magic happening...",
-   "⚖️ Rules, not Rulers!",
    "🏃‍♂️ Opting out of fiat...",
    "🗝️ Verifying, not trusting...",
   "📈 Calculating those sweet gains...",

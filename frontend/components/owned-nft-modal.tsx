@@ -192,7 +192,7 @@ export default function OwnedNFTModal({ isOpen, onClose, token }: OwnedNFTModalP
                       <Button
                         className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg"
                         onClick={() => {
-                          window.open(`https://amoy.polygonscan.com/token/0x562b2c7b8BDaD1241CAc7Baa82004dA2dFA5dBC0?a=${token.tokenId || token.id}`, '_blank');
+                          window.open(`https://amoy.polygonscan.com/token/0x0CfE6eeEc8Ebb6763C1f4004613e3a84419b45aa?a=${token.tokenId || token.id}`, '_blank');
                         }}
                       >
                         <ExternalLink className="mr-2 h-4 w-4" />

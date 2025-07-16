@@ -21,6 +21,11 @@ async function main() {
   await roles.waitForDeployment();
   const rolesAddress = roles.target;
   console.log("Roles deployed to:", rolesAddress);
+  console.log("Deployer address:", devWallet);
+  if (roles.owner) {
+    const rolesOwner = await roles.owner();
+    console.log("Roles owner:", rolesOwner);
+  }
 
   // Deploy TreasuryRouter (needs roles address and treasury address)
   const TreasuryRouter = await (hre as any).ethers.getContractFactory("TreasuryRouter");
@@ -31,9 +36,24 @@ async function main() {
   await treasuryRouter.waitForDeployment();
   const treasuryRouterAddress = treasuryRouter.target;
   console.log("TreasuryRouter deployed to:", treasuryRouterAddress);
-
-  // Transfer ownership to dev wallet
-  await treasuryRouter.transferOwnership(devWallet);
+  if (treasuryRouter.owner) {
+    const treasuryRouterOwner = await treasuryRouter.owner();
+    console.log("TreasuryRouter owner:", treasuryRouterOwner);
+  }
+  
+  // Transfer ownership to dev wallet (TreasuryRouter uses Ownable2Step so deployer becomes initial owner)
+  try {
+    const currentOwner = await treasuryRouter.owner();
+    console.log("Current TreasuryRouter owner:", currentOwner);
+    if (currentOwner !== devWallet) {
+      await treasuryRouter.transferOwnership(devWallet);
+      console.log("TreasuryRouter ownership transferred to:", devWallet);
+    } else {
+      console.log("TreasuryRouter deployer is already the owner");
+    }
+  } catch (e) {
+    console.error("Failed to transfer TreasuryRouter ownership:", e);
+  }
 
   // Deploy BlockchainClubMembership (name, symbol, roles address)
   const BlockchainClubMembership = await (hre as any).ethers.getContractFactory("BlockchainClubMembership");
@@ -45,9 +65,24 @@ async function main() {
   await membership.waitForDeployment();
   const membershipAddress = membership.target;
   console.log("BlockchainClubMembership deployed to:", membershipAddress);
-
-  // Transfer ownership to dev wallet
-  await membership.transferOwnership(devWallet);
+  if (membership.owner) {
+    const membershipOwner = await membership.owner();
+    console.log("Membership owner:", membershipOwner);
+  }
+  
+  // Transfer ownership to dev wallet (BlockchainClubMembership uses Ownable2Step so deployer becomes initial owner)
+  try {
+    const currentOwner = await membership.owner();
+    console.log("Current Membership owner:", currentOwner);
+    if (currentOwner !== devWallet) {
+      await membership.transferOwnership(devWallet);
+      console.log("Membership ownership transferred to:", devWallet);
+    } else {
+      console.log("Membership deployer is already the owner");
+    }
+  } catch (e) {
+    console.error("Failed to transfer Membership ownership:", e);
+  }
 
   // Prepare output
   const deployment = {

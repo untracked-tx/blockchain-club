@@ -65,6 +65,7 @@
   "function transferOwnership(address)",
   "function unpause()",
   "function updateWhitelist(address,bool)",
+  "function updateWhitelistBatch(address[],bool)",
   "function upgradeTo(address)",
   "function upgradeToAndCall(address,bytes) payable",
   "function whitelist(address) view returns (bool)",

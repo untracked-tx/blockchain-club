@@ -6,7 +6,7 @@
 
 const { execSync } = require('child_process');
 const hre = require('hardhat');
-const deployment = require('./deployments/deployment.json');
+const deployment = require('../deployments/deployment.json');
 
 const NETWORK = 'amoy'; // Change if needed
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';

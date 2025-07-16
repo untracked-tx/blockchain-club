@@ -196,12 +196,12 @@ export default function Home() {
                         <img 
                           src="/logos/Polygon_Primary_Light.svg" 
                           alt="Polygon" 
-                          className="w-48 h-48 object-contain transition-all duration-500 group-hover:scale-110 filter group-hover:drop-shadow-lg"
+                          className="w-56 h-56 object-contain transition-all duration-500 group-hover:scale-110 filter group-hover:drop-shadow-lg"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              parent.innerHTML = '<div class="w-48 h-48 bg-gradient-to-br from-[#8247E5] to-[#6B46C1] rounded-2xl flex items-center justify-center text-white font-bold text-4xl">POL</div>';
+                              parent.innerHTML = '<div class="w-56 h-56 bg-gradient-to-br from-[#8247E5] to-[#6B46C1] rounded-2xl flex items-center justify-center text-white font-bold text-4xl">POL</div>';
                             }
                           }}
                         />

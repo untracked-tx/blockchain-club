@@ -1,6 +1,6 @@
 {
   "Roles": {
-    "address": "0x0e717C37eC8E38390E8247b0A741F5e9dB54B818",
+    "address": "0x4613A76F3656BE272FE1B7CbeD3ef81F64751F45",
     "abi": [
       {
         "anonymous": false,
@@ -592,7 +592,7 @@
     ]
   },
   "TreasuryRouter": {
-    "address": "0xf3FB6d79a431688616642eafb38c7Ce9b52D43f7",
+    "address": "0x54568ae7a438a521C0fcA0E17A317c3e3189D8B1",
     "abi": [
       {
         "anonymous": false,
@@ -1591,7 +1591,7 @@
     ]
   },
   "BlockchainClubMembership": {
-    "address": "0xc589c6EA2b28A4b339AEac75fa1116edF2a0B825",
+    "address": "0x0CfE6eeEc8Ebb6763C1f4004613e3a84419b45aa",
     "abi": [
       {
         "anonymous": false,
@@ -1871,6 +1871,50 @@
           {
             "indexed": true,
             "internalType": "address",
+            "name": "requester",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "requestId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "approved",
+            "type": "bool"
+          }
+        ],
+        "name": "WhitelistRequestProcessed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "requester",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "requestId",
+            "type": "uint256"
+          }
+        ],
+        "name": "WhitelistRequested",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
             "name": "account",
             "type": "address"
           },
@@ -1905,6 +1949,19 @@
             "internalType": "bytes32",
             "name": "",
             "type": "bytes32"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "REQUEST_COOLDOWN",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -1976,12 +2033,12 @@
           },
           {
             "internalType": "string",
-            "name": "name",
+            "name": "typeName",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "category",
+            "name": "typeCategory",
             "type": "string"
           },
           {
@@ -2082,15 +2139,57 @@
         "type": "function"
       },
       {
+        "inputs": [],
+        "name": "getPendingWhitelistRequests",
+        "outputs": [
+          {
+            "internalType": "uint256[]",
+            "name": "requestIds",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "requesters",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "timestamps",
+            "type": "uint256[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          }
+        ],
+        "name": "hasPendingRequest",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "string",
-            "name": "name",
+            "name": "contractName",
             "type": "string"
           },
           {
             "internalType": "string",
-            "name": "symbol",
+            "name": "contractSymbol",
             "type": "string"
           },
           {
@@ -2123,6 +2222,25 @@
             "internalType": "bool",
             "name": "",
             "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "lastRequestTime",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -2176,7 +2294,7 @@
           },
           {
             "internalType": "bool",
-            "name": "isSoulbound",
+            "name": "isSoulboundFlag",
             "type": "bool"
           }
         ],
@@ -2264,6 +2382,24 @@
         "type": "function"
       },
       {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "requestId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "grantWhitelist",
+            "type": "bool"
+          }
+        ],
+        "name": "processWhitelistRequest",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
         "inputs": [],
         "name": "proxiableUUID",
         "outputs": [
@@ -2285,7 +2421,7 @@
           },
           {
             "internalType": "bool",
-            "name": "isSoulbound",
+            "name": "isSoulboundFlag",
             "type": "bool"
           }
         ],
@@ -2297,6 +2433,13 @@
       {
         "inputs": [],
         "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "requestWhitelist",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -2659,6 +2802,24 @@
       {
         "inputs": [
           {
+            "internalType": "address[]",
+            "name": "accounts",
+            "type": "address[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "status",
+            "type": "bool"
+          }
+        ],
+        "name": "updateWhitelistBatch",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
             "internalType": "address",
             "name": "newImplementation",
             "type": "address"
@@ -2700,6 +2861,40 @@
           {
             "internalType": "bool",
             "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "whitelistRequests",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "requester",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "processed",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "approved",
             "type": "bool"
           }
         ],

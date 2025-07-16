@@ -1,5 +1,5 @@
 const { execSync } = require('child_process');
-const deployment = require('./deployments/deployment.json');
+const deployment = require('../deployments/deployment.json');
 
 // Set your network name here (must match your hardhat config)
 const NETWORK = 'amoy';

@@ -175,138 +175,173 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
             ))}
           </div>
 
-          {/* Step Content */}
-          <div className="space-y-4">
+          {/* Current Step Content */}
+          <div className="min-h-[300px]">
             {/* Step 1: Add Network */}
-            <Card className={`border transition-all ${
-              currentStep === 1 ? 'border-green-400/50 bg-green-500/5' : 'border-gray-700 bg-gray-800/30'
-            }`}>
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
-                  <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Step 1: Add Polygon Amoy Network
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-white/70 mb-3 sm:mb-4 font-mono text-xs sm:text-sm">
-                  // Add the testnet to your MetaMask for minting and governance
-                </p>
-                <Button 
-                  onClick={addPolygonAmoy}
-                  disabled={isAddingChain || chainAdded}
-                  className="w-full font-mono text-xs sm:text-sm bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30"
-                >
-                  {isAddingChain ? (
-                    <>⏳ Adding Network...</>
-                  ) : chainAdded ? (
-                    <>✅ Network Added</>
-                  ) : (
-                    <>🌐 Add Polygon Amoy to MetaMask</>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Step 2: Get POL */}
-            <Card className={`border transition-all ${
-              currentStep === 2 ? 'border-blue-400/50 bg-blue-500/5' : 'border-gray-700 bg-gray-800/30'
-            }`}>
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
-                  <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Step 2: Get Free Test POL
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3 sm:space-y-4">
-                  {isConnected && (
-                    <div className="bg-black/40 p-2 sm:p-3 rounded-lg border border-gray-700">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs text-gray-400">Your Wallet:</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={copyAddress}
-                          className="h-5 sm:h-6 px-1 sm:px-2 text-xs"
-                        >
-                          <Copy className="w-3 h-3 mr-1" />
-                          Copy
-                        </Button>
-                      </div>
-                      <p className="font-mono text-xs sm:text-sm text-white truncate">
-                        {address}
-                      </p>
-                      <div className="mt-1 sm:mt-2 flex items-center gap-2">
-                        <span className="font-mono text-xs text-gray-400">POL Balance:</span>
-                        <Badge variant={hasBalance ? "secondary" : "destructive"} className="font-mono text-xs">
-                          {balance ? `${parseFloat(balance.formatted).toFixed(4)} POL` : "0 POL"}
-                        </Badge>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <p className="text-white/70 text-xs sm:text-sm font-mono">
-                    // Request free testnet POL for minting membership tokens
+            {currentStep === 1 && (
+              <Card className="border border-green-400/50 bg-green-500/5">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
+                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Step 1: Add Polygon Amoy Network
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-white/70 mb-3 sm:mb-4 font-mono text-xs sm:text-sm">
+                    // Add the testnet to your MetaMask for minting and governance
                   </p>
-                  
-                  {!hasBalance && (
+                  <Button 
+                    onClick={addPolygonAmoy}
+                    disabled={isAddingChain || chainAdded}
+                    className="w-full font-mono text-xs sm:text-sm bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30"
+                  >
+                    {isAddingChain ? (
+                      <>⏳ Adding Network...</>
+                    ) : chainAdded ? (
+                      <>✅ Network Added</>
+                    ) : (
+                      <>🌐 Add Polygon Amoy to MetaMask</>
+                    )}
+                  </Button>
+                  {chainAdded && (
                     <Button 
-                      onClick={handleRequestPol}
-                      disabled={!isConnected || isRequestingPol || polRequested}
-                      className="w-full font-mono text-xs sm:text-sm bg-blue-500/20 border border-blue-400/50 text-blue-400 hover:bg-blue-500/30"
+                      onClick={() => setCurrentStep(2)}
+                      className="w-full mt-3 font-mono text-xs sm:text-sm bg-gray-500/20 border border-gray-400/50 text-gray-300 hover:bg-gray-500/30"
                     >
-                      {isRequestingPol ? (
-                        <>⏳ Requesting POL...</>
-                      ) : polRequested ? (
-                        <>✅ POL Requested</>
-                      ) : (
-                        <>🪙 Request Free POL (Testnet)</>
-                      )}
+                      Continue to Next Step
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                     </Button>
                   )}
-                  
-                  {hasBalance && (
-                    <div className="bg-green-500/10 border border-green-400/30 p-2 sm:p-3 rounded-lg">
-                      <p className="text-green-400 font-mono text-xs sm:text-sm">
-                        ✅ You have POL! Ready to mint your membership.
-                      </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Step 2: Get POL */}
+            {currentStep === 2 && (
+              <Card className="border border-blue-400/50 bg-blue-500/5">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
+                    <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Step 2: Get Free Test POL
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3 sm:space-y-4">
+                    {isConnected && (
+                      <div className="bg-black/40 p-2 sm:p-3 rounded-lg border border-gray-700">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs text-gray-400">Your Wallet:</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={copyAddress}
+                            className="h-5 sm:h-6 px-1 sm:px-2 text-xs"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copy
+                          </Button>
+                        </div>
+                        <p className="font-mono text-xs sm:text-sm text-white truncate">
+                          {address}
+                        </p>
+                        <div className="mt-1 sm:mt-2 flex items-center gap-2">
+                          <span className="font-mono text-xs text-gray-400">POL Balance:</span>
+                          <Badge variant={hasBalance ? "secondary" : "destructive"} className="font-mono text-xs">
+                            {balance ? `${parseFloat(balance.formatted).toFixed(4)} POL` : "0 POL"}
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <p className="text-white/70 text-xs sm:text-sm font-mono">
+                      // Request free testnet POL for minting membership tokens
+                    </p>
+                    
+                    {!hasBalance && (
+                      <Button 
+                        onClick={handleRequestPol}
+                        disabled={!isConnected || isRequestingPol || polRequested}
+                        className="w-full font-mono text-xs sm:text-sm bg-blue-500/20 border border-blue-400/50 text-blue-400 hover:bg-blue-500/30"
+                      >
+                        {isRequestingPol ? (
+                          <>⏳ Requesting POL...</>
+                        ) : polRequested ? (
+                          <>✅ POL Requested</>
+                        ) : (
+                          <>🪙 Request Free POL (Testnet)</>
+                        )}
+                      </Button>
+                    )}
+                    
+                    {hasBalance && (
+                      <div className="bg-green-500/10 border border-green-400/30 p-2 sm:p-3 rounded-lg">
+                        <p className="text-green-400 font-mono text-xs sm:text-sm">
+                          ✅ You have POL! Ready to mint your membership.
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => setCurrentStep(1)}
+                        variant="outline"
+                        className="flex-1 font-mono text-xs sm:text-sm"
+                      >
+                        ← Back
+                      </Button>
+                      {(hasBalance || polRequested) && (
+                        <Button 
+                          onClick={() => setCurrentStep(3)}
+                          className="flex-1 font-mono text-xs sm:text-sm bg-gray-500/20 border border-gray-400/50 text-gray-300 hover:bg-gray-500/30"
+                        >
+                          Continue to Next Step
+                          <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                        </Button>
+                      )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Step 3: Mint Membership */}
-            <Card className={`border transition-all ${
-              currentStep === 3 ? 'border-violet-400/50 bg-violet-500/5' : 'border-gray-700 bg-gray-800/30'
-            }`}>
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Step 3: Mint Your Membership
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-white/70 mb-3 sm:mb-4 font-mono text-xs sm:text-sm">
-                  // NFT-based membership grants access to governance and exclusive features
-                </p>
-                <div className="mb-3 sm:mb-4">
-                  <RequestWhitelistButton className="w-full mb-2" variant="default" size="lg" />
-                </div>
-                <Button 
-                  onClick={() => {
-                    onClose()
-                    // Navigate to gallery page
-                    window.location.href = '/gallery'
-                  }}
-                  disabled={!hasBalance}
-                  className="w-full font-mono text-xs sm:text-sm bg-violet-500/20 border border-violet-400/50 text-violet-400 hover:bg-violet-500/30"
-                >
-                  🎫 Go to Gallery & Mint
-                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
+            {currentStep === 3 && (
+              <Card className="border border-violet-400/50 bg-violet-500/5">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                    Step 3: Mint Your Membership
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-white/70 mb-3 sm:mb-4 font-mono text-xs sm:text-sm">
+                    // NFT-based membership grants access to governance and exclusive features
+                  </p>
+                  <div className="mb-3 sm:mb-4">
+                    <RequestWhitelistButton className="w-full mb-2" variant="default" size="lg" />
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      onClose()
+                      // Navigate to gallery page
+                      window.location.href = '/gallery'
+                    }}
+                    disabled={!hasBalance}
+                    className="w-full font-mono text-xs sm:text-sm bg-violet-500/20 border border-violet-400/50 text-violet-400 hover:bg-violet-500/30 mb-3"
+                  >
+                    🎫 Go to Gallery & Mint
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  </Button>
+                  <Button 
+                    onClick={() => setCurrentStep(2)}
+                    variant="outline"
+                    className="w-full font-mono text-xs sm:text-sm"
+                  >
+                    ← Back
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Help Section */}

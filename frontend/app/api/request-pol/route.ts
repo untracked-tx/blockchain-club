@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import fs from "fs/promises"
-import path from "path"
+import { Redis } from '@upstash/redis'
 
 interface PolRequest {
   id: string
@@ -12,29 +11,27 @@ interface PolRequest {
   createdAt: string
 }
 
-const REQUEST_FILE = path.join(process.cwd(), "data", "pol-requests.json")
-
-async function ensureDataDir() {
-  const dataDir = path.dirname(REQUEST_FILE)
-  try {
-    await fs.mkdir(dataDir, { recursive: true })
-  } catch (err) {
-    // Directory might already exist
-  }
-}
+// Initialize Redis
+const redis = Redis.fromEnv()
+const REQUESTS_KEY = "pol-requests"
 
 async function getRequests(): Promise<PolRequest[]> {
   try {
-    const data = await fs.readFile(REQUEST_FILE, "utf-8")
-    return JSON.parse(data)
+    const requests = await redis.get<PolRequest[]>(REQUESTS_KEY)
+    return requests || []
   } catch (err) {
+    console.error("Error fetching from Redis:", err)
     return []
   }
 }
 
 async function saveRequests(requests: PolRequest[]) {
-  await ensureDataDir()
-  await fs.writeFile(REQUEST_FILE, JSON.stringify(requests, null, 2))
+  try {
+    await redis.set(REQUESTS_KEY, requests)
+  } catch (err) {
+    console.error("Error saving to Redis:", err)
+    throw err
+  }
 }
 
 export async function POST(request: NextRequest) {

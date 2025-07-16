@@ -441,9 +441,11 @@ export default function GovernancePage() {
                       <p className="text-sm text-muted-foreground mb-4">
                         ERC721 tokens that represent club membership. Non-transferable (soulbound).
                       </p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Contract
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <a href="https://amoy.polygonscan.com/address/0x0CfE6eeEc8Ebb6763C1f4004613e3a84419b45aa" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Contract
+                        </a>
                       </Button>
                     </CardContent>
                   </Card>
@@ -459,9 +461,11 @@ export default function GovernancePage() {
                       <p className="text-sm text-muted-foreground mb-4">
                         Access control system managing member roles and voting weights.
                       </p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Contract
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <a href="https://amoy.polygonscan.com/address/0x4613A76F3656BE272FE1B7CbeD3ef81F64751F45" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Contract
+                        </a>
                       </Button>
                     </CardContent>
                   </Card>
@@ -477,9 +481,11 @@ export default function GovernancePage() {
                       <p className="text-sm text-muted-foreground mb-4">
                         Secure fund management with time delays and multi-signature requirements.
                       </p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Contract
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <a href="https://amoy.polygonscan.com/address/0x54568ae7a438a521C0fcA0E17A317c3e3189D8B1" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Contract
+                        </a>
                       </Button>
                     </CardContent>
                   </Card>
@@ -488,9 +494,9 @@ export default function GovernancePage() {
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h4 className="font-semibold mb-2">Contract Addresses (Polygon Amoy Testnet)</h4>
                   <div className="space-y-2 text-sm font-mono">
-                    <div>Membership: 0x1234...5678</div>
-                    <div>Roles: 0xabcd...efgh</div>
-                    <div>Treasury: 0x9876...5432</div>
+                    <div>Membership: 0x0CfE6eeEc8Ebb6763C1f4004613e3a84419b45aa</div>
+                    <div>Roles: 0x4613A76F3656BE272FE1B7CbeD3ef81F64751F45</div>
+                    <div>Treasury: 0x54568ae7a438a521C0fcA0E17A317c3e3189D8B1</div>
                   </div>
                 </div>
               </div>
