@@ -19,8 +19,8 @@ async function grantOfficerRole(address) {
   console.log(`Granted OFFICER_ROLE to ${address}`);
 }
 
-// Grant to both wallet address and specific test address
-const testAddress = "0x9cd3bb58d05c0be0a5cc5e4906ba5f8ff2e68c9e";
+// Grant to both wallet address and additional test address if provided
+const testAddress = process.env.TEST_ADDRESS || "0x9cd3bb58d05c0be0a5cc5e4906ba5f8ff2e68c9e";
 
 async function main() {
   await grantOfficerRole(wallet.address);
