@@ -6,7 +6,7 @@
 
 ### Executive Summary
 
-* The University of Colorado Denver Blockchain Club implements institutional-grade on-chain governance through smart contract infrastructure.
+* The University of Colorado Denver Blockchain Club implements on-chain governance through audited smart contract infrastructure.
 * The architecture operates on decentralized protocols, establishing verifiable transparency, programmatic accountability, and operational resilience.
 * Membership verification utilizes soulbound NFTs, governance implements tiered access controls, and treasury operations enforce mandatory 24-hour security delays with role-based authorization.
 * This implementation establishes reference architecture patterns for academic decentralized autonomous organizations.
@@ -261,3 +261,65 @@ Blockchain-based institutional governance represents a fundamental advancement i
 ---
 
 *This whitepaper will be revised as technical capabilities and governance mechanisms evolve.*
+
+
+## 📊 **Better Architecture Diagram**
+
+Here's a more impressive version using Mermaid (renders beautifully on GitHub):
+
+```mermaid
+graph TB
+    subgraph "User Layer"
+        U1[Students/Members]
+        U2[Officers]
+        U3[Alumni]
+    end
+
+    subgraph "Frontend dApp"
+        W1[Next.js Interface]
+        W2[RainbowKit Wallet]
+        W3[Member Dashboard]
+    end
+
+    subgraph "Smart Contract Layer"
+        SC1[BlockchainClubMembership.sol<br/>ERC-721 Soulbound NFTs]
+        SC2[Roles.sol<br/>Access Control Hub]
+        SC3[TreasuryRouter.sol<br/>24h Time-Lock Escrow]
+        
+        SC1 -->|reads roles| SC2
+        SC3 -->|checks permissions| SC2
+        SC1 -->|auto-assigns roles| SC2
+    end
+
+    subgraph "Governance Layer"
+        G1[Snapshot Voting]
+        G2[Proposal System]
+        G3[Token-Weighted Polls]
+    end
+
+    subgraph "External Integrations"
+        E1[Polygon Network]
+        E2[IPFS Metadata]
+        E3[Gnosis Safe]
+        E4[ENS Domains]
+    end
+
+    U1 --> W1
+    U2 --> W1
+    U3 --> W1
+    
+    W1 --> SC1
+    W1 --> SC3
+    W3 --> SC2
+    
+    SC1 --> G1
+    SC2 --> G1
+    
+    SC1 --> E2
+    SC3 --> E3
+    SC1 --> E1
+    
+    style SC1 fill:#e1f5fe
+    style SC2 fill:#fff3e0
+    style SC3 fill:#f3e5f5
+    style G1 fill:#e8f5e9
