@@ -49,7 +49,7 @@ graph TB
     subgraph "External Integrations"
         E1[Polygon Network]
         E2[IPFS Metadata]
-        E3[Gnosis Safe]
+        E3[Safe Wallet]
         E4[ENS Domains]
     end
 
@@ -155,7 +155,7 @@ Time-delayed multi-asset management protocol supporting ETH, ERC20, and ERC721 t
 - `cancelERC20Transfer(transferId, reason)` / `cancelNFTTransfer(transferId, reason)` – Administrative cancellation
 - `updateTreasury(newTreasury)` – Treasury address reconfiguration
 - `emergencyWithdraw()` – Emergency protocol controls
-- `setTreasury(address)` – Treasury recipient configuration (Gnosis Safe recommended)
+- `setTreasury(address)` – Treasury recipient configuration (Safe wallet recommended)
 
 **Escrow Execution Flow:**
 1. Officer initiates asset deposit with metadata
@@ -178,7 +178,7 @@ Time-delayed multi-asset management protocol supporting ETH, ERC20, and ERC721 t
                                     ↓
                           [24h Temporal Lock]
                                     ↓
-                         [Gnosis Safe Execution]
+                         [Safe Wallet Execution]
 ```
 
 ---
@@ -205,7 +205,7 @@ Time-delayed multi-asset management protocol supporting ETH, ERC20, and ERC721 t
 
 - UUPS upgradeability pattern implementation across all contracts
 - `ADMIN_ROLE` maintains exclusive upgrade authorization
-- Production upgrades require multisig or Gnosis Safe execution
+- Production upgrades require multisig or Safe wallet execution
 
 ---
 

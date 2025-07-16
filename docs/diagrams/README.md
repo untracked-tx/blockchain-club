@@ -50,7 +50,7 @@ graph TB
     subgraph "External Integrations"
         E1[Polygon Network]
         E2[IPFS Metadata]
-        E3[Gnosis Safe]
+        E3[Safe Wallet]
         E4[ENS Domains]
     end
 
@@ -284,14 +284,14 @@ graph LR
         IPFS[IPFS Network]
         Polygon[Polygon Network]
         Snapshot[Snapshot Voting]
-        Gnosis[Gnosis Safe]
+        Safe[Safe Wallet]
         ENS[ENS Domains]
     end
     
     BC --> IPFS
     BC --> Polygon
     FE --> Snapshot
-    BC --> Gnosis
+    BC --> Safe
     FE --> ENS
     
     style BC fill:#e1f5fe

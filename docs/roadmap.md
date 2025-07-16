@@ -14,36 +14,95 @@ Remember: Our small team size enables rapid iteration and experimentation, allow
 
 ## Project Ideas We Could Build
 
-### **🌍 Humanitarian Blockchain Initiative** 
-*Priority: High - Liam wants to launch before graduation*
+### **🌍 Humanitarian Blockchain Initiative: Walletless Digital Cash for Crisis Relief** 
+*Priority: High - Target launch: Spring 2026 (before project lead graduation)*
 
-**The Idea:** Create a blockchain-based system for transparent humanitarian aid distribution or disaster relief coordination. Could be:
-- **Supply Chain Transparency**: Track donations from source to recipient
-- **Identity Verification**: Help displaced populations maintain digital identity
-- **Micro-lending Platform**: Small loans for communities in developing regions
-- **Educational Credential Verification**: Help refugees prove their qualifications
+**The Vision:** Create a revolutionary blockchain-powered aid distribution system that makes humanitarian assistance accessible to anyone with a basic phone or even just a piece of paper. No crypto wallets, apps, or technical knowledge required.
 
-**What We'd Learn:** Real-world blockchain impact, working with NGOs, scaling challenges, regulatory considerations
+**Core Innovation:**
+- **Walletless Voucher System**: Recipients receive simple claim codes (SMS, paper, voice)
+- **Local Agent Network**: Community members redeem codes for cash using smartphones
+- **Stablecoin Settlement**: Transparent, instant settlement with stable value
+- **Universal Access**: Works in crisis zones with limited connectivity
 
-**Club Benefits:** Meaningful project for portfolios, potential partnerships with humanitarian orgs, actual social impact
+**Real-World Impact:**
+- **75% reduction** in distribution costs (validated by Oxfam pilots)
+- **96% faster** aid delivery (hours vs. weeks)
+- **$325M+ already processed** by similar UN systems
+- **Complete transparency** with blockchain audit trail
+
+**What We'd Learn:** Crisis response technology, humanitarian partnerships, regulatory navigation, real-world blockchain implementation at scale
+
+**Club Benefits:** Career-defining project, partnerships with UN agencies, potential global deployment, meaningful social impact
+
+### **💝 Blockchain Donation Tracker & Transparency Platform**
+
+**The Idea:** Build a comprehensive platform that allows donors to track their contributions from wallet to impact, ensuring complete transparency in humanitarian giving.
+
+**Key Features:**
+- **Crypto Donation Integration**: Accept Bitcoin, Ethereum, stablecoins
+- **Supply Chain Tracking**: Follow donations from source to final recipient
+- **Impact Measurement**: Real-time reporting on outcomes and metrics
+- **Regulatory Compliance**: KYC/AML compliance for large donations
+- **Multi-Organization Support**: Platform for multiple charities and NGOs
+
+**Innovation Areas:**
+- Smart contracts for conditional giving (release funds when milestones met)
+- Integration with existing charity financial systems
+- Tax compliance and receipt generation for crypto donations
+- Mobile-first interface for global accessibility
+
+**What We'd Learn:** Financial regulations, charity operations, compliance frameworks, multi-stakeholder platform design
+
+**Club Benefits:** Fintech experience, regulatory knowledge, charity partnerships, measurable social impact
+
+### **🔬 Decentralized Scientific Research Collaboration Platform**
+
+**The Idea:** Create an open, blockchain-based platform that democratizes scientific research by enabling global collaboration, resource sharing, and transparent peer review.
+
+**Core Components:**
+- **Distributed Computing Network**: Donate idle computing power to research projects
+- **Data Contribution Marketplace**: Securely share datasets with privacy preservation
+- **Expert Collaboration Hub**: Match researchers with complementary skills globally
+- **Transparent Peer Review**: Blockchain-verified review process with reputation systems
+- **Research Integrity Ledger**: Immutable record of methodology, data, and results
+
+**Revolutionary Features:**
+- **Proof-of-Research**: Novel consensus mechanism rewarding scientific contributions
+- **IP Protection**: Smart contracts for collaborative intellectual property management
+- **Funding Mechanisms**: Decentralized research grants and crowdfunding
+- **Result Verification**: Community validation of scientific claims and data
+
+**Target Applications:**
+- Climate change modeling and data analysis
+- Medical research and drug discovery
+- AI model training with distributed datasets
+- Citizen science projects and data collection
+
+**What We'd Learn:** Scientific methodology, distributed systems, incentive mechanism design, academic partnerships, peer review processes
+
+**Club Benefits:** Academic collaborations, research publication opportunities, cutting-edge distributed systems experience, potential patent opportunities
 
 ### **🚀 Advanced Multi-Token Logic Experiments**
 
-**The Idea:** Push our dual-layer architecture to its limits with complex token gating:
+**The Idea:** Push our dual-layer architecture to its limits with complex token gating and governance mechanisms:
+
 ```typescript
-// Example: Semester project access requires multiple credentials
-const PROJECT_LEAD_ACCESS = {
-  required: ['officer'], 
-  plus: ['active_trader', 'github_contributor'],
-  temporal: 'current_semester',
-  achievement_threshold: 3 // Must have 3+ achievement tokens
+// Example: Advanced project access control
+const RESEARCH_PROJECT_ACCESS = {
+  required: ['verified_researcher'], 
+  plus: ['peer_review_contributor', 'data_provider'],
+  temporal: 'active_collaboration',
+  reputation_threshold: 85, // Minimum reputation score
+  stake_requirement: 100 // Tokens staked for participation
 };
 ```
 
 **Innovative Experiments:**
-- **Project-Based Tokens**: NFTs for leading specific initiatives
-- **Skill Verification**: Tokens for completing trading challenges, coding contributions
-- **Cross-Club Collaboration**: Shared tokens with other university blockchain clubs
+- **Dynamic Reputation Systems**: Token values that change based on contribution quality
+- **Cross-Platform Collaboration**: Shared governance between our three major projects
+- **Skill Verification Marketplace**: Blockchain-verified expertise for project matching
+- **Impact-Weighted Voting**: Governance power based on real-world project outcomes
 
 ### **💰 Real Treasury Management**
 
@@ -187,7 +246,7 @@ const calculateVotingPower = (member) => {
 ### **Technical Resources:**
 - **Development Environment**: Hardhat setup with our contracts
 - **Frontend Templates**: React components for common governance patterns
-- **Testing Networks**: Polygon Mumbai for rapid iteration
+- **Testing Networks**: Polygon Amoy for rapid iteration
 - **Documentation**: Technical guides and best practices
 
 ### **Club Support:**
