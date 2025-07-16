@@ -133,23 +133,194 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to Action Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-black via-[#565A5C] to-black py-16 md:py-24">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="container relative mx-auto px-4 text-center">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="mb-6 text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
-              Ready to Join the Future? 🚀
-            </h2>
-            <p className="mb-8 text-xl text-[#A2A4A3] leading-relaxed">
-              Be part of the next generation of blockchain innovators. Connect your wallet and mint your membership NFT today.
+      {/* Attribution & Partners Section */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-gray-800 to-slate-900 py-12">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10"></div>
+        
+        {/* Subtle decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-8 left-1/4 w-24 h-24 bg-[#CFB87C]/10 rounded-full blur-xl"></div>
+          <div className="absolute bottom-8 right-1/4 w-32 h-32 bg-[#8247E5]/10 rounded-full blur-xl"></div>
+        </div>
+        
+        <div className="container relative mx-auto px-4">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="mb-6">
+              <h3 className="mb-2 text-base font-semibold text-[#CFB87C] tracking-wide">Partners & Friends</h3>
+              <div className="mx-auto w-16 h-0.5 bg-gradient-to-r from-transparent via-[#CFB87C] to-transparent"></div>
+            </div>
+            
+            <p className="mb-10 text-sm text-gray-300 leading-relaxed max-w-2xl mx-auto font-light">
+              We gratefully acknowledge the open-source developers, data providers, and networks that help make this club possible.
             </p>
-            <Link href="/gallery">
-              <Button size="lg" className="rounded-xl bg-[#CFB87C] px-8 py-6 text-lg font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-2xl hover:bg-[#CFB87C]/90">
-                🎯 Get Started Now
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
+            
+            {/* Creative Partners Layout */}
+            <div className="relative">
+              {/* Floating connection lines */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 800 400">
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#CFB87C" stopOpacity="0.3"/>
+                      <stop offset="50%" stopColor="#8247E5" stopOpacity="0.5"/>
+                      <stop offset="100%" stopColor="#12FF80" stopOpacity="0.3"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M 100 200 Q 400 100 700 200" stroke="url(#lineGradient)" strokeWidth="2" fill="none" className="animate-pulse"/>
+                  <path d="M 150 250 Q 400 150 650 250" stroke="url(#lineGradient)" strokeWidth="1.5" fill="none" className="animate-pulse" style={{animationDelay: '1s'}}/>
+                </svg>
+              </div>
+
+              {/* Dynamic Grid Layout */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-5xl mx-auto items-center">
+                
+                {/* Polygon - Large Feature */}
+                <div className="col-span-2 md:col-span-2">
+                  <a 
+                    href="https://polygon.technology/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative block"
+                  >
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#8247E5]/10 via-transparent to-[#6B46C1]/10 p-8 h-48 border border-[#8247E5]/20 transition-all duration-500 hover:border-[#8247E5]/50 hover:scale-105 hover:rotate-1">
+                      {/* Subtle ambient background */}
+                      <div className="absolute inset-0 opacity-20">
+                        <div className="absolute top-8 right-8 w-3 h-3 bg-[#8247E5]/30 rounded-full opacity-60"></div>
+                        <div className="absolute bottom-12 left-8 w-2 h-2 bg-[#CFB87C]/40 rounded-full opacity-50"></div>
+                        <div className="absolute top-16 left-12 w-1 h-1 bg-[#8247E5]/25 rounded-full opacity-70"></div>
+                        {/* Gentle gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-[#8247E5]/5 via-transparent to-[#CFB87C]/5 opacity-50"></div>
+                      </div>
+                      
+                      <div className="relative z-10 flex items-center justify-center h-full">
+                        <img 
+                          src="/logos/Polygon_Primary_Light.svg" 
+                          alt="Polygon" 
+                          className="w-48 h-48 object-contain transition-all duration-500 group-hover:scale-110 filter group-hover:drop-shadow-lg"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-48 h-48 bg-gradient-to-br from-[#8247E5] to-[#6B46C1] rounded-2xl flex items-center justify-center text-white font-bold text-4xl">POL</div>';
+                            }
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Subtle label */}
+                      <div className="absolute bottom-4 left-6 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="text-xs text-[#8247E5] font-medium tracking-wide">NETWORK</div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+
+                {/* Connecting Element */}
+                <div className="hidden md:flex col-span-1 justify-center items-center">
+                  <div className="w-px h-16 bg-gradient-to-b from-transparent via-[#CFB87C]/50 to-transparent"></div>
+                </div>
+
+                {/* CoinGecko & Safe - Stacked */}
+                <div className="col-span-2 md:col-span-2 space-y-4">
+                  
+                  {/* CoinGecko - Compact */}
+                  <a 
+                    href="https://www.coingecko.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative block"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#8DC647]/10 to-transparent p-4 h-20 border border-[#8DC647]/20 transition-all duration-300 hover:border-[#8DC647]/50 hover:scale-105 hover:-rotate-1">
+                      <div className="flex items-center justify-center h-full space-x-4">
+                        <img 
+                          src="/logos/coingecko-white.svg" 
+                          alt="CoinGecko" 
+                          className="w-32 h-12 object-contain transition-all duration-300 group-hover:scale-110"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-32 h-12 bg-gradient-to-br from-[#8DC647] to-[#7CB342] rounded-xl flex items-center justify-center text-white text-xl">🦎</div>';
+                            }
+                          }}
+                        />
+                        <div className="opacity-60 group-hover:opacity-100 transition-opacity">
+                          <div className="text-xs text-[#8DC647] font-medium tracking-wide">DATA</div>
+                        </div>
+                      </div>
+                      
+                      {/* Floating accent */}
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#8DC647] rounded-full animate-pulse"></div>
+                    </div>
+                  </a>
+
+                  {/* Safe - Compact */}
+                  <a 
+                    href="https://safe.global/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative block"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#12FF80]/10 to-transparent p-4 h-20 border border-[#12FF80]/20 transition-all duration-300 hover:border-[#12FF80]/50 hover:scale-105 hover:rotate-1">
+                      <div className="flex items-center justify-center h-full space-x-4">
+                        <img 
+                          src="/logos/Safe_Logos_H-Lockup_White.svg" 
+                          alt="Safe" 
+                          className="w-32 h-12 object-contain transition-all duration-300 group-hover:scale-110"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-32 h-12 bg-gradient-to-br from-[#12FF80] to-[#00E673] rounded-xl flex items-center justify-center text-gray-900 text-xl font-bold">🔒</div>';
+                            }
+                          }}
+                        />
+                        <div className="opacity-60 group-hover:opacity-100 transition-opacity">
+                          <div className="text-xs text-[#12FF80] font-medium tracking-wide">SECURITY</div>
+                        </div>
+                      </div>
+                      
+                      {/* Floating accent */}
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#12FF80] rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                    </div>
+                  </a>
+
+                  {/* Wagami - Compact */}
+                  <a 
+                    href="https://wagami.xyz/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative block"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white/10 to-transparent p-4 h-20 border border-white/20 transition-all duration-300 hover:border-white/50 hover:scale-105 hover:-rotate-1">
+                      <div className="flex items-center justify-center h-full space-x-4">
+                        <img 
+                          src="/logos/logo-dark.svg" 
+                          alt="Wagami" 
+                          className="w-32 h-12 object-contain transition-all duration-300 group-hover:scale-110"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-32 h-12 bg-gradient-to-br from-white to-gray-200 rounded-xl flex items-center justify-center text-gray-900 text-xl font-bold">🌊</div>';
+                            }
+                          }}
+                        />
+                        <div className="opacity-60 group-hover:opacity-100 transition-opacity">
+                          <div className="text-xs text-white font-medium tracking-wide">DEFI</div>
+                        </div>
+                      </div>
+                      
+                      {/* Floating accent */}
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              {/* Bottom accent line */}
+              <div className="mt-8 mx-auto w-24 h-px bg-gradient-to-r from-transparent via-[#CFB87C] to-transparent opacity-40"></div>
+            </div>
           </div>
         </div>
       </section>

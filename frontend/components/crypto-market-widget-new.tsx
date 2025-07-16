@@ -1041,6 +1041,23 @@ const CryptoMarketWidget: React.FC<CryptoMarketWidgetProps> = ({ onDataLoaded })
             </div>
           </TabsContent>
         </Tabs>
+        
+        {/* CoinGecko Attribution */}
+        <div className="flex justify-end items-center mt-4 pt-3 border-t border-gray-100">
+          <a 
+            href="https://www.coingecko.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center text-xs text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          >
+            <img 
+              src="/logos/Variant=CG-Symbol-Color.svg" 
+              alt="CoinGecko" 
+              className="w-3 h-3 mr-1.5"
+            />
+            <span>Data by CoinGecko</span>
+          </a>
+        </div>
       </Card>
     </div>
   )

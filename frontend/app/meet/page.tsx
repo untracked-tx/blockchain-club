@@ -36,7 +36,7 @@ export default function MeetPage() {
       name: "Liam Murphy",
       role: "Treasurer",
       bio: "Treasurer of the Blockchain Club and is currently pursuing an MS in Finance at CU Denver. He's dedicated to making finance and blockchain accessible to all students, and is passionate about building a transparent, supportive community where everyone can learn and grow together.",
-      image: "/liam.jpg",
+      image: "/205283431.png",
       tokenType: "Officer",
       email: "liam.murphy@ucdenver.edu",
       linkedin: "https://www.linkedin.com/in/liam-m-582255340/",
@@ -179,22 +179,17 @@ export default function MeetPage() {
             ))}
           </div>
 
-          {/* Professional CTA Section */}
+          {/* Join Our Community Section */}
           <div className="text-center mt-20">
             <div className="bg-white rounded-2xl p-12 border border-gray-200 shadow-lg max-w-4xl mx-auto">
               <h2 className="text-3xl font-bold mb-4 text-gray-900">Join Our Investment Community</h2>
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                Ready to learn from industry professionals and gain hands-on experience 
-                in blockchain investing? We're always looking for driven students.
+                Ready to dive into the world of blockchain and cryptocurrency investing? Join our community of student investors and start building your financial future.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex justify-center">
                 <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  <Award className="h-5 w-5 mr-2" />
-                  Apply for Membership
-                </Button>
-                <Button variant="outline" size="lg" className="border-blue-200 text-blue-600 hover:bg-blue-50">
                   <Users className="h-5 w-5 mr-2" />
-                  Learn More
+                  Partner with Us
                 </Button>
               </div>
             </div>

@@ -6,16 +6,14 @@ import { Bitcoin, Sparkles, Zap, TrendingUp } from "lucide-react"
 
 // Loading messages for the Bitcoin-themed loading screen
 const loadingMessages = [
-  "🚀 Sending API calls to the moon...",
-  "🍕 Remember Bitcoin Pizza Day? 10,000 BTC for 2 pizzas!",
-  "💎 Diamond hands loading portfolio data...",
-  "⚡ Lightning fast blockchain sync in progress...",
-  "🌙 To the moon! Fetching your crypto gains...", 
-  "🔥 Portfolio having a bullish moment...",
+   "🚀 Indexing Data Please HODL...",
+   "🌍 Borderless money syncing...",
+   "💸 Fun fact: USD lost 95% value since Federal Reserve creation!",
+   "🌐 Peer-to-peer magic happening...",
+   "⚖️ Rules, not Rulers!",
+   "🏃‍♂️ Opting out of fiat...",
+   "🗝️ Verifying, not trusting...",
   "📈 Calculating those sweet gains...",
-  "⭐ Hodling while we load your data...",
-  "🚨 Breaking: Your portfolio is loading...",
-  "💰 Satoshi would be proud... Loading complete soon!"
 ]
 
 interface BitcoinLoadingScreenProps {
@@ -24,14 +22,39 @@ interface BitcoinLoadingScreenProps {
 
 export const BitcoinLoadingScreen: React.FC<BitcoinLoadingScreenProps> = ({ message }) => {
   const [currentMessage, setCurrentMessage] = useState(0)
+  const [shuffledMessages, setShuffledMessages] = useState<string[]>([])
+  const [messageIndex, setMessageIndex] = useState(0)
+
+  // Fisher-Yates shuffle algorithm
+  const shuffleArray = (array: string[]) => {
+    const shuffled = [...array]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }
+
+  // Initialize shuffled messages on component mount
+  useEffect(() => {
+    setShuffledMessages(shuffleArray(loadingMessages))
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentMessage(prev => (prev + 1) % loadingMessages.length)
-    }, 2500)
+      setMessageIndex(prev => {
+        const nextIndex = prev + 1
+        // If we've shown all messages, reshuffle and start over
+        if (nextIndex >= shuffledMessages.length) {
+          setShuffledMessages(shuffleArray(loadingMessages))
+          return 0
+        }
+        return nextIndex
+      })
+    }, 3200)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [shuffledMessages])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/80 flex items-center justify-center p-4">
@@ -55,23 +78,18 @@ export const BitcoinLoadingScreen: React.FC<BitcoinLoadingScreenProps> = ({ mess
             <p className="text-muted-foreground">Preparing your blockchain dashboard</p>
           </div>
 
-          {/* Simple Loading Spinner */}
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          {/* Loading Icons */}
+          <div className="flex justify-center space-x-4">
+            <Zap className="h-8 w-8 text-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <TrendingUp className="h-8 w-8 text-green-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <Bitcoin className="h-8 w-8 text-orange-500 animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
 
           {/* Rotating Messages */}
           <div className="min-h-[3rem] flex items-center justify-center">
             <p className="text-lg font-medium text-foreground animate-pulse">
-              {message || loadingMessages[currentMessage]}
+              {message || (shuffledMessages.length > 0 ? shuffledMessages[messageIndex] : loadingMessages[0])}
             </p>
-          </div>
-
-          {/* Loading Icons */}
-          <div className="flex justify-center space-x-4">
-            <Zap className="h-5 w-5 text-blue-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <TrendingUp className="h-5 w-5 text-green-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <Bitcoin className="h-5 w-5 text-orange-500 animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
 
           {/* Subtle hint */}
