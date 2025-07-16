@@ -36,6 +36,12 @@ Complete technical specification and system overview for the blockchain membersh
 1. **For Developers**: Start with [Technical Specification](architecture/technical-specification.md)
 2. **For Security Review**: See [Security Architecture](security.md)
 3. **For Project Overview**: Read the [Whitepaper](whitepaper.md)
+4. **For Contributing**: See [Contributing Guide](CONTRIBUTING.MD)
+
+## 🤝 **Community**
+
+- **[Contributing Guide](CONTRIBUTING.MD)** - How to contribute to the project
+- **[Humans](../HUMANS.md)** - The people behind the code
 
 ---
 

@@ -27,12 +27,15 @@ export default function ResearchPage() {
 	const [secretSequence, setSecretSequence] = useState<string[]>([])
 	const router = useRouter()
 
-	// Secret sequence to reveal passwords (more covert than dragging)
-	const TARGET_SEQUENCE = ["logo", "star", "trending", "newsletter"] // Click these elements in order
+	// Secret sequence to reveal passwords (simple and memorable)
+	const TARGET_SEQUENCE = ["trending", "trending", "newsletter"] // Click trending twice then newsletter button
 	
 	const handleSecretClick = (elementId: string) => {
+		console.log('Secret click:', elementId, 'Current sequence:', secretSequence) // Debug log
+		
 		setSecretSequence(prev => {
 			const newSequence = [...prev, elementId]
+			console.log('New sequence:', newSequence) // Debug log
 			
 			// Check if the sequence matches our target
 			const isCorrectSequence = TARGET_SEQUENCE.every((target, index) => 
@@ -41,14 +44,18 @@ export default function ResearchPage() {
 			
 			if (newSequence.length === TARGET_SEQUENCE.length) {
 				if (isCorrectSequence) {
+					console.log('Secret sequence completed!') // Debug log
 					setShowSecrets(true)
+				} else {
+					console.log('Wrong sequence, resetting') // Debug log
 				}
-				// Reset sequence after 4 clicks regardless
+				// Reset sequence after clicks regardless
 				return []
 			}
 			
 			// Reset if wrong element clicked
 			if (newSequence[newSequence.length - 1] !== TARGET_SEQUENCE[newSequence.length - 1]) {
+				console.log('Wrong element clicked, resetting sequence') // Debug log
 				return []
 			}
 			
@@ -88,7 +95,10 @@ export default function ResearchPage() {
 		})
 		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by date, newest first
 
-	const featuredArticles = researchArticles.filter(article => article.featured)
+	const featuredArticles = researchArticles.filter(article => 
+		article.id === "humanitarian-blockchain-initiative" || 
+		article.id === "bitcoin-temporal-cycles"
+	)
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -104,10 +114,7 @@ export default function ResearchPage() {
 				<div className="container relative mx-auto px-4 text-center">
 					<div className="mx-auto max-w-4xl">
 						<div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-blue-100 backdrop-blur-sm border border-white/30">
-							<BookOpen 
-								className="mr-2 h-4 w-4 cursor-pointer hover:scale-110 transition-transform" 
-								onClick={() => handleSecretClick("logo")}
-							/>
+							<BookOpen className="mr-2 h-4 w-4" />
 							Research & Analysis
 						</div>
 						
@@ -296,14 +303,24 @@ export default function ResearchPage() {
 						</p>
 						
 						{!showSecrets ? (
-							<Button 
-								variant="secondary" 
-								size="lg" 
-								className="bg-white text-blue-600 hover:bg-gray-100"
-								onClick={() => handleSecretClick("newsletter")}
-							>
-								Subscribe to Newsletter
-							</Button>
+							<div className="space-y-4">
+								<Button 
+									variant="secondary" 
+									size="lg" 
+									className="bg-white text-blue-600 hover:bg-gray-100 transition-all duration-200 hover:scale-105"
+									onClick={() => handleSecretClick("newsletter")}
+								>
+									Subscribe to Newsletter
+								</Button>
+								
+								{/* Secret sequence progress indicator (only show if user has started) */}
+								{secretSequence.length > 0 && (
+									<div className="text-xs text-blue-200 opacity-75">
+										Secret progress: {secretSequence.length}/3 
+										{secretSequence.length === 2 && " (One more click! 📧)"}
+									</div>
+								)}
+							</div>
 						) : (
 							<div className="bg-black/20 rounded-lg p-4 text-left max-w-md mx-auto">
 								<p className="font-medium mb-3 text-center">🔐 Secret Access Codes:</p>

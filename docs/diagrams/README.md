@@ -1,6 +1,6 @@
 # System Diagrams
 
-This document contains all architectural and flow diagrams for the UCD Blockchain Club Protocol.
+This document contains all architectural and flow diagrams for the CU Denver Blockchain Club Protocol.
 
 ## Table of Contents
 1. [System Architecture](#system-architecture)
@@ -300,4 +300,4 @@ graph LR
 
 ---
 
-*These diagrams provide comprehensive visual documentation of the UCD Blockchain Club Protocol architecture and workflows.*
+*These diagrams provide comprehensive visual documentation of the CU Denver Blockchain Club Protocol architecture and workflows.*

@@ -19,6 +19,8 @@ Remember: Our small team size enables rapid iteration and experimentation, allow
 
 **The Vision:** Create a revolutionary blockchain-powered aid distribution system that makes humanitarian assistance accessible to anyone with a basic phone or even just a piece of paper. No crypto wallets, apps, or technical knowledge required.
 
+> **📖 Read the Full Proposal:** [Bridging the Gap: A Walletless Digital Cash System for Global Humanitarian Aid](/research#humanitarian-blockchain-initiative) - A comprehensive research document detailing technical architecture, implementation roadmap, and partnership strategies.
+
 **Core Innovation:**
 - **Walletless Voucher System**: Recipients receive simple claim codes (SMS, paper, voice)
 - **Local Agent Network**: Community members redeem codes for cash using smartphones

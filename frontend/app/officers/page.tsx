@@ -476,79 +476,163 @@ export default function OfficersPage() {
       const totalSupply = await membershipContract.totalSupply()
       console.log(`[DEBUG] Loading member data for ${totalSupply} tokens`)
       const memberData: MemberData[] = []
+      const processedAddresses = new Set<string>()
 
-      // Enumerate all tokens to get member data
+      // First, enumerate all tokens to get token holders
       for (let i = 0; i < Number(totalSupply); i++) {
         try {
           const tokenId = await membershipContract.tokenByIndex(i)
           const owner = await membershipContract.ownerOf(tokenId)
           
           // Skip if we already have this owner
-          if (memberData.find(m => m.address.toLowerCase() === owner.toLowerCase())) {
+          if (processedAddresses.has(owner.toLowerCase())) {
             continue
           }
+          processedAddresses.add(owner.toLowerCase())
 
-          // Get member stats
-          const memberStats = await membershipContract.memberStats(owner)
-          const tokenCount = await membershipContract.balanceOf(owner)
-          
-          // Get current roles (users can have multiple roles)
-          const roles: ("ADMIN_ROLE" | "OFFICER_ROLE" | "MEMBER_ROLE")[] = []
-          const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
-          const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
-          const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
-
-          if (await rolesContract.hasRole(adminRoleHash, owner)) {
-            roles.push("ADMIN_ROLE")
+          const memberInfo = await loadMemberInfo(owner)
+          if (memberInfo) {
+            memberData.push(memberInfo)
           }
-          if (await rolesContract.hasRole(officerRoleHash, owner)) {
-            roles.push("OFFICER_ROLE")
-          }
-          if (await rolesContract.hasRole(memberRoleHash, owner)) {
-            roles.push("MEMBER_ROLE")
-          }
-
-          // For display purposes, show the highest role as currentRole
-          // Priority order for display: Admin > Officer > Member
-          // Note: These are independent roles - having admin doesn't grant officer privileges automatically
-          const currentRole = roles.includes("ADMIN_ROLE") ? "ADMIN_ROLE" : 
-                             roles.includes("OFFICER_ROLE") ? "OFFICER_ROLE" :
-                             roles.includes("MEMBER_ROLE") ? "MEMBER_ROLE" : null
-
-          // Get voting power
-          const votingPower = await rolesContract.getVotingPower(owner)
-          const customVotingPower = await rolesContract.customVotingPower(owner)
-
-          // Get all token IDs for this owner
-          const tokenIds: number[] = []
-          for (let j = 0; j < Number(tokenCount); j++) {
-            const tokenId = await membershipContract.tokenOfOwnerByIndex(owner, j)
-            tokenIds.push(Number(tokenId))
-          }
-
-          memberData.push({
-            address: owner,
-            tokenIds,
-            joinDate: Number(memberStats.joinDate) * 1000, // Convert to milliseconds
-            tokenCount: Number(tokenCount),
-            currentRole,
-            roles,
-            isActive: memberStats.isActive,
-            votingPower: Number(votingPower),
-            customVotingPower: Number(customVotingPower) > 0 ? Number(customVotingPower) : undefined
-          })
         } catch (error) {
           console.error(`Error loading data for token ${i}:`, error)
         }
       }
 
+      // Then, check for role holders who might not have NFTs
+      const additionalAddresses = new Set<string>()
+      
+      // Add current user if connected and not already processed
+      if (userAddress && !processedAddresses.has(userAddress.toLowerCase())) {
+        additionalAddresses.add(userAddress)
+      }
+
+      // Try to get role members using AccessControlEnumerable functions
+      try {
+        const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
+        const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+        const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
+
+        // Get all role holders
+        const roles = [adminRoleHash, officerRoleHash, memberRoleHash]
+        for (const roleHash of roles) {
+          try {
+            const roleCount = await rolesContract.getRoleMemberCount(roleHash)
+            for (let i = 0; i < Number(roleCount); i++) {
+              try {
+                const roleMember = await rolesContract.getRoleMember(roleHash, i)
+                if (!processedAddresses.has(roleMember.toLowerCase())) {
+                  additionalAddresses.add(roleMember)
+                }
+              } catch (error) {
+                console.error(`Error getting role member ${i} for role ${roleHash}:`, error)
+              }
+            }
+          } catch (error) {
+            console.error(`Error getting role members for role ${roleHash}:`, error)
+          }
+        }
+      } catch (error) {
+        console.error("Error enumerating role members:", error)
+      }
+
+      // Check these additional addresses for roles
+      for (const address of additionalAddresses) {
+        try {
+          const memberInfo = await loadMemberInfo(address)
+          if (memberInfo && memberInfo.roles.length > 0) {
+            memberData.push(memberInfo)
+            processedAddresses.add(address.toLowerCase())
+          }
+        } catch (error) {
+          console.error(`Error loading role data for ${address}:`, error)
+        }
+      }
+
       console.log(`[DEBUG] Found ${memberData.length} unique members`)
       console.log(`[DEBUG] Admin count: ${memberData.filter(m => m.roles.includes("ADMIN_ROLE")).length}`)
-      console.log(`[DEBUG] Officer count: ${memberData.filter(m => m.roles.includes("OFFICER_ROLE") && !m.roles.includes("ADMIN_ROLE")).length}`)
+      console.log(`[DEBUG] Officer count: ${memberData.filter(m => m.roles.includes("OFFICER_ROLE")).length}`)
       
       setMembers(memberData)
     } catch (error) {
       console.error("Failed to load member data:", error)
+    }
+  }
+
+  // Helper function to load member information for a given address
+  async function loadMemberInfo(owner: string): Promise<MemberData | null> {
+    if (!membershipContract || !rolesContract) return null
+
+    try {
+
+      // Get member stats (default values if no NFT)
+      let memberStats, tokenCount
+      try {
+        memberStats = await membershipContract.memberStats(owner)
+        tokenCount = await membershipContract.balanceOf(owner)
+      } catch (error) {
+        // If member stats fail, use defaults (for role-only members)
+        memberStats = { joinDate: 0, isActive: true }
+        tokenCount = 0
+      }
+      
+      // Get current roles (users can have multiple roles)
+      const roles: ("ADMIN_ROLE" | "OFFICER_ROLE" | "MEMBER_ROLE")[] = []
+      const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
+      const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+      const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
+
+      if (await rolesContract.hasRole(adminRoleHash, owner)) {
+        roles.push("ADMIN_ROLE")
+      }
+      if (await rolesContract.hasRole(officerRoleHash, owner)) {
+        roles.push("OFFICER_ROLE")
+      }
+      if (await rolesContract.hasRole(memberRoleHash, owner)) {
+        roles.push("MEMBER_ROLE")
+      }
+
+      // Skip if this address has no roles and no NFTs
+      if (roles.length === 0 && Number(tokenCount) === 0) {
+        return null
+      }
+
+      // For display purposes, show the highest role as currentRole
+      // Priority order for display: Admin > Officer > Member
+      // Note: These are independent roles - having admin doesn't grant officer privileges automatically
+      const currentRole = roles.includes("ADMIN_ROLE") ? "ADMIN_ROLE" : 
+                         roles.includes("OFFICER_ROLE") ? "OFFICER_ROLE" :
+                         roles.includes("MEMBER_ROLE") ? "MEMBER_ROLE" : null
+
+      // Get voting power
+      const votingPower = await rolesContract.getVotingPower(owner)
+      const customVotingPower = await rolesContract.customVotingPower(owner)
+
+      // Get all token IDs for this owner
+      const tokenIds: number[] = []
+      for (let j = 0; j < Number(tokenCount); j++) {
+        try {
+          const tokenId = await membershipContract.tokenOfOwnerByIndex(owner, j)
+          tokenIds.push(Number(tokenId))
+        } catch (error) {
+          console.error(`Error getting token ${j} for ${owner}:`, error)
+        }
+      }
+
+      return {
+        address: owner,
+        tokenIds,
+        joinDate: Number(memberStats.joinDate) * 1000, // Convert to milliseconds
+        tokenCount: Number(tokenCount),
+        currentRole,
+        roles,
+        isActive: memberStats.isActive,
+        votingPower: Number(votingPower),
+        customVotingPower: Number(customVotingPower) > 0 ? Number(customVotingPower) : undefined
+      }
+    } catch (error) {
+      console.error(`Error loading member info for ${owner}:`, error)
+      return null
     }
   }
 
