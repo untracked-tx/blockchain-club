@@ -252,17 +252,11 @@ Our system eliminates the complexity that keeps blockchain technology from reach
 
 ### Funding and Partnership Strategy
 
-**Immediate Needs (Year 1): $500K-750K**
+**Immediate Needs**
 - Technical development and security audits
 - Pilot deployment and operations
 - Agent network establishment and training
 - Regulatory compliance and legal framework
-
-**Scaling Phase (Years 2-3): $1.5M-2M**
-- Multi-country expansion
-- Advanced feature development
-- Partnership integration
-- Impact measurement and evaluation
 
 **Strategic Partners:**
 - **Humanitarian Organizations**: WFP, UNHCR, Oxfam, Red Cross

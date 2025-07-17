@@ -19,7 +19,7 @@ Remember: Our small team size enables rapid iteration and experimentation, allow
 
 **The Vision:** Create a revolutionary blockchain-powered aid distribution system that makes humanitarian assistance accessible to anyone with a basic phone or even just a piece of paper. No crypto wallets, apps, or technical knowledge required.
 
-> **📖 Read the Full Proposal:** [Bridging the Gap: A Walletless Digital Cash System for Global Humanitarian Aid](/research#humanitarian-blockchain-initiative) - A comprehensive research document detailing technical architecture, implementation roadmap, and partnership strategies.
+> **📖 Read the Full Proposal:** [Bridging the Gap: A Walletless Digital Cash System for Global Humanitarian Aid](https://www.untrackedtx.xyz/research/humanitarian-blockchain-initiative) - A comprehensive research document detailing technical architecture, implementation roadmap, and partnership strategies.
 
 **Core Innovation:**
 - **Walletless Voucher System**: Recipients receive simple claim codes (SMS, paper, voice)
@@ -143,12 +143,13 @@ const RESEARCH_PROJECT_ACCESS = {
 - [ ] Deploy to Polygon mainnet
 - [ ] Launch Snapshot governance integration
 - [ ] Get 20+ club members with NFTs
+- [ ] **Finalize Members Lounge**: Complete member-only section with portfolio tracking, discussion forums, and exclusive content
+- [ ] **Launch Officers Club**: Implement officer-only governance tools, treasury oversight, and leadership coordination features
 
 **Humanitarian Initiative:**
 - [ ] Research partner organizations (Red Cross, local nonprofits)
 - [ ] Define project scope and technical requirements
 - [ ] Build MVP prototype
-- [ ] Present at university innovation showcase
 
 **Club Development:**
 - [ ] Document our architecture for other schools
@@ -201,12 +202,15 @@ const RESEARCH_PROJECT_ACCESS = {
 - [ ] **Meeting Attendance Tokens**: Soulbound NFTs for attending club meetings
 - [ ] **Skill Badges**: Tokens for completing trading simulations, coding challenges
 - [ ] **Event Access Control**: NFT-gated access to exclusive club events
+- [ ] **Members Lounge Polish**: Add final touches to member dashboard, discussion threads, and resource library
+- [ ] **Officers Club Security**: Implement multi-sig approval workflows and sensitive data protection
 
 ### **Month-Long Projects:**
 - [ ] **Club Treasury Dashboard**: Real-time visualization of club finances
 - [ ] **Member Recommendation Engine**: Match members for collaboration based on skills/interests
 - [ ] **Research Publication System**: Blockchain-verified authorship for club research
 - [ ] **Alumni Network Integration**: Permanent credentials for graduated members
+- [ ] **Complete Access Control System**: Finalize token-gated sections with seamless member/officer verification
 
 ---
 
@@ -272,7 +276,6 @@ Plus, these experiences look impressive on resumes and provide real blockchain d
 **Project Coordination:**
 * Website: https://untrackedtx.xyz
 * GitHub: https://github.com/untracked-tx/blockchain-club
-* Weekly Meetings: [Day/Time/Location]
 
 ---
 
