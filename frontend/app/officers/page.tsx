@@ -4742,10 +4742,10 @@ function DataExportSection({ members, whitelist, contractStats, isLoading }: Dat
       <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
         <div className="flex-1">
           <div className="text-sm text-gray-600 space-y-1">
-            <p>� <strong>{contractStats?.totalMembers || members.length}</strong> total members</p>
+            <p>👥 <strong>{contractStats?.totalMembers || members.length}</strong> total members</p>
             <p>⚡ <strong>{contractStats?.activeMembers || 0}</strong> active members</p>
             <p>🏆 <strong>{contractStats?.totalAdmins || 0}</strong> admins</p>
-            <p>�️ <strong>{contractStats?.totalOfficers || 0}</strong> officers</p>
+            <p>🛡️ <strong>{contractStats?.totalOfficers || 0}</strong> officers</p>
             <p>🎫 <strong>{contractStats?.totalSupply || 0}</strong> total tokens</p>
             <p>📊 <strong>{contractStats?.averageTokensPerMember || 0}</strong> avg tokens/member</p>
             <p>🗳️ <strong>{contractStats?.totalVotingPower || 0}</strong> total voting power</p>
