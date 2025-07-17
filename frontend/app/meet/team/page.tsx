@@ -5,11 +5,35 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Mail, Linkedin, Users, Crown, Key, Award, Shield, MapPin, GraduationCap, User, DollarSign, Github, ExternalLink } from "lucide-react"
+import { useState, useEffect } from "react"
 
 export default function MeetPage() {
+  const [showHidden, setShowHidden] = useState(false)
 
-  // Only show Liam Murphy for the main meet page
-  const clubMembers = [
+  useEffect(() => {
+    // Add console command to unlock team profiles
+    (window as any).unlockTeam = () => {
+      console.log('🔓 Team profiles unlocked');
+      setShowHidden(true);
+    };
+    
+    console.log('%cAdmin Console Available', 'color: #00ff00; font-weight: bold;');
+    console.log('%cType unlockTeam() to access full team profiles', 'color: #0099ff;');
+  }, []);
+
+  // All club members - some hidden by default
+  const allMembers = [
+    {
+      id: 2,
+      name: "Julie Jurkowski",
+      role: "President",
+      bio: "Julie combines hands-on experience at Comcast and Lockheed Martin with a drive to foster growth and accountability within the club. She's committed to building a culture where students turn data-driven ideas into real results, together.",
+      image: "/julie.jpg",
+      tokenType: "Officer",
+      email: "Julie.Jurkowski@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/julie-jurkowski/",
+      hidden: true, // Hidden until unlocked
+    },
     {
       id: 3,
       name: "Liam Murphy",
@@ -20,8 +44,35 @@ export default function MeetPage() {
       email: "liam.murphy@ucdenver.edu",
       linkedin: "https://www.linkedin.com/in/liam-m-582255340/",
       github: "https://github.com/untracked-tx",
+      hidden: false, // Always visible
+    },
+    {
+      id: 4,
+      name: "Samuel Sherrow",
+      role: "Member",
+      bio: "Sam is a senior product manager and MBA candidate who's led teams at S&P Global and top SaaS firms. With 15+ years connecting technology and finance, he helps the club link classroom concepts to industry trends—offering real-world insights on digital platforms, product strategy, and what it takes to succeed in finance.",
+      image: "/sam.jpg",
+      tokenType: "Member",
+      email: "Samuel.Sherrow@Ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/ssherrow/",
+      hidden: true, // Hidden until unlocked
+    },
+    {
+      id: 1,
+      name: "Dr. Yosef Bonaparte",
+      role: "Faculty Advisor",
+      bio: "Professor of Finance at CU Denver, Director of External Affairs, and leader of the MS in FinTech program. Founding faculty advisor and national expert in AI, crypto, and blockchain.",
+      image: "/yosef.jpg",
+      tokenType: "Advisor",
+      email: "yosef.bonaparte@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/yosef-bonaparte-22234aa6/",
+      website: "https://yosef-bonaparte.vercel.app",
+      hidden: true, // Hidden until unlocked
     },
   ]
+
+  // Filter members based on unlock status
+  const clubMembers = allMembers.filter(member => !member.hidden || showHidden)
 
   return (
     <div className="flex flex-col">
@@ -141,6 +192,18 @@ export default function MeetPage() {
                       >
                         <Github className="h-4 w-4 mr-2" />
                         GitHub
+                      </Button>
+                    )}
+                    {/* Website button only for Dr. Yosef Bonaparte */}
+                    {member.id === 1 && (
+                      <Button
+                        onClick={() => window.open(member.website, '_blank')}
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Portfolio
                       </Button>
                     )}
                   </div>

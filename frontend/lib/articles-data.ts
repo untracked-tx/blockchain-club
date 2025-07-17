@@ -59,34 +59,6 @@ export const researchArticles: Article[] = [
     filePath: "central-banks-vs-crypto.md"
   },
   {
-    id: "global-currency-analysis",
-    title: "One World, One Currency: Promise and Peril",
-    excerpt: "A comprehensive analysis of the economic implications of implementing a single global currency system, examining both the potential benefits and risks for developed and developing nations. This deep-dive explores historical precedents, theoretical frameworks, and real-world examples from the Eurozone to cryptocurrency adoption.",
-    content: "", // Will be loaded from markdown
-    author: "Liam Murphy",
-    date: "2025-06-10",
-    readTime: "15 min read",
-    category: "Monetary Policy",
-    tags: ["global currency", "monetary policy", "economic stability", "international trade", "eurozone", "cryptocurrency", "central banking"],
-    featured: true,
-    isMarkdown: true,
-    filePath: "global-currency-analysis.md"
-  },
-  {
-    id: "crypto-sustainability-revolution",
-    title: "The Green Blockchain Revolution: How Crypto Is Solving Its Sustainability Crisis",
-    excerpt: "From energy-guzzling mining operations to carbon-negative protocols, the cryptocurrency industry is undergoing a radical environmental transformation. Discover how blockchain went from climate villain to potential planetary savior.",
-    content: "", // Will be loaded from markdown
-    author: "Environmental Technology Team",
-    date: "2025-02-20",
-    readTime: "16 min read",
-    category: "Technology",
-    tags: ["sustainability", "environment", "proof-of-stake", "renewable energy", "carbon neutral", "climate change", "green technology", "ethereum"],
-    featured: true,
-    isMarkdown: true,
-    filePath: "crypto-sustainability-revolution.md"
-  },
-  {
     id: "bitcoin-temporal-cycles",
     title: "The Temporal Bitcoin Cycle: How Natural Market Rhythms Emerge in a Decentralized Currency System",
     excerpt: "An innovative research framework analyzing temporal patterns in Bitcoin blockchain data through the lens of behavioral finance, macroeconomics, and Hayekian economic theory. This groundbreaking analysis explores how natural market rhythms emerge without central banking intervention.",
