@@ -99,7 +99,7 @@ export default function Footer() {
 
         <div className="mt-8 border-t border-gray-200 pt-8 text-center">
           <p className="text-sm text-gray-600">
-            Released under the{" "}
+            © 2025 Blockchain Club • Open source and built with ❤️ & ☕ • Released under the {" "}
             <a 
               href="https://opensource.org/licenses/MIT" 
               target="_blank" 
@@ -108,7 +108,6 @@ export default function Footer() {
             >
               MIT License
             </a>
-            {" "}• Open source and built with ❤️ & ☕
           </p>
         </div>
       </div>
