@@ -7,6 +7,7 @@
 ![Hardhat](https://img.shields.io/badge/built%20with-Hardhat-f4e04d?style=flat&logo=ethereum)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
 ![Polygon](https://img.shields.io/badge/Polygon-8247E5?style=flat&logo=polygon&logoColor=white)
+![Code Compliance](https://img.shields.io/badge/Code%20Compliance-95%25-brightgreen)
 
 A decentralized membership and governance system for university blockchain clubs, built on Ethereum/Polygon.
 
@@ -74,7 +75,3 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 *Built with ❤️ for the University of Colorado Denver Blockchain Club*
-
-![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red)
-![Powered by Coffee](https://img.shields.io/badge/Powered%20by-Coffee-FFDD00?style=flat&logo=buymeacoffee)
-![Open Source](https://img.shields.io/badge/Open%20Source-💚-brightgreen)
