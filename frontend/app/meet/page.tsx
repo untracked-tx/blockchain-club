@@ -11,17 +11,6 @@ export default function MeetPage() {
   // Combine all club members into a single array
   const clubMembers = [
     {
-      id: 1,
-      name: "Dr. Yosef Bonaparte",
-      role: "Faculty Advisor",
-      bio: "Professor of Finance at CU Denver, Director of External Affairs, and leader of the MS in FinTech program. Founding faculty advisor and national expert in AI, crypto, and blockchain.",
-      image: "/yosef.jpg",
-      tokenType: "Advisor",
-      email: "yosef.bonaparte@ucdenver.edu",
-      linkedin: "https://www.linkedin.com/in/yosef-bonaparte-22234aa6/",
-      website: "https://yosef-bonaparte.vercel.app",
-    },
-    {
       id: 2,
       name: "Julie Jurkowski",
       role: "President",
@@ -51,6 +40,17 @@ export default function MeetPage() {
       tokenType: "Member",
       email: "Samuel.Sherrow@Ucdenver.edu",
       linkedin: "https://www.linkedin.com/in/ssherrow/",
+    },
+    {
+      id: 1,
+      name: "Dr. Yosef Bonaparte",
+      role: "Faculty Advisor",
+      bio: "Professor of Finance at CU Denver, Director of External Affairs, and leader of the MS in FinTech program. Founding faculty advisor and national expert in AI, crypto, and blockchain.",
+      image: "/yosef.jpg",
+      tokenType: "Advisor",
+      email: "yosef.bonaparte@ucdenver.edu",
+      linkedin: "https://www.linkedin.com/in/yosef-bonaparte-22234aa6/",
+      website: "https://yosef-bonaparte.vercel.app",
     },
   ]
 

@@ -12,6 +12,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { contracts } from "@/lib/contracts"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { getBlockchainErrorMessage, isPermissionError } from "@/lib/error-utils"
 
 // Token type configurations (fallback for UI display)
 const tokenTypeConfigs = {
@@ -225,36 +226,15 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
     } catch (err: any) {
       console.error("Minting error:", err);
       
-      // Check if it's a permission-related error
-      if (err.message?.includes("execution reverted")) {
-        if (err.message?.includes("Officers only") || err.reason?.includes("Officers only")) {
-          setPermissionError("OFFICER_REQUIRED");
-          return;
-        } else if (err.message?.includes("Not whitelisted") || err.reason?.includes("Not whitelisted")) {
-          setPermissionError("WHITELIST_REQUIRED");
-          return;
-        }
+      // Check if it's a permission-related error first
+      const permissionError = isPermissionError(err);
+      if (permissionError) {
+        setPermissionError(permissionError);
+        return;
       }
       
-      // Parse other types of errors for user-friendly messages
-      let errorMessage = "An error occurred while minting.";
-      
-      if (err.code === 4001 || err.message?.includes("User denied")) {
-        errorMessage = "Transaction was cancelled by user.";
-      } else if (err.message?.includes("Already minted") || err.reason?.includes("Already minted")) {
-        errorMessage = "You have already minted this token type.";
-      } else if (err.message?.includes("Max supply reached") || err.reason?.includes("Max supply reached")) {
-        errorMessage = "Maximum supply for this token has been reached.";
-      } else if (err.message?.includes("Token type not active") || err.reason?.includes("Token type not active")) {
-        errorMessage = "This token type is not currently available for minting.";
-      } else if (err.message?.includes("insufficient funds")) {
-        errorMessage = "Insufficient funds to complete the transaction.";
-      } else if (err.reason && !err.reason.includes("0x")) {
-        errorMessage = err.reason;
-      } else if (err.message && !err.message.includes("0x") && !err.message.includes("execution reverted")) {
-        errorMessage = err.message;
-      }
-      
+      // Get user-friendly error message
+      const errorMessage = getBlockchainErrorMessage(err);
       setError(errorMessage);
       setStep("");
     } finally {
