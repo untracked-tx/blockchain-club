@@ -29,7 +29,7 @@ const tokenTypeConfigs = {
     maxSupply: 10,
     mintAccess: "WHITELIST_ONLY",
     cost: "0.01 ETH",
-    soulbound: false,
+    soulbound: true,
     category: "governance"
   },
   OFFICER: {
@@ -38,7 +38,7 @@ const tokenTypeConfigs = {
     maxSupply: 2,
     mintAccess: "OFFICER_ONLY",
     cost: "Free",
-    soulbound: false,
+    soulbound: true,
     category: "governance"
   },
   // Supporter Tokens
@@ -494,7 +494,7 @@ export default function GalleryPage() {
       </section>
 
       {/* Enhanced Content Section */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 pb-20">
       <div className="mb-8 text-center">
         <h1 className="mb-4 text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
           Token Gallery

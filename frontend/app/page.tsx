@@ -28,7 +28,7 @@ export default function Home() {
               Next-Gen Blockchain Education
             </div>
             
-            <h1 className="mb-6 bg-gradient-to-r from-black via-[#CFB87C] to-[#565A5C] bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl">
+            <h1 className="mb-6 bg-gradient-to-r from-black via-[#CFB87C] to-[#565A5C] bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl pb-4">
               Blockchain & Crypto 
               <span className="block">Investing Club</span>
             </h1>

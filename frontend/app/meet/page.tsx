@@ -107,7 +107,7 @@ export default function MeetPage() {
                       <img
                         src={member.image || "/placeholder.svg"}
                         alt={member.name}
-                        className="w-24 h-24 rounded-full mx-auto border-3 border-gray-200 group-hover:border-blue-300 transition-all duration-300 object-cover shadow-lg"
+                        className="w-32 h-32 rounded-full mx-auto border-3 border-gray-200 group-hover:border-blue-300 transition-all duration-300 object-cover shadow-lg"
                       />
                       {/* Role badge */}
                       <div className="absolute -bottom-2 -right-2">
