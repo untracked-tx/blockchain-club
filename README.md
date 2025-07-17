@@ -2,7 +2,7 @@
 
 ![Club](https://img.shields.io/badge/Blockchain%20Club-%F0%9F%92%99-blue)
 ![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat&logo=solidity)
-![License](https://img.shields.io/github/license/untracked-tx/blockchain-club)
+![License](https://img.shields.io/badge/License-MIT-blue)
 ![Next.js](https://img.shields.io/badge/built%20with-Next.js-000?style=flat&logo=next.js)
 ![Hardhat](https://img.shields.io/badge/built%20with-Hardhat-f4e04d?style=flat&logo=ethereum)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
