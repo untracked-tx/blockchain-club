@@ -36,7 +36,8 @@ import {
   HelpCircle,
   Code,
   FileText,
-  ExternalLink
+  ExternalLink,
+  Zap
 } from "lucide-react"
 import { useToast } from "../../hooks/use-toast"
 import { ethers } from "ethers"
@@ -208,6 +209,14 @@ export default function OfficersPage() {
     type: "idle" | "loading" | "success" | "error"
     txHash?: string
   }>({ loading: false, message: "", type: "idle" })
+
+  // Batch operations state
+  const [batchWhitelistAddresses, setBatchWhitelistAddresses] = useState("")
+  const [batchRoleAddresses, setBatchRoleAddresses] = useState("")
+  const [batchWhitelistLoading, setBatchWhitelistLoading] = useState(false)
+  const [batchRoleLoading, setBatchRoleLoading] = useState(false)
+  const [selectedBatchRole, setSelectedBatchRole] = useState<"MEMBER_ROLE" | "OFFICER_ROLE">("MEMBER_ROLE")
+  const [batchOperation, setBatchOperation] = useState<"grant" | "revoke">("grant")
 
   // Wallet tokens modal state
   const [selectedWallet, setSelectedWallet] = useState<MemberData | null>(null)
@@ -476,163 +485,79 @@ export default function OfficersPage() {
       const totalSupply = await membershipContract.totalSupply()
       console.log(`[DEBUG] Loading member data for ${totalSupply} tokens`)
       const memberData: MemberData[] = []
-      const processedAddresses = new Set<string>()
 
-      // First, enumerate all tokens to get token holders
+      // Enumerate all tokens to get member data
       for (let i = 0; i < Number(totalSupply); i++) {
         try {
           const tokenId = await membershipContract.tokenByIndex(i)
           const owner = await membershipContract.ownerOf(tokenId)
           
           // Skip if we already have this owner
-          if (processedAddresses.has(owner.toLowerCase())) {
+          if (memberData.find(m => m.address.toLowerCase() === owner.toLowerCase())) {
             continue
           }
-          processedAddresses.add(owner.toLowerCase())
 
-          const memberInfo = await loadMemberInfo(owner)
-          if (memberInfo) {
-            memberData.push(memberInfo)
+          // Get member stats
+          const memberStats = await membershipContract.memberStats(owner)
+          const tokenCount = await membershipContract.balanceOf(owner)
+          
+          // Get current roles (users can have multiple roles)
+          const roles: ("ADMIN_ROLE" | "OFFICER_ROLE" | "MEMBER_ROLE")[] = []
+          const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
+          const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+          const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
+
+          if (await rolesContract.hasRole(adminRoleHash, owner)) {
+            roles.push("ADMIN_ROLE")
           }
+          if (await rolesContract.hasRole(officerRoleHash, owner)) {
+            roles.push("OFFICER_ROLE")
+          }
+          if (await rolesContract.hasRole(memberRoleHash, owner)) {
+            roles.push("MEMBER_ROLE")
+          }
+
+          // For display purposes, show the highest role as currentRole
+          // Priority order for display: Admin > Officer > Member
+          // Note: These are independent roles - having admin doesn't grant officer privileges automatically
+          const currentRole = roles.includes("ADMIN_ROLE") ? "ADMIN_ROLE" : 
+                             roles.includes("OFFICER_ROLE") ? "OFFICER_ROLE" :
+                             roles.includes("MEMBER_ROLE") ? "MEMBER_ROLE" : null
+
+          // Get voting power
+          const votingPower = await rolesContract.getVotingPower(owner)
+          const customVotingPower = await rolesContract.customVotingPower(owner)
+
+          // Get all token IDs for this owner
+          const tokenIds: number[] = []
+          for (let j = 0; j < Number(tokenCount); j++) {
+            const tokenId = await membershipContract.tokenOfOwnerByIndex(owner, j)
+            tokenIds.push(Number(tokenId))
+          }
+
+          memberData.push({
+            address: owner,
+            tokenIds,
+            joinDate: Number(memberStats.joinDate) * 1000, // Convert to milliseconds
+            tokenCount: Number(tokenCount),
+            currentRole,
+            roles,
+            isActive: memberStats.isActive,
+            votingPower: Number(votingPower),
+            customVotingPower: Number(customVotingPower) > 0 ? Number(customVotingPower) : undefined
+          })
         } catch (error) {
           console.error(`Error loading data for token ${i}:`, error)
         }
       }
 
-      // Then, check for role holders who might not have NFTs
-      const additionalAddresses = new Set<string>()
-      
-      // Add current user if connected and not already processed
-      if (userAddress && !processedAddresses.has(userAddress.toLowerCase())) {
-        additionalAddresses.add(userAddress)
-      }
-
-      // Try to get role members using AccessControlEnumerable functions
-      try {
-        const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
-        const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
-        const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
-
-        // Get all role holders
-        const roles = [adminRoleHash, officerRoleHash, memberRoleHash]
-        for (const roleHash of roles) {
-          try {
-            const roleCount = await rolesContract.getRoleMemberCount(roleHash)
-            for (let i = 0; i < Number(roleCount); i++) {
-              try {
-                const roleMember = await rolesContract.getRoleMember(roleHash, i)
-                if (!processedAddresses.has(roleMember.toLowerCase())) {
-                  additionalAddresses.add(roleMember)
-                }
-              } catch (error) {
-                console.error(`Error getting role member ${i} for role ${roleHash}:`, error)
-              }
-            }
-          } catch (error) {
-            console.error(`Error getting role members for role ${roleHash}:`, error)
-          }
-        }
-      } catch (error) {
-        console.error("Error enumerating role members:", error)
-      }
-
-      // Check these additional addresses for roles
-      for (const address of additionalAddresses) {
-        try {
-          const memberInfo = await loadMemberInfo(address)
-          if (memberInfo && memberInfo.roles.length > 0) {
-            memberData.push(memberInfo)
-            processedAddresses.add(address.toLowerCase())
-          }
-        } catch (error) {
-          console.error(`Error loading role data for ${address}:`, error)
-        }
-      }
-
       console.log(`[DEBUG] Found ${memberData.length} unique members`)
       console.log(`[DEBUG] Admin count: ${memberData.filter(m => m.roles.includes("ADMIN_ROLE")).length}`)
-      console.log(`[DEBUG] Officer count: ${memberData.filter(m => m.roles.includes("OFFICER_ROLE")).length}`)
+      console.log(`[DEBUG] Officer count: ${memberData.filter(m => m.roles.includes("OFFICER_ROLE") && !m.roles.includes("ADMIN_ROLE")).length}`)
       
       setMembers(memberData)
     } catch (error) {
       console.error("Failed to load member data:", error)
-    }
-  }
-
-  // Helper function to load member information for a given address
-  async function loadMemberInfo(owner: string): Promise<MemberData | null> {
-    if (!membershipContract || !rolesContract) return null
-
-    try {
-
-      // Get member stats (default values if no NFT)
-      let memberStats, tokenCount
-      try {
-        memberStats = await membershipContract.memberStats(owner)
-        tokenCount = await membershipContract.balanceOf(owner)
-      } catch (error) {
-        // If member stats fail, use defaults (for role-only members)
-        memberStats = { joinDate: 0, isActive: true }
-        tokenCount = 0
-      }
-      
-      // Get current roles (users can have multiple roles)
-      const roles: ("ADMIN_ROLE" | "OFFICER_ROLE" | "MEMBER_ROLE")[] = []
-      const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
-      const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
-      const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"))
-
-      if (await rolesContract.hasRole(adminRoleHash, owner)) {
-        roles.push("ADMIN_ROLE")
-      }
-      if (await rolesContract.hasRole(officerRoleHash, owner)) {
-        roles.push("OFFICER_ROLE")
-      }
-      if (await rolesContract.hasRole(memberRoleHash, owner)) {
-        roles.push("MEMBER_ROLE")
-      }
-
-      // Skip if this address has no roles and no NFTs
-      if (roles.length === 0 && Number(tokenCount) === 0) {
-        return null
-      }
-
-      // For display purposes, show the highest role as currentRole
-      // Priority order for display: Admin > Officer > Member
-      // Note: These are independent roles - having admin doesn't grant officer privileges automatically
-      const currentRole = roles.includes("ADMIN_ROLE") ? "ADMIN_ROLE" : 
-                         roles.includes("OFFICER_ROLE") ? "OFFICER_ROLE" :
-                         roles.includes("MEMBER_ROLE") ? "MEMBER_ROLE" : null
-
-      // Get voting power
-      const votingPower = await rolesContract.getVotingPower(owner)
-      const customVotingPower = await rolesContract.customVotingPower(owner)
-
-      // Get all token IDs for this owner
-      const tokenIds: number[] = []
-      for (let j = 0; j < Number(tokenCount); j++) {
-        try {
-          const tokenId = await membershipContract.tokenOfOwnerByIndex(owner, j)
-          tokenIds.push(Number(tokenId))
-        } catch (error) {
-          console.error(`Error getting token ${j} for ${owner}:`, error)
-        }
-      }
-
-      return {
-        address: owner,
-        tokenIds,
-        joinDate: Number(memberStats.joinDate) * 1000, // Convert to milliseconds
-        tokenCount: Number(tokenCount),
-        currentRole,
-        roles,
-        isActive: memberStats.isActive,
-        votingPower: Number(votingPower),
-        customVotingPower: Number(customVotingPower) > 0 ? Number(customVotingPower) : undefined
-      }
-    } catch (error) {
-      console.error(`Error loading member info for ${owner}:`, error)
-      return null
     }
   }
 
@@ -1129,6 +1054,121 @@ export default function OfficersPage() {
       })
     }
     setWhitelistLoading(false)
+  }
+
+  // Batch whitelist management functions
+  const updateWhitelistBatch = async (status: boolean) => {
+    if (!batchWhitelistAddresses.trim() || !membershipContract) {
+      toast({
+        title: "Error",
+        description: "Please enter valid addresses",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setBatchWhitelistLoading(true)
+    try {
+      // Parse addresses from textarea (split by lines, commas, or spaces)
+      const addresses = batchWhitelistAddresses
+        .split(/[\n,\s]+/)
+        .map(addr => addr.trim())
+        .filter(addr => addr.length > 0)
+
+      // Validate all addresses
+      for (const addr of addresses) {
+        if (!ethers.isAddress(addr)) {
+          throw new Error(`Invalid address format: ${addr}`)
+        }
+      }
+
+      const tx = await membershipContract.updateWhitelistBatch(addresses, status)
+      
+      toast({
+        title: "Transaction Submitted",
+        description: `${status ? "Adding" : "Removing"} ${addresses.length} addresses ${status ? "to" : "from"} whitelist...`,
+      })
+
+      await tx.wait()
+      
+      toast({
+        title: "Success",
+        description: `${addresses.length} addresses ${status ? "added to" : "removed from"} whitelist`,
+      })
+      
+      // Clear the input and refresh data
+      setBatchWhitelistAddresses("")
+      await loadContractData()
+    } catch (error: any) {
+      console.error("Failed to update whitelist batch:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update whitelist",
+        variant: "destructive"
+      })
+    }
+    setBatchWhitelistLoading(false)
+  }
+
+  // Batch role management functions
+  const updateRolesBatch = async () => {
+    if (!batchRoleAddresses.trim() || !rolesContract) {
+      toast({
+        title: "Error",
+        description: "Please enter valid addresses",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setBatchRoleLoading(true)
+    try {
+      // Parse addresses from textarea
+      const addresses = batchRoleAddresses
+        .split(/[\n,\s]+/)
+        .map(addr => addr.trim())
+        .filter(addr => addr.length > 0)
+
+      // Validate all addresses
+      for (const addr of addresses) {
+        if (!ethers.isAddress(addr)) {
+          throw new Error(`Invalid address format: ${addr}`)
+        }
+      }
+
+      const roleBytes32 = await rolesContract[selectedBatchRole]()
+      let tx
+
+      if (batchOperation === "grant") {
+        tx = await rolesContract.grantRoleBatch(roleBytes32, addresses)
+      } else {
+        tx = await rolesContract.revokeRoleBatch(roleBytes32, addresses)
+      }
+      
+      toast({
+        title: "Transaction Submitted",
+        description: `${batchOperation === "grant" ? "Granting" : "Revoking"} ${selectedBatchRole} ${batchOperation === "grant" ? "to" : "from"} ${addresses.length} addresses...`,
+      })
+
+      await tx.wait()
+      
+      toast({
+        title: "Success",
+        description: `${selectedBatchRole} ${batchOperation === "grant" ? "granted to" : "revoked from"} ${addresses.length} addresses`,
+      })
+      
+      // Clear the input and refresh data
+      setBatchRoleAddresses("")
+      await loadContractData()
+    } catch (error: any) {
+      console.error("Failed to update roles batch:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update roles",
+        variant: "destructive"
+      })
+    }
+    setBatchRoleLoading(false)
   }
 
   // Token burning function
@@ -2656,6 +2696,70 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                     {/* Individual Role Management Status */}
                     <StatusIndicator status={quickRoleSetupStatus} title="Role Management" />
 
+                    {/* Batch Role Management */}
+                    <div className="border-t pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-purple-600" />
+                          <Label className="text-sm font-semibold">Batch Role Management</Label>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Grant or revoke roles for multiple addresses at once. Enter one address per line, or separate with commas.
+                        </p>
+                        
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>Role Type</Label>
+                              <Select value={selectedBatchRole} onValueChange={(value: "MEMBER_ROLE" | "OFFICER_ROLE") => setSelectedBatchRole(value)}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="MEMBER_ROLE">Member Role</SelectItem>
+                                  <SelectItem value="OFFICER_ROLE">Officer Role</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Operation</Label>
+                              <Select value={batchOperation} onValueChange={(value: "grant" | "revoke") => setBatchOperation(value)}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="grant">Grant Role</SelectItem>
+                                  <SelectItem value="revoke">Revoke Role</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          
+                          <textarea
+                            placeholder="0x1234...&#10;0x5678...&#10;0xabcd..."
+                            value={batchRoleAddresses}
+                            onChange={(e) => setBatchRoleAddresses(e.target.value)}
+                            className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          
+                          <Button 
+                            onClick={updateRolesBatch}
+                            disabled={batchRoleLoading || !batchRoleAddresses.trim()}
+                            className={`w-full ${batchOperation === "grant" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
+                          >
+                            {batchRoleLoading ? (
+                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            ) : batchOperation === "grant" ? (
+                              <UserPlus className="mr-2 h-4 w-4" />
+                            ) : (
+                              <Trash2 className="mr-2 h-4 w-4" />
+                            )}
+                            {batchOperation === "grant" ? "Grant" : "Revoke"} {selectedBatchRole.replace("_", " ")} to All
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* How this works section */}
                     <div className="border-t pt-4">
                       <button
@@ -2676,7 +2780,7 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                       {showOfficerWhitelistHelp && (
                         <div className="mt-3 space-y-3 p-4 bg-gray-50 rounded-lg border">
                           <div className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
-                            Role Hierarchy & Best Practices
+                            Role Hierarchy & Contract Functions
                           </div>
                           
                           <div className="space-y-2">
@@ -2705,12 +2809,58 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             </div>
                           </div>
                           
+                          <div className="text-xs font-semibold text-gray-800 uppercase tracking-wide mt-4 mb-2">
+                            Contract Functions Available
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border">
+                              <Code className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-mono text-sm text-green-700">rolesContract.grantRole(role, address)</div>
+                                <div className="text-xs text-gray-600">Grant a single role to one address</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border">
+                              <Code className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-mono text-sm text-red-700">rolesContract.revokeRole(role, address)</div>
+                                <div className="text-xs text-gray-600">Revoke a single role from one address</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border border-purple-200 bg-purple-50">
+                              <Code className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-mono text-sm text-purple-700">rolesContract.grantRoleBatch(role, addresses[])</div>
+                                <div className="text-xs text-gray-600">Grant a role to multiple addresses in one transaction</div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Zap className="h-3 w-3 text-purple-500" />
+                                  <span className="text-xs text-purple-600">Gas efficient for bulk operations</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border border-purple-200 bg-purple-50">
+                              <Code className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-mono text-sm text-purple-700">rolesContract.revokeRoleBatch(role, addresses[])</div>
+                                <div className="text-xs text-gray-600">Revoke a role from multiple addresses in one transaction</div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Zap className="h-3 w-3 text-purple-500" />
+                                  <span className="text-xs text-purple-600">Gas efficient for bulk operations</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
                           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                             <div className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-2">
                               💡 Pro Tip
                             </div>
                             <div className="text-sm text-blue-700">
-                              For full functionality, users typically need multiple roles. For example, an officer should have both OFFICER_ROLE and MEMBER_ROLE to appear in all relevant lists and have full access.
+                              For full functionality, users typically need multiple roles. For example, an officer should have both OFFICER_ROLE and MEMBER_ROLE to appear in all relevant lists and have full access. Use batch operations when setting up multiple new members to save on gas costs.
                             </div>
                           </div>
                         </div>
@@ -3610,6 +3760,56 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                       </div>
                     )}
 
+                    {/* Batch Whitelist Management */}
+                    <div className="border-t pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-purple-600" />
+                          <Label className="text-sm font-semibold">Batch Whitelist Management</Label>
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Add or remove multiple addresses at once. Enter one address per line, or separate with commas.
+                        </p>
+                        
+                        <div className="space-y-3">
+                          <textarea
+                            placeholder="0x1234...&#10;0x5678...&#10;0xabcd..."
+                            value={batchWhitelistAddresses}
+                            onChange={(e) => setBatchWhitelistAddresses(e.target.value)}
+                            className="w-full h-24 px-3 py-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <Button 
+                              onClick={() => updateWhitelistBatch(true)}
+                              disabled={batchWhitelistLoading || !batchWhitelistAddresses.trim()}
+                              className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {batchWhitelistLoading ? (
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Plus className="mr-2 h-4 w-4" />
+                              )}
+                              Add All to Whitelist
+                            </Button>
+                            <Button 
+                              onClick={() => updateWhitelistBatch(false)}
+                              disabled={batchWhitelistLoading || !batchWhitelistAddresses.trim()}
+                              variant="destructive"
+                              className="disabled:opacity-50"
+                            >
+                              {batchWhitelistLoading ? (
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="mr-2 h-4 w-4" />
+                              )}
+                              Remove All from Whitelist
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* How this works section */}
                     <div className="border-t pt-4">
                       <button
@@ -3648,6 +3848,18 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                               <div className="flex-1">
                                 <div className="font-mono text-sm text-green-700">membershipContract.updateWhitelist()</div>
                                 <div className="text-xs text-gray-600">Adds or removes addresses from whitelist</div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Lock className="h-3 w-3 text-orange-500" />
+                                  <span className="text-xs text-orange-600">Requires OFFICER_ROLE signature</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-3 p-2 bg-white rounded border border-purple-200 bg-purple-50">
+                              <Users className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-mono text-sm text-purple-700">membershipContract.updateWhitelistBatch()</div>
+                                <div className="text-xs text-gray-600">Batch adds or removes multiple addresses from whitelist</div>
                                 <div className="flex items-center gap-1 mt-1">
                                   <Lock className="h-3 w-3 text-orange-500" />
                                   <span className="text-xs text-orange-600">Requires OFFICER_ROLE signature</span>
