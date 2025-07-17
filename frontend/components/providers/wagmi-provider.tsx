@@ -2,14 +2,15 @@
 
 import { type ReactNode, useMemo } from "react"
 import {
-  getDefaultConfig,
   RainbowKitProvider,
-  darkTheme,
   lightTheme,
+  connectorsForWallets,
+  getDefaultWallets,
 } from "@rainbow-me/rainbowkit"
-import { WagmiConfig, createConfig, http } from "wagmi"
+import { WagmiProvider, createConfig, http } from "wagmi"
 import { polygon, mainnet, Chain } from "wagmi/chains"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { safeWallet } from "@rainbow-me/rainbowkit/wallets"
 
 const amoy: Chain = {
   id: 80002,
@@ -31,20 +32,48 @@ const amoy: Chain = {
 const queryClient = new QueryClient()
 
 export function WagmiConfigProvider({ children }: { children: React.ReactNode }) {
-  const config = useMemo(() => getDefaultConfig({
-    appName: "Blockchain & Crypto Investing Club",
-    projectId: "c36cf795c5c39aee1fe031a681e3f23b",
-    chains: [polygon, mainnet, amoy],
-    transports: {
-      [polygon.id]: http(),
-      [mainnet.id]: http(),
-      [amoy.id]: http(),
-    },
-    ssr: false,
-  }), []);
+  const config = useMemo(() => {
+    const chains = [polygon, mainnet, amoy] as const
+    
+    // Get default wallets from RainbowKit
+    const { wallets } = getDefaultWallets({
+      appName: "Blockchain & Crypto Investing Club",
+      projectId: "c36cf795c5c39aee1fe031a681e3f23b",
+    });
+
+    // Add Safe wallet to the existing wallet groups
+    const walletsWithSafe = [
+      {
+        groupName: 'Popular',
+        wallets: [
+          ...wallets[0]?.wallets || [],
+          safeWallet, // Add Safe wallet here
+        ],
+      },
+      // Include any other wallet groups that might exist
+      ...wallets.slice(1),
+    ];
+
+    const connectors = connectorsForWallets(walletsWithSafe, {
+      appName: "Blockchain & Crypto Investing Club",
+      projectId: "c36cf795c5c39aee1fe031a681e3f23b",
+    });
+
+    // Create wagmi config with all connectors including Safe
+    return createConfig({
+      chains,
+      connectors,
+      transports: {
+        [polygon.id]: http(),
+        [mainnet.id]: http(),
+        [amoy.id]: http(),
+      },
+      ssr: false,
+    });
+  }, []);
 
   return (
-    <WagmiConfig config={config}>
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           theme={lightTheme({
@@ -58,6 +87,6 @@ export function WagmiConfigProvider({ children }: { children: React.ReactNode })
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
-    </WagmiConfig>
+    </WagmiProvider>
   );
 }

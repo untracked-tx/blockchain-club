@@ -109,7 +109,7 @@ New to blockchain development? Start here:
 
 Contributors will be:
 
-- Listed in [HUMANS.md](../HUMANS.md)
+- Listed in [HUMANS.md](HUMANS.md)
 - Credited in release notes
 - Eligible for club membership NFTs
 - Invited to present at club meetings

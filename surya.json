@@ -1,4 +1,0 @@
-{
-  "input": "contracts/*.sol",
-  "output": "docs/contract-graph.dot"
-}

@@ -36,10 +36,11 @@ export default function MeetPage() {
       name: "Liam Murphy",
       role: "Treasurer",
       bio: "Treasurer of the Blockchain Club and is currently pursuing an MS in Finance at CU Denver. He's dedicated to making finance and blockchain accessible to all students, and is passionate about building a transparent, supportive community where everyone can learn and grow together.",
-      image: "/205283431.png",
+      image: "/tres-hs.png",
       tokenType: "Officer",
       email: "liam.murphy@ucdenver.edu",
       linkedin: "https://www.linkedin.com/in/liam-m-582255340/",
+      github: "https://github.com/untracked-tx",
     },
     {
       id: 4,
@@ -161,6 +162,18 @@ export default function MeetPage() {
                       <Linkedin className="h-4 w-4 mr-2" />
                       LinkedIn
                     </Button>
+                    {/* GitHub button only for Liam Murphy */}
+                    {member.id === 3 && member.github && (
+                      <Button
+                        onClick={() => window.open(member.github, '_blank')}
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+                      >
+                        <Github className="h-4 w-4 mr-2" />
+                        GitHub
+                      </Button>
+                    )}
                     {/* Website button only for Dr. Yosef Bonaparte */}
                     {member.id === 1 && (
                       <Button

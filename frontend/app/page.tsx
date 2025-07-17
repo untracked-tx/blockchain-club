@@ -171,148 +171,160 @@ export default function Home() {
                 </svg>
               </div>
 
-              {/* Dynamic Grid Layout */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-5xl mx-auto items-center">
+              {/* Uniform Partners Grid */}
+              <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
                 
-                {/* Polygon - Large Feature */}
-                <div className="col-span-2 md:col-span-2">
+                {/* Polygon */}
+                <div className="w-56">
                   <a 
                     href="https://polygon.technology/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="group relative block"
                   >
-                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#8247E5]/10 via-transparent to-[#6B46C1]/10 p-8 h-48 border border-[#8247E5]/20 transition-all duration-500 hover:border-[#8247E5]/50 hover:scale-105 hover:rotate-1">
-                      {/* Subtle ambient background */}
-                      <div className="absolute inset-0 opacity-20">
-                        <div className="absolute top-8 right-8 w-3 h-3 bg-[#8247E5]/30 rounded-full opacity-60"></div>
-                        <div className="absolute bottom-12 left-8 w-2 h-2 bg-[#CFB87C]/40 rounded-full opacity-50"></div>
-                        <div className="absolute top-16 left-12 w-1 h-1 bg-[#8247E5]/25 rounded-full opacity-70"></div>
-                        {/* Gentle gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#8247E5]/5 via-transparent to-[#CFB87C]/5 opacity-50"></div>
-                      </div>
-                      
-                      <div className="relative z-10 flex items-center justify-center h-full">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#8247E5]/10 to-transparent p-6 h-20 border border-[#8247E5]/20 transition-all duration-300 hover:border-[#8247E5]/50 hover:scale-105 hover:rotate-1">
+                      <div className="flex items-center justify-center h-full">
                         <img 
                           src="/logos/Polygon_Primary_Light.svg" 
                           alt="Polygon" 
-                          className="w-56 h-56 object-contain transition-all duration-500 group-hover:scale-110 filter group-hover:drop-shadow-lg"
+                          className="w-36 h-14 object-contain transition-all duration-300 group-hover:scale-110"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              parent.innerHTML = '<div class="w-56 h-56 bg-gradient-to-br from-[#8247E5] to-[#6B46C1] rounded-2xl flex items-center justify-center text-white font-bold text-4xl">POL</div>';
+                              parent.innerHTML = '<div class="w-36 h-14 bg-gradient-to-br from-[#8247E5] to-[#6B46C1] rounded-xl flex items-center justify-center text-white font-bold text-xl">POL</div>';
                             }
                           }}
                         />
                       </div>
-                      
-                      {/* Subtle label */}
-                      <div className="absolute bottom-4 left-6 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="text-xs text-[#8247E5] font-medium tracking-wide">NETWORK</div>
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#8247E5] rounded-full animate-pulse"></div>
+                      <div className="absolute bottom-2 left-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <div className="text-xs text-[#8247E5] font-medium">Network</div>
                       </div>
                     </div>
                   </a>
                 </div>
 
-                {/* Connecting Element */}
-                <div className="hidden md:flex col-span-1 justify-center items-center">
-                  <div className="w-px h-16 bg-gradient-to-b from-transparent via-[#CFB87C]/50 to-transparent"></div>
-                </div>
-
-                {/* CoinGecko & Safe - Stacked */}
-                <div className="col-span-2 md:col-span-2 space-y-4">
-                  
-                  {/* CoinGecko - Compact */}
+                {/* CoinGecko */}
+                <div className="w-56">
                   <a 
                     href="https://www.coingecko.com/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="group relative block"
                   >
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#8DC647]/10 to-transparent p-4 h-20 border border-[#8DC647]/20 transition-all duration-300 hover:border-[#8DC647]/50 hover:scale-105 hover:-rotate-1">
-                      <div className="flex items-center justify-center h-full space-x-4">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#8DC647]/10 to-transparent p-6 h-20 border border-[#8DC647]/20 transition-all duration-300 hover:border-[#8DC647]/50 hover:scale-105 hover:-rotate-1">
+                      <div className="flex items-center justify-center h-full">
                         <img 
                           src="/logos/coingecko-white.svg" 
                           alt="CoinGecko" 
-                          className="w-32 h-12 object-contain transition-all duration-300 group-hover:scale-110"
+                          className="w-36 h-14 object-contain transition-all duration-300 group-hover:scale-110"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              parent.innerHTML = '<div class="w-32 h-12 bg-gradient-to-br from-[#8DC647] to-[#7CB342] rounded-xl flex items-center justify-center text-white text-xl">🦎</div>';
+                              parent.innerHTML = '<div class="w-36 h-14 bg-gradient-to-br from-[#8DC647] to-[#7CB342] rounded-xl flex items-center justify-center text-white text-xl">🦎</div>';
                             }
                           }}
                         />
-                        <div className="opacity-60 group-hover:opacity-100 transition-opacity">
-                          <div className="text-xs text-[#8DC647] font-medium tracking-wide">DATA</div>
-                        </div>
                       </div>
-                      
-                      {/* Floating accent */}
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#8DC647] rounded-full animate-pulse"></div>
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#8DC647] rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                      <div className="absolute bottom-2 left-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <div className="text-xs text-[#8DC647] font-medium">Data</div>
+                      </div>
                     </div>
                   </a>
+                </div>
 
-                  {/* Safe - Compact */}
+                {/* Safe */}
+                <div className="w-56">
                   <a 
                     href="https://safe.global/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="group relative block"
                   >
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#12FF80]/10 to-transparent p-4 h-20 border border-[#12FF80]/20 transition-all duration-300 hover:border-[#12FF80]/50 hover:scale-105 hover:rotate-1">
-                      <div className="flex items-center justify-center h-full space-x-4">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#12FF80]/10 to-transparent p-6 h-20 border border-[#12FF80]/20 transition-all duration-300 hover:border-[#12FF80]/50 hover:scale-105 hover:rotate-1">
+                      <div className="flex items-center justify-center h-full">
                         <img 
                           src="/logos/Safe_Logos_H-Lockup_White.svg" 
                           alt="Safe" 
-                          className="w-32 h-12 object-contain transition-all duration-300 group-hover:scale-110"
+                          className="w-36 h-14 object-contain transition-all duration-300 group-hover:scale-110"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              parent.innerHTML = '<div class="w-32 h-12 bg-gradient-to-br from-[#12FF80] to-[#00E673] rounded-xl flex items-center justify-center text-gray-900 text-xl font-bold">🔒</div>';
+                              parent.innerHTML = '<div class="w-36 h-14 bg-gradient-to-br from-[#12FF80] to-[#00E673] rounded-xl flex items-center justify-center text-gray-900 font-bold text-xl">🔒</div>';
                             }
                           }}
                         />
-                        <div className="opacity-60 group-hover:opacity-100 transition-opacity">
-                          <div className="text-xs text-[#12FF80] font-medium tracking-wide">SECURITY</div>
-                        </div>
                       </div>
-                      
-                      {/* Floating accent */}
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#12FF80] rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#12FF80] rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                      <div className="absolute bottom-2 left-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <div className="text-xs text-[#12FF80] font-medium">Security</div>
+                      </div>
                     </div>
                   </a>
+                </div>
 
-                  {/* Wagami - Compact */}
+                {/* Rainbow Wallet */}
+                <div className="w-56">
+                  <a 
+                    href="https://rainbow.me/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="group relative block"
+                  >
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FF8CDA]/10 to-[#FFF500]/10 p-6 h-20 border border-[#FF8CDA]/20 transition-all duration-300 hover:border-[#FF8CDA]/50 hover:scale-105 hover:-rotate-1">
+                      <div className="flex items-center justify-center h-full">
+                        <img 
+                          src="/logos/idXcLraLs3_logos.svg" 
+                          alt="Rainbow Wallet" 
+                          className="w-36 h-14 object-contain transition-all duration-300 group-hover:scale-110"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-36 h-14 bg-gradient-to-br from-[#FF8CDA] to-[#FFF500] rounded-xl flex items-center justify-center text-gray-900 font-bold text-xl">🌈</div>';
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-[#FF8CDA] rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+                      <div className="absolute bottom-2 left-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <div className="text-xs text-[#FF8CDA] font-medium">Wallet</div>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+
+                {/* Wagami */}
+                <div className="w-56">
                   <a 
                     href="https://wagami.xyz/" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="group relative block"
                   >
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white/10 to-transparent p-4 h-20 border border-white/20 transition-all duration-300 hover:border-white/50 hover:scale-105 hover:-rotate-1">
-                      <div className="flex items-center justify-center h-full space-x-4">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white/10 to-transparent p-6 h-20 border border-white/20 transition-all duration-300 hover:border-white/50 hover:scale-105 hover:rotate-1">
+                      <div className="flex items-center justify-center h-full">
                         <img 
                           src="/logos/logo-dark.svg" 
                           alt="Wagami" 
-                          className="w-32 h-12 object-contain transition-all duration-300 group-hover:scale-110"
+                          className="w-36 h-14 object-contain transition-all duration-300 group-hover:scale-110"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              parent.innerHTML = '<div class="w-32 h-12 bg-gradient-to-br from-white to-gray-200 rounded-xl flex items-center justify-center text-gray-900 text-xl font-bold">🌊</div>';
+                              parent.innerHTML = '<div class="w-36 h-14 bg-gradient-to-br from-white to-gray-200 rounded-xl flex items-center justify-center text-gray-900 font-bold text-xl">🌊</div>';
                             }
                           }}
                         />
-                        <div className="opacity-60 group-hover:opacity-100 transition-opacity">
-                          <div className="text-xs text-white font-medium tracking-wide">DEFI</div>
-                        </div>
                       </div>
-                      
-                      {/* Floating accent */}
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '2s'}}></div>
+                      <div className="absolute bottom-2 left-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <div className="text-xs text-white font-medium">Web3</div>
+                      </div>
                     </div>
                   </a>
                 </div>

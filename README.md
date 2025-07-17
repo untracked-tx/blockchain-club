@@ -58,7 +58,7 @@ npx hardhat run scripts/deployAll.ts --network amoy
 We welcome contributions! This project started as a solo effort by [Liam Murphy](mailto:Liam.Murphy@ucdenver.edu) but is open to community involvement.
 
 - See our [Contributing Guide](./docs/CONTRIBUTING.MD)
-- Check out the [Humans behind the code](./HUMANS.md)
+- Check out the [Humans behind the code](./docs/HUMANS.md)
 - Join our weekly meetings (Thursdays 6pm)
 
 ## 📄 License

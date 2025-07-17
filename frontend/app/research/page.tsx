@@ -75,7 +75,7 @@ export default function ResearchPage() {
 
 		// Check for O Club secret keyword
 		if (searchQuery.toLowerCase().trim() === "capt_satoshi") {
-			router.push("/oclub?key=authorized")
+			router.push("/oclub?key=MesshallMischief")
 			return
 		}
 		// Normal search functionality is handled by the filter below

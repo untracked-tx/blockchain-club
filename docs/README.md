@@ -41,7 +41,7 @@ Complete technical specification and system overview for the blockchain membersh
 ## 🤝 **Community**
 
 - **[Contributing Guide](CONTRIBUTING.MD)** - How to contribute to the project
-- **[Humans](../HUMANS.md)** - The people behind the code
+- **[Humans](HUMANS.md)** - The people behind the code
 
 ---
 
