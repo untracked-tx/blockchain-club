@@ -75,3 +75,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 *Built with ❤️ for the University of Colorado Denver Blockchain Club*
+
+![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red)
+![Powered by Coffee](https://img.shields.io/badge/Powered%20by-Coffee-FFDD00?style=flat&logo=buymeacoffee)
+![Open Source](https://img.shields.io/badge/Open%20Source-💚-brightgreen)
