@@ -93,10 +93,7 @@ interface ContractStats {
   totalAdmins: number
   totalOfficers: number
   totalSupply: number
-  activeMembers: number
-  averageTokensPerMember: number
-  totalVotingPower: number
-  tokenTypeCount: number
+  whitelistedCount: number
 }
 
 interface TokenTypeData {
@@ -356,31 +353,30 @@ export default function OfficersPage() {
     }
   }, [members])
 
+  // Update stats when whitelist changes
+  useEffect(() => {
+    if (members.length > 0) {
+      updateStatsFromMembers()
+    }
+  }, [whitelist])
+
   // Centralized function to update all stats from members data
   const updateStatsFromMembers = () => {
     const adminCount = members.filter(m => m.roles.includes("ADMIN_ROLE")).length
     // Count all users with OFFICER_ROLE (independent of admin status)
     const officerCount = members.filter(m => m.roles.includes("OFFICER_ROLE")).length
     
-    // Calculate enhanced metrics
-    const activeMembers = members.filter(m => m.isActive).length
-    const totalTokens = members.reduce((sum, m) => sum + m.tokenCount, 0)
-    const averageTokensPerMember = members.length > 0 
-      ? Math.round((totalTokens / members.length) * 100) / 100 
-      : 0
-    const totalVotingPower = members.reduce((sum, m) => sum + m.votingPower, 0)
+    // Also update whitelist count from current whitelist data
+    const whitelistedCount = whitelist.length
     
-    console.log(`[DEBUG] Enhanced stats: ${members.length} members, ${adminCount} admins, ${officerCount} officers, ${activeMembers} active, ${averageTokensPerMember} avg tokens/member, ${totalVotingPower} total voting power`)
+    console.log(`[DEBUG] Updating stats: ${members.length} members, ${adminCount} admins, ${officerCount} officers, ${whitelistedCount} whitelisted`)
     
     setContractStats(prev => prev ? {
       ...prev,
       totalMembers: members.length, // Update with actual unique member count
       totalAdmins: adminCount,
       totalOfficers: officerCount,
-      activeMembers: activeMembers,
-      averageTokensPerMember: averageTokensPerMember,
-      totalVotingPower: totalVotingPower,
-      totalSupply: totalTokens
+      whitelistedCount: whitelistedCount
     } : null)
   }
 
@@ -389,91 +385,50 @@ export default function OfficersPage() {
 
     setPublicStatsLoading(true)
     try {
-      console.log("[DEBUG] Loading enhanced public contract stats...")
+      console.log("[DEBUG] Loading public contract stats...")
       
       // Get basic contract stats
       const [totalSupply] = await Promise.all([
         membershipContract.totalSupply()
       ])
 
-      // Enhanced data collection
+      // Get role counts by enumerating through tokens (simplified version)
       const memberAddresses = new Set<string>()
       const adminAddresses = new Set<string>()
       const officerAddresses = new Set<string>()
-      const tokensByMember = new Map<string, number>()
-      let totalVotingPower = 0
-      let activeMembers = 0
       
-      // Enumerate tokens to get comprehensive member data
-      for (let i = 0; i < Math.min(Number(totalSupply), 200); i++) { // Increased limit for better data
+      // Enumerate tokens to get unique member addresses and their roles
+      for (let i = 0; i < Math.min(Number(totalSupply), 100); i++) { // Limit to first 100 for performance
         try {
           const tokenId = await membershipContract.tokenByIndex(i)
           const owner = await membershipContract.ownerOf(tokenId)
-          const ownerLower = owner.toLowerCase()
           
-          memberAddresses.add(ownerLower)
+          memberAddresses.add(owner.toLowerCase())
           
-          // Count tokens per member
-          const currentCount = tokensByMember.get(ownerLower) || 0
-          tokensByMember.set(ownerLower, currentCount + 1)
-          
-          // Check if this is the first time we're seeing this member
-          if (currentCount === 0) {
-            // Check roles for this member
-            const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
-            const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+          // Check roles for this member
+          const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
+          const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
 
-            if (await rolesContract.hasRole(adminRoleHash, owner)) {
-              adminAddresses.add(ownerLower)
-            }
-            if (await rolesContract.hasRole(officerRoleHash, owner)) {
-              officerAddresses.add(ownerLower)
-            }
-
-            // Get voting power and activity status
-            try {
-              const votingPower = await rolesContract.getVotingPower(owner)
-              const memberStats = await membershipContract.memberStats(owner)
-              
-              totalVotingPower += Number(votingPower)
-              if (memberStats.isActive) {
-                activeMembers++
-              }
-            } catch (error) {
-              console.error(`Error getting member stats for ${owner}:`, error)
-            }
+          if (await rolesContract.hasRole(adminRoleHash, owner)) {
+            adminAddresses.add(owner.toLowerCase())
+          }
+          if (await rolesContract.hasRole(officerRoleHash, owner)) {
+            officerAddresses.add(owner.toLowerCase())
           }
         } catch (error) {
           console.error(`Error checking token ${i}:`, error)
         }
       }
 
-      // Get token type count
-      let tokenTypeCount = 0
-      try {
-        const allTokenTypeIds = await membershipContract.getAllTokenTypeIds()
-        tokenTypeCount = allTokenTypeIds.length
-      } catch (error) {
-        console.error("Error getting token types:", error)
-      }
-
-      // Calculate average tokens per member
-      const averageTokensPerMember = memberAddresses.size > 0 
-        ? Math.round((Number(totalSupply) / memberAddresses.size) * 100) / 100 
-        : 0
-
       setContractStats({
         totalMembers: memberAddresses.size,
         totalAdmins: adminAddresses.size,
         totalOfficers: officerAddresses.size,
         totalSupply: Number(totalSupply),
-        activeMembers,
-        averageTokensPerMember,
-        totalVotingPower,
-        tokenTypeCount
+        whitelistedCount: 0 // Will be updated if user is an officer
       })
 
-      console.log(`[DEBUG] Enhanced stats loaded: ${memberAddresses.size} members, ${adminAddresses.size} admins, ${officerAddresses.size} officers, ${Number(totalSupply)} total supply, ${activeMembers} active, ${averageTokensPerMember} avg tokens/member, ${totalVotingPower} total voting power, ${tokenTypeCount} token types`)
+      console.log(`[DEBUG] Public stats loaded: ${memberAddresses.size} members, ${adminAddresses.size} admins, ${officerAddresses.size} officers, ${Number(totalSupply)} total supply`)
     } catch (error) {
       console.error("Failed to load public contract stats:", error)
     } finally {
@@ -500,10 +455,7 @@ export default function OfficersPage() {
         totalAdmins: 0, // Will be updated after member data loads
         totalOfficers: 0, // Will be updated after member data loads
         totalSupply: Number(tokenSupply),
-        activeMembers: 0, // Will be updated after member data loads
-        averageTokensPerMember: 0, // Will be updated after member data loads
-        totalVotingPower: 0, // Will be updated after member data loads
-        tokenTypeCount: 0 // Will be updated after token types load
+        whitelistedCount: 0 // Will be updated after whitelist data loads
       })
 
       // Load member data first (this provides role counts and addresses for whitelist)
@@ -657,12 +609,6 @@ export default function OfficersPage() {
 
       console.log(`[DEBUG] Final token types data:`, tokenTypesData)
       setTokenTypes(tokenTypesData)
-      
-      // Update token type count in stats
-      setContractStats(prev => prev ? {
-        ...prev,
-        tokenTypeCount: tokenTypesData.length
-      } : null)
       
       if (tokenTypesData.length === 0) {
         console.log("[DEBUG] No configured token types found. Use 'Create Token Type' to add some!")
@@ -2209,23 +2155,22 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
             {/* POL Requests Management */}
             <PolRequestsDashboard />
 
-            {/* Data Management */}
+            {/* Data Management Section */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5" />
+                  <BarChart3 className="h-5 w-5" />
                   Data Management
                 </CardTitle>
                 <CardDescription>
-                  Export club data for analysis, record-keeping, and reporting
+                  Export custom CSV reports with selected member data for club management and analytics
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <DataExportSection 
-                  members={members} 
-                  whitelist={whitelist} 
-                  contractStats={contractStats}
-                  isLoading={membersLoading || whitelistLoading} 
+                  members={members}
+                  whitelist={whitelist}
+                  isLoading={membersLoading || whitelistLoading}
                 />
               </CardContent>
             </Card>
@@ -4458,38 +4403,35 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
 
       </div>
       </div>
-    </div>
-  )
 }
 
+// Data Export Section Component
 interface DataExportSectionProps {
   members: MemberData[]
   whitelist: WhitelistEntry[]
-  contractStats: ContractStats | null
   isLoading: boolean
 }
 
-function DataExportSection({ members, whitelist, contractStats, isLoading }: DataExportSectionProps) {
+function DataExportSection({ members, whitelist, isLoading }: DataExportSectionProps) {
   const [selectedFields, setSelectedFields] = useState<string[]>([
     'address', 'tokenCount', 'currentRole', 'isActive'
   ])
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv')
+  const [includeWhitelist, setIncludeWhitelist] = useState(false)
   const { toast } = useToast()
 
   const availableFields = [
     { key: 'address', label: 'Wallet Address', category: 'Basic' },
     { key: 'tokenCount', label: 'Token Count', category: 'Basic' },
-    { key: 'currentRole', label: 'Primary Role', category: 'Basic' },
+    { key: 'currentRole', label: 'Current Role', category: 'Basic' },
     { key: 'isActive', label: 'Active Status', category: 'Basic' },
     { key: 'joinDate', label: 'Join Date', category: 'Basic' },
     { key: 'votingPower', label: 'Voting Power', category: 'Governance' },
     { key: 'customVotingPower', label: 'Custom Voting Power', category: 'Governance' },
     { key: 'tokenIds', label: 'Token IDs (Array)', category: 'Tokens' },
     { key: 'roles', label: 'All Roles (Array)', category: 'Roles' },
-    { key: 'totalTokensOwned', label: 'Total Tokens Owned', category: 'Analytics' },
-    { key: 'membershipDuration', label: 'Days as Member', category: 'Analytics' },
-    { key: 'roleCount', label: 'Number of Roles', category: 'Analytics' },
-    { key: 'hasCustomVoting', label: 'Has Custom Voting Power', category: 'Analytics' },
+    { key: 'whitelistStatus', label: 'Whitelist Status', category: 'Whitelist' },
+    { key: 'whitelistDate', label: 'Whitelist Date', category: 'Whitelist' },
   ]
 
   const fieldCategories = [...new Set(availableFields.map(f => f.category))]
@@ -4518,45 +4460,53 @@ function DataExportSection({ members, whitelist, contractStats, isLoading }: Dat
     
     switch (fieldKey) {
       case 'joinDate':
-        return value ? new Date(value).toLocaleDateString() : ''
+      case 'whitelistDate':
+        return value ? new Date(value * 1000).toLocaleDateString() : ''
       case 'tokenIds':
       case 'roles':
         return Array.isArray(value) ? value.join(';') : ''
       case 'isActive':
-      case 'hasCustomVoting':
+      case 'whitelistStatus':
         return value ? 'Yes' : 'No'
-      case 'membershipDuration':
-        return `${value} days`
-      case 'totalTokensOwned':
-      case 'roleCount':
-      case 'votingPower':
-      case 'customVotingPower':
-        return String(value || 0)
       default:
         return String(value)
     }
   }
 
   const generateExportData = () => {
-    // Create enhanced member data with analytics
+    // Create enhanced member data with whitelist info
     const enhancedMembers = members.map(member => {
-      const membershipDuration = Math.floor((Date.now() - member.joinDate) / (1000 * 60 * 60 * 24))
+      const whitelistEntry = whitelist.find(w => w.address.toLowerCase() === member.address.toLowerCase())
       return {
         ...member,
-        totalTokensOwned: member.tokenCount,
-        membershipDuration: membershipDuration,
-        roleCount: member.roles.length,
-        hasCustomVoting: !!member.customVotingPower,
-        // Format join date for better readability
-        joinDateFormatted: new Date(member.joinDate).toLocaleDateString(),
-        // Role summary
-        rolesSummary: member.roles.join(', ') || 'No roles',
-        // Token IDs as comma-separated string for easier CSV reading
-        tokenIdsString: member.tokenIds.join(', ')
+        whitelistStatus: !!whitelistEntry,
+        whitelistDate: whitelistEntry?.timestamp || null
       }
     })
 
-    return enhancedMembers
+    // Add whitelist-only entries if requested
+    let exportData = enhancedMembers
+    if (includeWhitelist) {
+      const whitelistOnlyEntries = whitelist
+        .filter(w => !members.find(m => m.address.toLowerCase() === w.address.toLowerCase()))
+        .map(w => ({
+          address: w.address,
+          tokenCount: 0,
+          currentRole: null,
+          isActive: false,
+          joinDate: null,
+          votingPower: 0,
+          customVotingPower: null,
+          tokenIds: [],
+          roles: [],
+          whitelistStatus: true,
+          whitelistDate: w.timestamp
+        }))
+      
+      exportData = [...enhancedMembers, ...whitelistOnlyEntries]
+    }
+
+    return exportData
   }
 
   const exportToCSV = () => {
@@ -4694,6 +4644,19 @@ function DataExportSection({ members, whitelist, contractStats, isLoading }: Dat
       </div>
 
       {/* Include Whitelist Option */}
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="includeWhitelist"
+          checked={includeWhitelist}
+          onChange={(e) => setIncludeWhitelist(e.target.checked)}
+          className="h-4 w-4"
+        />
+        <label htmlFor="includeWhitelist" className="text-sm font-medium">
+          Include whitelist-only addresses (addresses that are whitelisted but don't own tokens)
+        </label>
+      </div>
+
       {/* Field Selection */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -4742,14 +4705,11 @@ function DataExportSection({ members, whitelist, contractStats, isLoading }: Dat
       <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t">
         <div className="flex-1">
           <div className="text-sm text-gray-600 space-y-1">
-            <p>� <strong>{contractStats?.totalMembers || members.length}</strong> total members</p>
-            <p>⚡ <strong>{contractStats?.activeMembers || 0}</strong> active members</p>
-            <p>🏆 <strong>{contractStats?.totalAdmins || 0}</strong> admins</p>
-            <p>�️ <strong>{contractStats?.totalOfficers || 0}</strong> officers</p>
-            <p>🎫 <strong>{contractStats?.totalSupply || 0}</strong> total tokens</p>
-            <p>📊 <strong>{contractStats?.averageTokensPerMember || 0}</strong> avg tokens/member</p>
-            <p>🗳️ <strong>{contractStats?.totalVotingPower || 0}</strong> total voting power</p>
-            <p>🎭 <strong>{contractStats?.tokenTypeCount || 0}</strong> token types</p>
+            <p>📊 <strong>{members.length}</strong> total members</p>
+            <p>📝 <strong>{whitelist.length}</strong> whitelisted addresses</p>
+            {includeWhitelist && (
+              <p>📋 <strong>{whitelist.filter(w => !members.find(m => m.address.toLowerCase() === w.address.toLowerCase())).length}</strong> whitelist-only addresses</p>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
@@ -4763,6 +4723,9 @@ function DataExportSection({ members, whitelist, contractStats, isLoading }: Dat
           </Button>
         </div>
       </div>
+    </div>
+  )
+}
     </div>
   )
 }

@@ -60,33 +60,31 @@ export class TransactionService {
     address: string, 
     limit: number = 50,
     offset: number = 0
-  ): Promise<TransactionResponse> {
+  ): Promise<TransactionResponse & { failedChains?: string[] }> {
     const allTransactions: Transaction[] = []
-    
+    const failedChains: string[] = [];
     // Fetch transactions from multiple chains in parallel
     const chainPromises = Object.entries(CHAIN_CONFIGS).map(async ([chainKey, config]) => {
       try {
         console.log(`🔍 Fetching ${config.name} transactions for ${address}`)
-        
         const response = await fetch(
           `/api/transactions?chain=${chainKey}&address=${address}&limit=${limit}&offset=${offset}`
         )
-        
         if (!response.ok) {
           console.warn(`Failed to fetch ${config.name} transactions:`, response.status)
+          failedChains.push(config.name)
           return []
         }
-        
         const data = await response.json()
-        
         if (data.status !== '1' || !data.result) {
-          console.warn(`No transactions found for ${config.name}`)
+          console.warn(`No transactions found for ${config.name} (status: ${data.status}, message: ${data.message || ''})`)
+          failedChains.push(config.name)
           return []
         }
-        
         return this.parseTransactions(data.result || [], config.name)
       } catch (error) {
         console.warn(`Error fetching ${config.name} transactions:`, error)
+        failedChains.push(config.name)
         return []
       }
     })
@@ -100,7 +98,8 @@ export class TransactionService {
     return {
       transactions: allTransactions.slice(0, limit),
       total: allTransactions.length,
-      hasMore: allTransactions.length >= limit
+      hasMore: allTransactions.length >= limit,
+      failedChains
     }
   }
 

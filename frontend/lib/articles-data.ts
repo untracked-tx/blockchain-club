@@ -89,7 +89,7 @@ export const researchArticles: Article[] = [
   {
     id: "layer2-scaling-solutions",
     title: "The Great Ethereum Escape: How Layer 2 Networks Are Rescuing Crypto from $100 Gas Fees",
-    excerpt: "While Ethereum users hemorrhaged billions in transaction fees, a new generation of Layer 2 networks quietly built the infrastructure to save cryptocurrency from itself. From Arbitrum's optimistic gamble to Polygon's aggressive expansion, discover how scaling solutions turned from experimental sideshows into the main event.",
+    excerpt: "While Ethereum users hemorhaged billions in transaction fees, a new generation of Layer 2 networks quietly built the infrastructure to save cryptocurrency from itself. From Arbitrum's optimistic gamble to Polygon's aggressive expansion, discover how scaling solutions turned from experimental sideshows into the main event.",
     content: "", // Will be loaded from markdown
     author: "Julian Guiteau",
     date: "2024-12-28",

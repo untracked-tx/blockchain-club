@@ -99,9 +99,31 @@ export async function POST(request: NextRequest) {
              Date.now() - req.timestamp < 24 * 60 * 60 * 1000 // 24 hours
     )
     
+    // Debug logging
+    console.log(`🔍 Checking recent requests for ${address}:`)
+    console.log(`📋 Total requests found: ${requests.length}`)
+    console.log(`⏰ Current time: ${new Date().toISOString()}`)
+    if (recentRequest) {
+      console.log(`🔄 Recent request found:`, {
+        id: recentRequest.id,
+        status: recentRequest.status,
+        timestamp: recentRequest.timestamp,
+        createdAt: recentRequest.createdAt,
+        timeDiff: Date.now() - recentRequest.timestamp,
+        hoursAgo: (Date.now() - recentRequest.timestamp) / (60 * 60 * 1000)
+      })
+    } else {
+      console.log(`✅ No recent requests found for this address`)
+    }
+    
     if (recentRequest && recentRequest.status === "funded") {
+      const hoursAgo = (Date.now() - recentRequest.timestamp) / (60 * 60 * 1000)
       return NextResponse.json(
-        { error: "You've already received POL in the last 24 hours" },
+        { 
+          error: `You've already received POL ${hoursAgo.toFixed(1)} hours ago. Please wait ${(24 - hoursAgo).toFixed(1)} more hours.`,
+          lastRequest: recentRequest.createdAt,
+          waitTime: Math.ceil(24 - hoursAgo)
+        },
         { status: 429 }
       )
     }

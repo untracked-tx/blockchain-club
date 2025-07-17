@@ -21,6 +21,8 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
   const [isRequestingPol, setIsRequestingPol] = useState(false)
   const [chainAdded, setChainAdded] = useState(false)
   const [polRequested, setPolRequested] = useState(false)
+  const [polRequestStatus, setPolRequestStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'rate-limited'>('idle')
+  const [polRequestMessage, setPolRequestMessage] = useState('')
   
   const { toast } = useToast()
   const { address, isConnected } = useAccount()
@@ -49,23 +51,26 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
       setChainAdded(true)
       setCurrentStep(2)
       toast({
-        title: "✅ Chain Added!",
-        description: "Polygon Amoy network successfully added to MetaMask",
+        title: "✅ Network Added Successfully!",
+        description: "Polygon Amoy network is now available in MetaMask. You can proceed to get POL.",
+        duration: 5000,
       })
     } catch (error: any) {
       console.error("Failed to add Amoy:", error)
       if (error.code === 4902) {
         toast({
-          title: "Network Already Added",
-          description: "Polygon Amoy is already in your MetaMask",
+          title: "ℹ️ Network Already Added",
+          description: "Polygon Amoy is already configured in your MetaMask. Proceeding to next step.",
+          duration: 4000,
         })
         setChainAdded(true)
         setCurrentStep(2)
       } else {
         toast({
-          title: "Error",
-          description: "Failed to add network. Please try again.",
-          variant: "destructive"
+          title: "❌ Network Error",
+          description: "Failed to add network. Please try manually or check your MetaMask.",
+          variant: "destructive",
+          duration: 6000,
         })
       }
     } finally {
@@ -77,6 +82,9 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
     if (!address) return
     
     setIsRequestingPol(true)
+    setPolRequestStatus('loading')
+    setPolRequestMessage('Submitting your POL request...')
+    
     try {
       const response = await fetch("/api/request-pol", {
         method: "POST",
@@ -93,35 +101,55 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
       
       if (response.ok) {
         setPolRequested(true)
-        setCurrentStep(3)
+        setPolRequestStatus('success')
+        // Don't auto-advance to step 3 - let user see the success message
         
         if (data.status === "pending") {
+          setPolRequestMessage('✅ POL request submitted successfully! Usually processed within a few hours.')
           toast({
             title: "🪙 POL Request Submitted!",
             description: data.message || "Your request has been submitted. Usually processed within a few hours.",
+            duration: 6000,
           })
         } else {
+          setPolRequestMessage('✅ Request already exists! You have a pending request.')
           toast({
             title: "✅ Request Already Exists",
             description: "You already have a pending request. Check back soon!",
+            duration: 6000,
           })
         }
       } else {
+        setPolRequestStatus('error')
         if (response.status === 429) {
+          setPolRequestStatus('rate-limited')
+          const waitTime = data.waitTime ? `Please wait ${data.waitTime} more hours.` : 'Please wait before requesting again.'
+          setPolRequestMessage(`⏰ Rate limited: ${waitTime}`)
           toast({
             title: "⏰ Too Soon",
             description: data.error || "You've recently received POL. Please wait before requesting again.",
-            variant: "destructive"
+            variant: "destructive",
+            duration: 8000,
           })
         } else {
-          throw new Error(data.error || "Request failed")
+          setPolRequestMessage(`❌ Request failed: ${data.error || 'Unknown error'}`)
+          toast({
+            title: "❌ Request Failed",
+            description: data.error || "Something went wrong. Please try again.",
+            variant: "destructive",
+            duration: 6000,
+          })
         }
       }
     } catch (err) {
+      setPolRequestStatus('error')
+      const errorMessage = err instanceof Error ? err.message : "Network error occurred"
+      setPolRequestMessage(`❌ Error: ${errorMessage}`)
       toast({
         title: "Request Failed",
         description: err instanceof Error ? err.message : "Something went wrong. Try again or contact support.",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 6000,
       })
     } finally {
       setIsRequestingPol(false)
@@ -132,8 +160,9 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
     if (address) {
       navigator.clipboard.writeText(address)
       toast({
-        title: "Address Copied!",
-        description: "Wallet address copied to clipboard",
+        title: "📋 Address Copied!",
+        description: "Your wallet address has been copied to clipboard.",
+        duration: 3000,
       })
     }
   }
@@ -153,26 +182,60 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6 pb-4">
-          {/* Progress Indicator */}
+          {/* Progress Indicator with Navigation */}
           <div className="flex items-center justify-between px-2">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div className={`
-                  w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center font-mono text-xs sm:text-sm
-                  ${currentStep >= step 
-                    ? 'bg-green-500/20 border-green-400 text-green-400' 
-                    : 'border-gray-600 text-gray-400'
-                  }
-                `}>
-                  {currentStep > step ? <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" /> : step}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => currentStep > 1 && setCurrentStep(currentStep - 1)}
+              disabled={currentStep === 1}
+              className="font-mono text-xs p-1 h-6 w-6"
+            >
+              ←
+            </Button>
+            
+            <div className="flex items-center">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <button
+                    onClick={() => setCurrentStep(step)}
+                    className={`
+                      w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center font-mono text-xs sm:text-sm transition-all duration-200 hover:scale-105
+                      ${currentStep >= step 
+                        ? 'bg-green-500/20 border-green-400 text-green-400' 
+                        : 'border-gray-600 text-gray-400 hover:border-gray-500'
+                      }
+                    `}
+                  >
+                    {currentStep > step ? <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" /> : step}
+                  </button>
+                  {step < 3 && (
+                    <div className={`w-8 sm:w-16 h-0.5 mx-1 sm:mx-2 transition-colors duration-300 ${
+                      currentStep > step ? 'bg-green-400' : 'bg-gray-600'
+                    }`} />
+                  )}
                 </div>
-                {step < 3 && (
-                  <div className={`w-8 sm:w-16 h-0.5 mx-1 sm:mx-2 ${
-                    currentStep > step ? 'bg-green-400' : 'bg-gray-600'
-                  }`} />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => currentStep < 3 && setCurrentStep(currentStep + 1)}
+              disabled={currentStep === 3}
+              className="font-mono text-xs p-1 h-6 w-6"
+            >
+              →
+            </Button>
+          </div>
+
+          {/* Step Title */}
+          <div className="text-center">
+            <h3 className="font-mono text-sm text-gray-400">
+              {currentStep === 1 && "Step 1: Add Network"}
+              {currentStep === 2 && "Step 2: Get POL Tokens"}
+              {currentStep === 3 && "Step 3: Mint Membership"}
+            </h3>
           </div>
 
           {/* Current Step Content */}
@@ -193,12 +256,15 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
                   <Button 
                     onClick={addPolygonAmoy}
                     disabled={isAddingChain || chainAdded}
-                    className="w-full font-mono text-xs sm:text-sm bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30"
+                    className="w-full font-mono text-xs sm:text-sm bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30 transition-all duration-200"
                   >
                     {isAddingChain ? (
-                      <>⏳ Adding Network...</>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
+                        Adding Network...
+                      </div>
                     ) : chainAdded ? (
-                      <>✅ Network Added</>
+                      <>✅ Network Added Successfully</>
                     ) : (
                       <>🌐 Add Polygon Amoy to MetaMask</>
                     )}
@@ -257,16 +323,44 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
                       // Request free testnet POL for minting membership tokens
                     </p>
                     
+                    {/* POL Request Status Display */}
+                    {polRequestStatus !== 'idle' && (
+                      <div className={`p-3 rounded-lg border font-mono text-xs sm:text-sm ${
+                        polRequestStatus === 'loading' ? 'bg-blue-500/10 border-blue-400/30 text-blue-400' :
+                        polRequestStatus === 'success' ? 'bg-green-500/10 border-green-400/30 text-green-400' :
+                        polRequestStatus === 'rate-limited' ? 'bg-yellow-500/10 border-yellow-400/30 text-yellow-400' :
+                        'bg-red-500/10 border-red-400/30 text-red-400'
+                      }`}>
+                        <div className="flex items-center gap-2">
+                          {polRequestStatus === 'loading' && (
+                            <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                          )}
+                          <span>{polRequestMessage}</span>
+                        </div>
+                      </div>
+                    )}
+                    
                     {!hasBalance && (
                       <Button 
                         onClick={handleRequestPol}
                         disabled={!isConnected || isRequestingPol || polRequested}
-                        className="w-full font-mono text-xs sm:text-sm bg-blue-500/20 border border-blue-400/50 text-blue-400 hover:bg-blue-500/30"
+                        className={`w-full font-mono text-xs sm:text-sm transition-all duration-200 ${
+                          polRequestStatus === 'success' ? 'bg-green-500/20 border-green-400/50 text-green-400' :
+                          polRequestStatus === 'error' || polRequestStatus === 'rate-limited' ? 'bg-red-500/20 border-red-400/50 text-red-400' :
+                          'bg-blue-500/20 border-blue-400/50 text-blue-400 hover:bg-blue-500/30'
+                        }`}
                       >
                         {isRequestingPol ? (
-                          <>⏳ Requesting POL...</>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin"></div>
+                            Requesting POL...
+                          </div>
                         ) : polRequested ? (
                           <>✅ POL Requested</>
+                        ) : polRequestStatus === 'rate-limited' ? (
+                          <>⏰ Rate Limited - Try Later</>
+                        ) : polRequestStatus === 'error' ? (
+                          <>🔄 Try Again</>
                         ) : (
                           <>🪙 Request Free POL (Testnet)</>
                         )}
@@ -289,14 +383,25 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
                       >
                         ← Back
                       </Button>
-                      {(hasBalance || polRequested) && (
+                      
+                      {/* Show continue button when POL is available OR requested successfully */}
+                      {(hasBalance || polRequestStatus === 'success') && (
                         <Button 
                           onClick={() => setCurrentStep(3)}
-                          className="flex-1 font-mono text-xs sm:text-sm bg-gray-500/20 border border-gray-400/50 text-gray-300 hover:bg-gray-500/30"
+                          className="flex-1 font-mono text-xs sm:text-sm bg-violet-500/20 border border-violet-400/50 text-violet-400 hover:bg-violet-500/30"
                         >
-                          Continue to Next Step
+                          {hasBalance ? 'Ready to Mint!' : 'Continue to Minting'}
                           <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                         </Button>
+                      )}
+                      
+                      {/* Show help text if POL request is pending */}
+                      {polRequestStatus === 'success' && !hasBalance && (
+                        <div className="flex-1 bg-violet-500/10 border border-violet-400/30 p-2 rounded-lg">
+                          <p className="text-violet-400 font-mono text-xs text-center">
+                            💡 Your POL request is being processed. You can continue to learn about minting!
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>

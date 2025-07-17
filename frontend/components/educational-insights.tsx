@@ -206,11 +206,19 @@ export function EducationalInsights({ assets }: EducationalInsightsProps) {
           
           {/* Special note about Polygon */}
           {relevantAssets.some(asset => ['POL', 'MATIC'].includes(asset.symbol)) && (
-            <div className="mt-4 p-4 bg-purple-50 border border-purple-100 rounded-lg">
-              <div className="text-sm text-purple-800 leading-relaxed">
-                <strong>About Our Polygon Deployment:</strong> Our Blockchain Club smart contracts are natively deployed on the Polygon network, 
-                enabling fast and affordable club operations. We're grateful to the Polygon development team for their support 
-                in making blockchain technology accessible to students.
+            <div className="mt-4 p-6 bg-gradient-to-r from-purple-50 via-violet-50 to-indigo-50 border border-purple-200/60 rounded-xl shadow-sm">
+              <div className="flex items-start gap-4">
+                <div>
+                  <h4 className="text-base font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                    About Our Polygon Deployment
+                    <span className="text-purple-600">⚡</span>
+                  </h4>
+                  <p className="text-sm text-purple-800 leading-relaxed">
+                    Our Blockchain Club smart contracts are natively deployed on the Polygon network, 
+                    enabling fast and affordable club operations. We're grateful to the Polygon development team for their support 
+                    in making blockchain technology accessible to students.
+                  </p>
+                </div>
               </div>
             </div>
           )}

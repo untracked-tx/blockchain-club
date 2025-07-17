@@ -243,7 +243,7 @@ export default function PortfolioPage() {
           <div className="absolute top-40 right-20 w-40 h-40 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-1000"></div>
           <div className="absolute bottom-20 left-40 w-36 h-36 bg-white/20 rounded-full mix-blend-overlay filter blur-xl animate-pulse delay-2000"></div>
         </div>
-        
+
         <div className="container relative mx-auto px-4 text-center">
           <div className="mx-auto max-w-4xl">
             {/* Floating Badge */}
@@ -267,6 +267,21 @@ export default function PortfolioPage() {
             </div>
           </div>
         </div>
+        {/* Subtle Quote - absolutely positioned at the bottom of the banner, outside all content */}
+        <span className="pointer-events-auto select-text absolute left-1/2 -translate-x-1/2 bottom-8 z-20 text-emerald-100 text-sm opacity-70 italic max-w-2xl px-2">
+          Regarding the Great Depression ... we did it. We're very sorry. ... We won't do it again."<br />
+          <span className="not-italic">–Ben Bernanke, November 8, 2002,</span>
+          {" "}
+          <a
+            href="https://www.federalreserve.gov/boarddocs/speeches/2002/20021108/default.htm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-emerald-50 hover:text-white ml-1"
+            tabIndex={0}
+          >
+            source
+          </a>
+        </span>
       </section>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50">
@@ -1309,7 +1324,22 @@ export default function PortfolioPage() {
                       <p className="text-sm text-gray-600">Recent treasury activity across all chains</p>
                     </div>
                   </div>
-                  <TransactionHistory walletAddress={MULTISIG_WALLET} />
+                  <div className="px-4 py-3 bg-gray-50/50 border border-gray-100 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Info className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 mb-1">Treasury Transaction History</h4>
+                        <a
+                          href="https://blockscan.com/address/0x0A1a8e1fFe25B63E3965FaEbe230e498AfC7EAb6?chainid=1"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-700 underline hover:text-blue-900 text-xs"
+                        >
+                          View all treasury transactions on Blockscan Explorer
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -1334,18 +1364,22 @@ export default function PortfolioPage() {
         </TabsContent>      </Tabs>
       
       {/* Treasury Footnote */}
-      <div className="mb-8 mt-4 px-4 py-3 bg-gray-50/50 border border-gray-100 rounded-lg">
-        <div className="flex items-start gap-3">
-          <Info className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-1">About Our Treasury</h4>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Our treasury prioritizes investments in blockchain projects that advance environmental sustainability and social impact. We focus on proof-of-stake networks, carbon-neutral protocols, and projects that support financial inclusion and community empowerment. Treasury decisions and investments are made through governance votes by members holding voting tokens, with all decisions guided by ESG principles.
-            </p>
+      <div className="mb-8 mt-4 rounded-lg bg-gradient-to-r from-emerald-50 via-green-50 to-blue-50 border border-emerald-200/60 shadow-sm">
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div>
+              <h4 className="text-base font-semibold text-emerald-900 mb-3 flex items-center gap-2">
+                About Our Treasury
+                <span className="text-emerald-600">🌱</span>
+              </h4>
+              <p className="text-sm text-emerald-800 leading-relaxed">
+                Our treasury prioritizes investments in blockchain projects that advance environmental sustainability and social impact. We focus on proof-of-stake networks, carbon-neutral protocols, and projects that support financial inclusion and community empowerment. Treasury decisions and investments are made through governance votes by members holding voting tokens, with all decisions guided by ESG principles.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      
+
       {/* Educational Insights Section */}
       <div className="mb-8">
         <EducationalInsights 
