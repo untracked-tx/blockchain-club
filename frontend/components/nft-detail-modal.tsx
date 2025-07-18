@@ -12,7 +12,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { contracts } from "@/lib/contracts"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
-import { getBlockchainErrorMessage, isPermissionError } from "@/lib/error-utils"
+import { getBlockchainErrorMessage, isPermissionError, retryWithBackoff, getSmartGasParams } from "@/lib/error-utils"
 
 // Token type configurations (fallback for UI display)
 const tokenTypeConfigs = {
@@ -214,8 +214,11 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
       
       setStep("Confirming transaction...");
       
-      // Use publicMint for all cases - the contract handles access control
-      const tx = await contract.publicMint(tokenNameBytes32, isSoulbound);
+      // Use retry logic with smart gas estimation
+      const tx = await retryWithBackoff(async () => {
+        const gasParams = await getSmartGasParams(contract, 'publicMint', [tokenNameBytes32, isSoulbound]);
+        return await contract.publicMint(tokenNameBytes32, isSoulbound, gasParams);
+      }, 3);
       
       setStep("Transaction submitted. Waiting for confirmation...");
       setTxHash(tx.hash);
@@ -230,6 +233,7 @@ export default function NFTDetailModal({ isOpen, onClose, token }: NFTDetailModa
       const permissionError = isPermissionError(err);
       if (permissionError) {
         setPermissionError(permissionError);
+        setStep("");
         return;
       }
       
