@@ -48,6 +48,13 @@ async function saveRequests(requests: PolRequest[]) {
 
 // GET - Fetch all requests (admin only)
 export async function GET(request: NextRequest) {
+  // Add CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+
   try {
     console.log("=== DEBUGGING ENVIRONMENT VARIABLES ===")
     console.log("UPSTASH_REDIS_REST_URL:", process.env.UPSTASH_REDIS_REST_URL)
@@ -71,7 +78,7 @@ export async function GET(request: NextRequest) {
           urlLength: process.env.UPSTASH_REDIS_REST_URL?.length || 0,
           tokenLength: process.env.UPSTASH_REDIS_REST_TOKEN?.length || 0
         }
-      }, { status: 500 })
+      }, { status: 500, headers: corsHeaders })
     }
     
     // Try to create Redis client with cleaned credentials
@@ -93,7 +100,7 @@ export async function GET(request: NextRequest) {
         funded: requests.filter(r => r.status === "funded").length,
         rejected: requests.filter(r => r.status === "rejected").length
       }
-    })
+    }, { headers: corsHeaders })
   } catch (error) {
     console.error("Error fetching admin requests:", error)
     
@@ -108,7 +115,7 @@ export async function GET(request: NextRequest) {
           hasToken: !!process.env.UPSTASH_REDIS_REST_TOKEN
         }
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     )
   }
 }
@@ -190,4 +197,16 @@ export async function DELETE(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+// OPTIONS - Handle preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }

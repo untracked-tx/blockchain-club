@@ -20,7 +20,7 @@ module.exports = {
   },
   networks: {
     amoy: {
-      url: "https://rpc-amoy.polygon.technology",
+      url: "https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa",
       accounts: [process.env.PRIVATE_KEY],
     },
   },

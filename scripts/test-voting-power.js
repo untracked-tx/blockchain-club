@@ -2,7 +2,7 @@ const ethers = require("ethers");
 require("dotenv").config();
 const rolesArtifact = require("./artifacts/contracts/Roles.sol/Roles.json");
 
-const AMOY_RPC = "https://rpc-amoy.polygon.technology";
+const AMOY_RPC = "https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa";
 const provider = new ethers.JsonRpcProvider(AMOY_RPC);
 
 // Get your wallet address from env or hardcode for testing  

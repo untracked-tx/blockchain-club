@@ -21,7 +21,7 @@ const amoy: Chain = {
     decimals: 18,
   },
   rpcUrls: {
-    default: { http: ["https://rpc-amoy.polygon.technology/"] },
+    default: { http: ["https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa"] },
   },
   blockExplorers: {
     default: { name: "Amoy Polygonscan", url: "https://amoy.polygonscan.com/" },

@@ -857,8 +857,21 @@ export default function OfficersPage() {
       } else if (error.message?.includes("insufficient funds")) {
         userFriendlyMessage = "Insufficient funds for gas fees"
         statusMessage = "Insufficient gas fees"
-      } else if (error.message?.includes("could not coalesce error")) {
-        userFriendlyMessage = "Polygon Amoy is having a moment 🎭 - try again in a few seconds!"
+      } else if (error.message?.includes("could not coalesce error") || 
+                 error.message?.includes("network") || 
+                 error.message?.includes("timeout") ||
+                 error.message?.includes("failed to fetch")) {
+        userFriendlyMessage = `🎭 Polygon Amoy is Having Drama Queen Vibes
+
+Don't panic! The testnet is just being extra theatrical today.
+
+Quick fixes to try:
+1. Hit retry - sometimes testnets need a pep talk
+2. Wait 30-60 seconds for the network mood to improve  
+3. Check if your MetaMask is feeling cooperative
+4. Grab some coffee - testnets have commitment issues 😅
+
+Your role grant is totally valid, the network is just having an identity crisis!`
         statusMessage = "Network being dramatic"
       } else if (error.shortMessage) {
         userFriendlyMessage = error.shortMessage
@@ -1060,9 +1073,37 @@ export default function OfficersPage() {
       await loadContractData()
     } catch (error: any) {
       console.error("Failed to add to whitelist:", error)
+      
+      let userFriendlyMessage = "Failed to add to whitelist"
+      
+      if (error.code === 4001) {
+        userFriendlyMessage = "Transaction was cancelled by user"
+      } else if (error.message?.includes("insufficient funds")) {
+        userFriendlyMessage = "Insufficient funds for gas fees"
+      } else if (error.message?.includes("OFFICER_ROLE")) {
+        userFriendlyMessage = "You don't have permission to manage the whitelist. Officer role required."
+      } else if (error.message?.includes("could not coalesce error") || 
+                 error.message?.includes("network") || 
+                 error.message?.includes("timeout") ||
+                 error.message?.includes("failed to fetch")) {
+        userFriendlyMessage = `🎟️ Polygon Amoy is Having VIP List Anxiety
+
+The testnet bouncer is being picky about who gets on the list today!
+
+Quick fixes to try:
+1. Hit retry - sometimes bouncers need a second opinion
+2. Wait 30-60 seconds for the VIP coordinator to sort things out
+3. Make sure your MetaMask has its credentials ready
+4. Grab a drink - exclusive clubs have exclusive problems! 🍸
+
+Your whitelist request is totally valid, the network is just being selective!`
+      } else if (error.message) {
+        userFriendlyMessage = error.message
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to add to whitelist",
+        description: userFriendlyMessage,
         variant: "destructive"
       })
     }
@@ -1104,9 +1145,37 @@ export default function OfficersPage() {
       await loadContractData()
     } catch (error: any) {
       console.error("Failed to remove from whitelist:", error)
+      
+      let userFriendlyMessage = "Failed to remove from whitelist"
+      
+      if (error.code === 4001) {
+        userFriendlyMessage = "Transaction was cancelled by user"
+      } else if (error.message?.includes("insufficient funds")) {
+        userFriendlyMessage = "Insufficient funds for gas fees"
+      } else if (error.message?.includes("OFFICER_ROLE")) {
+        userFriendlyMessage = "You don't have permission to manage the whitelist. Officer role required."
+      } else if (error.message?.includes("could not coalesce error") || 
+                 error.message?.includes("network") || 
+                 error.message?.includes("timeout") ||
+                 error.message?.includes("failed to fetch")) {
+        userFriendlyMessage = `🚫 Polygon Amoy's VIP Bouncer is Having Trust Issues
+
+The testnet can't decide who should be kicked out of the exclusive club!
+
+Quick fixes to try:
+1. Hit retry - even bouncers make mistakes
+2. Wait 30-60 seconds for the security team to sort it out
+3. Double-check your MetaMask isn't having an identity crisis
+4. Take a timeout - exclusive clubs are complicated! 🥂
+
+Your removal request is perfectly reasonable, the network is just being indecisive!`
+      } else if (error.message) {
+        userFriendlyMessage = error.message
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to remove from whitelist",
+        description: userFriendlyMessage,
         variant: "destructive"
       })
     }
@@ -1603,8 +1672,21 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
         userFriendlyMessage = "You don't have permission to mint tokens. Officer role required."
         statusMessage = "Permission denied"
       } else if (error.message?.includes("could not coalesce error") || 
-                 error.message?.includes("Internal JSON-RPC error")) {
-        userFriendlyMessage = "Polygon Amoy is having a moment 🎭 - totally not your fault! Try again in a few seconds."
+                 error.message?.includes("Internal JSON-RPC error") ||
+                 error.message?.includes("network") || 
+                 error.message?.includes("timeout") ||
+                 error.message?.includes("failed to fetch")) {
+        userFriendlyMessage = `🎨 Polygon Amoy is Having Artistic Temperament Issues
+
+The testnet is channeling its inner artist and being a bit moody!
+
+Quick fixes to try:
+1. Hit retry - sometimes testnets need creative inspiration
+2. Wait 30-60 seconds for the network to find its muse
+3. Double-check your MetaMask is feeling creative
+4. Take a creative break - testnets have artistic blocks too! 🎭
+
+Your mint request is perfectly crafted, the network is just having a creative crisis!`
         statusMessage = "Network being dramatic"
       } else if (error.shortMessage) {
         // Use ethers' cleaned up error message if available

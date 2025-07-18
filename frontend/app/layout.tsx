@@ -73,7 +73,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://bridge.walletconnect.org" />
         <link rel="preconnect" href="https://registry.walletconnect.com" />
-        <link rel="preconnect" href="https://rpc-amoy.polygon.technology" />
+        <link rel="preconnect" href="https://polygon-amoy.g.alchemy.com" />
         <link rel="preconnect" href="https://polygon-rpc.com" />
         <link rel="preconnect" href="https://ipfs.io" />
       </head>

@@ -44,7 +44,7 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
             symbol: 'POL',
             decimals: 18,
           },
-          rpcUrls: ['https://rpc-amoy.polygon.technology'],
+          rpcUrls: ['https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa'],
           blockExplorerUrls: ['https://amoy.polygonscan.com'],
         }],
       })

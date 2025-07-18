@@ -2,7 +2,7 @@ const ethers = require("ethers");
 require("dotenv").config();
 const deployment = require("../deployments/deployment.json");
 
-const AMOY_RPC = "https://rpc-amoy.polygon.technology";
+const AMOY_RPC = "https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa";
 const provider = new ethers.JsonRpcProvider(AMOY_RPC);
 const privateKey = process.env.PRIVATE_KEY;
 if (!privateKey) throw new Error("Set PRIVATE_KEY in your .env file");
