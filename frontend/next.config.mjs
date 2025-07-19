@@ -9,6 +9,20 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  webpack: (config, { isServer }) => {
+    // Ignore pino-pretty warning for WalletConnect
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      "pino-pretty": false,
+    };
+    
+    // Ignore specific warnings
+    config.ignoreWarnings = [
+      /Module not found: Can't resolve 'pino-pretty'/,
+    ];
+    
+    return config;
+  },
   async headers() {
     return [
       {

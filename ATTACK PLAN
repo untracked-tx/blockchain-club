@@ -1,0 +1,117 @@
+
+
+### PHASE 2: TRANSACTION RELIABILITY 🛡️
+**Target**: Make transactions bulletproof against testnet volatility
+
+#### Step 1: Add Retry Logic
+- Implement exponential backoff for RPC errors
+- Max 3 retries with 2s, 4s, 8s delays
+
+#### Step 2: Gas Strategy
+- Add manual gas price setting for Polygon Amoy
+- Implement gas estimation with 20% buffer
+
+#### Step 3: Provider Failover
+- Add multiple RPC endpoints
+- Automatic switching on failure
+
+### PHASE 3: CODE STANDARDIZATION 📋
+**Target**: Consistent contract interaction patterns
+
+#### Step 1: Choose One Library
+- **DECISION**: Standardize on wagmi/viem (modern, React-optimized)
+- **MIGRATE**: Replace ethers.js contract calls with wagmi hooks
+
+#### Step 2: Unified Error Handling
+- Centralize all RPC error handling
+- Add transaction monitoring/polling
+
+### EXECUTION ORDER 🎯
+1. **NOW**: Fix viem versions (5 minutes)
+2. **NEXT**: Test transaction (immediate verification)
+3. **THEN**: Add retry logic (30 minutes)
+4. **LATER**: Full standardization (when time permits)
+
+## STATUS: READY TO EXECUTE ✅
+**Priority 1**: Viem version fix
+**Expected Impact**: 80% chance this resolves the immediate transaction failures
+
+
+
+
+
+2 · Quote gas & fees the new way
+Create a single helper so every modal uses the same logic:
+
+ts
+Copy
+Edit
+import { simulateContract, writeContract } from 'wagmi/actions';
+import { clubAbi } from '@/lib/abi';
+
+export async function writeWithEstimates(client, args) {
+  // 1️⃣ simulation does gas estimate + picks safe base / priority fee
+  const sim = await simulateContract(client, {
+    address: '0x0CfE6e…45aa',
+    abi: clubAbi,
+    functionName: 'publicMint',
+    args,
+    account: client.account,          // signer
+  });
+
+  // sim returns { gas, maxFeePerGas, maxPriorityFeePerGas, request }
+  return writeContract(client, sim.request);   // 2️⃣ actual send
+}
+Hook usage inside your modal:
+
+ts
+Copy
+Edit
+const { data, isPending, writeAsync } = useMutation({
+  mutationFn: ({ token, soulbound }) =>
+    writeWithEstimates(config, [token, soulbound]),
+});
+MetaMask should now show ~0.006‑0.009 POL instead of 0.0005 POL.
+
+3 · Add RPC fail‑over (after you see correct gas)
+ts
+Copy
+Edit
+import { fallback, http, createConfig, polygonAmoy } from 'wagmi';
+
+ 
+  ],
+  { rank: true, retryCount: 2 }
+);
+
+export const config = createConfig({
+  chains: [polygonAmoy],
+  transports: { [polygonAmoy.id]: amoyTransport },
+});
+Delete any other http(...) transport declarations so all reads/writes flow through the fallback bundle.
+
+4 · (If users double‑click) nonce guard
+Very light context store:
+
+ts
+Copy
+Edit
+const PendingContext = createContext(new Set<number>());
+
+export async function safeWrite(fn) {
+  const pc = useContext(PendingContext);
+  const nonce = await signer.getNonce();
+
+  if (pc.has(nonce)) throw new Error('Another tx is pending');
+  pc.add(nonce);
+  try { return await fn(); }
+  finally { pc.delete(nonce); }
+}
+Wrap writeWithEstimates with safeWrite.
+
+SUGGESTIONS 
+
+https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa
+
+
+https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa

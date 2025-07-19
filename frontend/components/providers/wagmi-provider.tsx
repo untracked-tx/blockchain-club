@@ -14,7 +14,7 @@ import { safeWallet } from "@rainbow-me/rainbowkit/wallets"
 
 const amoy: Chain = {
   id: 80002,
-  name: "Polygon Amoy Testnet",
+  name: "Amoy",
   nativeCurrency: {
     name: "POL",
     symbol: "POL",

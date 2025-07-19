@@ -26,7 +26,7 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
   const { address, isConnected } = useAccount()
   const { data: balance } = useBalance({
     address,
-    chainId: 80002, // Polygon Amoy
+    chainId: 80002, // Amoy
   })
 
   const addPolygonAmoy = async () => {
@@ -36,7 +36,7 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
         method: 'wallet_addEthereumChain',
         params: [{
           chainId: '0x13882', // 80002 in hex
-          chainName: 'Polygon Amoy',
+          chainName: 'Amoy',
           nativeCurrency: {
             name: 'Polygon',
             symbol: 'POL',
@@ -50,14 +50,14 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
       setCurrentStep(2)
       toast({
         title: "✅ Chain Added!",
-        description: "Polygon Amoy network successfully added to MetaMask",
+        description: "Amoy network successfully added to MetaMask",
       })
     } catch (error: any) {
       console.error("Failed to add Amoy:", error)
       if (error.code === 4902) {
         toast({
           title: "Network Already Added",
-          description: "Polygon Amoy is already in your MetaMask",
+          description: "Amoy is already in your MetaMask",
         })
         setChainAdded(true)
         setCurrentStep(2)
@@ -183,7 +183,7 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
                 <CardHeader className="pb-2 sm:pb-3">
                   <CardTitle className="text-base sm:text-lg font-mono text-white flex items-center gap-2">
                     <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Step 1: Add Polygon Amoy Network
+                    Step 1: Add Amoy Network
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -200,7 +200,7 @@ export function NewUserOnboarding({ isOpen, onClose }: NewUserOnboardingProps) {
                     ) : chainAdded ? (
                       <>✅ Network Added</>
                     ) : (
-                      <>🌐 Add Polygon Amoy to MetaMask</>
+                      <>🌐 Add Amoy to MetaMask</>
                     )}
                   </Button>
                   {chainAdded && (
