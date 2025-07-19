@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -36,15 +36,18 @@ import {
   HelpCircle,
   Code,
   FileText,
-  ExternalLink
+  ExternalLink,
+  Wallet
 } from "lucide-react"
 import { useToast } from "../../hooks/use-toast"
 import { ethers } from "ethers"
 import { contracts } from "@/lib/contracts"
-import { useContract } from "../../hooks/useContract"
+import { useAccount, useWalletClient, usePublicClient } from "wagmi"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { InlineLoadingSkeleton, MemberCardSkeleton, SectionLoadingSkeleton } from "@/components/ui/loading-skeleton"
 import PolRequestsDashboard from "@/components/pol-requests-dashboard"
+import { getBlockchainErrorMessage, isPermissionError } from "@/lib/error-utils"
 
 // Extend window object for ethereum
 declare global {
@@ -112,7 +115,11 @@ interface WhitelistEntry {
 }
 
 export default function OfficersPage() {
-  const [isConnected, setIsConnected] = useState(false)
+  // WAGMI hooks for Web3 connection
+  const { address, isConnected } = useAccount()
+  const { data: walletClient } = useWalletClient()
+  const publicClient = usePublicClient()
+
   const [isOfficer, setIsOfficer] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [userAddress, setUserAddress] = useState("")
@@ -131,9 +138,8 @@ export default function OfficersPage() {
   const [showHowItWorksDropdown, setShowHowItWorksDropdown] = useState(false)
   const { toast } = useToast()
 
-  // Web3 and contract setup
-  const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null)
-  const membershipContract = useContract(provider)
+  // Web3 and contract setup - using WAGMI instead of raw ethers
+  const [membershipContract, setMembershipContract] = useState<ethers.Contract | null>(null)
   const [rolesContract, setRolesContract] = useState<ethers.Contract | null>(null)
 
   // Role and token type management state
@@ -217,63 +223,56 @@ export default function OfficersPage() {
   const [walletTokensData, setWalletTokensData] = useState<any[]>([])
   const [tokenDataLoading, setTokenDataLoading] = useState(false)
 
-  // Initialize Web3 provider and contracts
+  // Initialize contracts when wallet is connected
   useEffect(() => {
-    const initializeWeb3 = async () => {
-      if (typeof window !== "undefined" && window.ethereum) {
-        try {
-          const web3Provider = new ethers.BrowserProvider(window.ethereum)
-          setProvider(web3Provider)
-          
-          // Check if already connected
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' })
-          if (accounts.length > 0) {
-            setIsConnected(true)
-            await checkOfficerRole(web3Provider)
-          }
-        } catch (error) {
-          console.error("Failed to initialize Web3:", error)
-        }
+    const initializeContracts = async () => {
+      if (!walletClient || !isConnected || !address) {
+        setMembershipContract(null)
+        setRolesContract(null)
+        setUserAddress("")
+        setIsOfficer(false)
+        setIsAdmin(false)
+        return
       }
-    }
-    
-    initializeWeb3()
-  }, [])
 
-  // Initialize roles contract when provider is available
-  useEffect(() => {
-    const initializeRolesContract = async () => {
-      if (provider) {
-        try {
-          const signer = await provider.getSigner()
-          const rolesContractInstance = new ethers.Contract(
-            contracts.roles.address,
-            contracts.roles.abi,
-            signer
-          )
-          setRolesContract(rolesContractInstance)
-        } catch (error) {
-          console.error("Failed to initialize roles contract:", error)
-        }
+      try {
+        setUserAddress(address)
+        
+        // Use WAGMI's wallet client directly (it already has fallback RPC configured)
+        // Convert WAGMI wallet client to ethers signer for contract interactions
+        const provider = new ethers.BrowserProvider(walletClient.transport)
+        const signer = await provider.getSigner()
+        
+        // Initialize contracts with the WAGMI-based signer (benefits from fallback RPC)
+        const membershipContractInstance = new ethers.Contract(
+          contracts.membership.address,
+          contracts.membership.abi,
+          signer
+        )
+        
+        const rolesContractInstance = new ethers.Contract(
+          contracts.roles.address,
+          contracts.roles.abi,
+          signer
+        )
+        
+        setMembershipContract(membershipContractInstance)
+        setRolesContract(rolesContractInstance)
+        
+        // Check user roles
+        await checkOfficerRole(rolesContractInstance, address)
+        
+      } catch (error) {
+        console.error("Failed to initialize contracts:", error)
       }
     }
     
-    initializeRolesContract()
-  }, [provider])
+    initializeContracts()
+  }, [walletClient, isConnected, address])
 
   // Check if connected user has officer role
-  const checkOfficerRole = async (web3Provider: ethers.BrowserProvider) => {
+  const checkOfficerRole = async (rolesContractInstance: ethers.Contract, userAddress: string) => {
     try {
-      const signer = await web3Provider.getSigner()
-      const userAddress = await signer.getAddress()
-      setUserAddress(userAddress)
-      
-      const rolesContractInstance = new ethers.Contract(
-        contracts.roles.address,
-        contracts.roles.abi,
-        signer
-      )
-      
       // Check if user has OFFICER_ROLE
       const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
       const hasOfficerRole = await rolesContractInstance.hasRole(officerRoleHash, userAddress)
@@ -288,33 +287,6 @@ export default function OfficersPage() {
       console.error("Failed to check officer role:", error)
       setIsOfficer(false)
       setIsAdmin(false)
-    }
-  }
-
-  // Connect wallet function
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      toast({
-        title: "Error",
-        description: "Please install MetaMask to connect your wallet",
-        variant: "destructive"
-      })
-      return
-    }
-
-    try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' })
-      const web3Provider = new ethers.BrowserProvider(window.ethereum)
-      setProvider(web3Provider)
-      setIsConnected(true)
-      await checkOfficerRole(web3Provider)
-    } catch (error) {
-      console.error("Failed to connect wallet:", error)
-      toast({
-        title: "Error",
-        description: "Failed to connect wallet",
-        variant: "destructive"
-      })
     }
   }
 
@@ -1047,7 +1019,7 @@ export default function OfficersPage() {
     if (!targetAddress || !membershipContract) {
       toast({
         title: "Error",
-        description: "Please enter a valid address",
+        description: "Please enter a valid address and ensure wallet is connected",
         variant: "destructive"
       })
       return
@@ -1059,6 +1031,7 @@ export default function OfficersPage() {
         throw new Error("Invalid address format")
       }
 
+      // Use the existing contract instance instead of creating a fresh one
       const tx = await membershipContract.updateWhitelist(targetAddress, true)
       
       toast({
@@ -1091,7 +1064,7 @@ export default function OfficersPage() {
     if (!targetAddress || !membershipContract) {
       toast({
         title: "Error",
-        description: "Please enter a valid address",
+        description: "Please enter a valid address and ensure wallet is connected",
         variant: "destructive"
       })
       return
@@ -1103,6 +1076,7 @@ export default function OfficersPage() {
         throw new Error("Invalid address format")
       }
 
+      // Use the existing contract instance instead of creating a fresh one
       const tx = await membershipContract.updateWhitelist(targetAddress, false)
       
       toast({
@@ -1133,197 +1107,107 @@ export default function OfficersPage() {
 
   // Token burning function
   const burnToken = async () => {
-    if (!membershipContract || !burnTokenId) {
+    if (!burnTokenId) {
+      setBurnStatus("Please enter a token ID")
       toast({
         title: "Error",
-        description: "Please enter a valid token ID",
+        description: "Please enter a token ID",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!window.ethereum) {
+      setBurnStatus("Error: MetaMask not found - please install MetaMask")
+      toast({
+        title: "Error",
+        description: "MetaMask not found - please install MetaMask",
         variant: "destructive"
       })
       return
     }
 
     setBurnLoading(true)
-    setBurnStatus("Validating input...")
+    setBurnStatus("Burning token...")
     
     try {
-      // Validate that the token ID is a number
-      const tokenId = parseInt(burnTokenId)
-      if (isNaN(tokenId) || tokenId < 0) {
-        throw new Error("Invalid token ID format")
-      }
-
-      setBurnStatus("Checking network connection...")
-      console.log(`[DEBUG] Attempting to burn token ${tokenId}`)
-      console.log(`[DEBUG] User address: ${userAddress}`)
-      console.log(`[DEBUG] Is Officer: ${isOfficer}`)
-      console.log(`[DEBUG] Is Admin: ${isAdmin}`)
-      console.log(`[DEBUG] Contract address: ${membershipContract.target}`)
-
-      // Check network connection and health
-      if (!provider) {
-        throw new Error("No blockchain connection available. Please connect your wallet and try again.")
-      }
+      const tokenId = BigInt(burnTokenId)
       
-      console.log(`[DEBUG] Checking network connection...`)
-      const network = await provider.getNetwork()
-      console.log(`[DEBUG] Network: ${network.name} (chainId: ${network.chainId})`)
-      
-      // Test basic connectivity with a simple call
-      setBurnStatus("Testing blockchain connectivity...")
+      // Create fresh contract instances like the working nft-detail-modal
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      const userAddress = await signer.getAddress()
+
+      const freshMembershipContract = new ethers.Contract(
+        contracts.membership.address,
+        contracts.membership.abi,
+        signer
+      )
+
+      const freshRolesContract = new ethers.Contract(
+        contracts.roles.address,
+        contracts.roles.abi,
+        signer
+      )
+
+      // Verify token exists and get owner
       try {
-        const blockNumber = await provider.getBlockNumber()
-        console.log(`[DEBUG] Current block number: ${blockNumber}`)
-      } catch (connectError) {
-        console.error(`[DEBUG] Network connectivity issue:`, connectError)
-        throw new Error("Network connection issue: Unable to connect to the blockchain. Please check your internet connection and try again.")
-      }
-
-      // Check if the token exists first
-      setBurnStatus("Checking if token exists...")
-      let tokenOwner: string
-      try {
-        tokenOwner = await membershipContract.ownerOf(tokenId)
-        console.log(`[DEBUG] Token ${tokenId} owner:`, tokenOwner)
-      } catch (error: any) {
-        console.error("Token existence check failed:", error)
-        if (error.message?.includes("ERC721: invalid token ID") || error.message?.includes("invalid token ID")) {
-          throw new Error(`Token #${tokenId} doesn't exist or has already been burned! 🔍`)
-        } else {
-          throw new Error(`Token #${tokenId} does not exist or has already been burned`)
+        const tokenOwner = await freshMembershipContract.ownerOf(tokenId)
+        console.log(`Token ${tokenId} is owned by: ${tokenOwner}`)
+      } catch (ownerError: any) {
+        if (ownerError.message?.includes("ERC721NonexistentToken") || ownerError.message?.includes("invalid token ID")) {
+          throw new Error(`Token #${tokenId} doesn't exist or has already been burned`)
         }
+        throw ownerError
       }
 
-      // Log ownership info but don't restrict (officers can burn any token)
-      if (tokenOwner.toLowerCase() !== userAddress.toLowerCase()) {
-        console.log(`[DEBUG] Note: Burning token owned by another user - Token owner: ${tokenOwner}, User: ${userAddress}`)
-        console.log(`[DEBUG] This is allowed because you have OFFICER_ROLE permissions`)
-      } else {
-        console.log(`[DEBUG] Burning your own token`)
-      }
-
-      // Check user's role before attempting burn
-      setBurnStatus("Verifying permissions...")
-      if (rolesContract) {
-        const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
-        const adminRoleHash = ethers.ZeroHash // DEFAULT_ADMIN_ROLE is bytes32(0)
-        
-        const hasOfficerRole = await rolesContract.hasRole(officerRoleHash, userAddress)
-        const hasAdminRole = await rolesContract.hasRole(adminRoleHash, userAddress)
-        
-        console.log(`[DEBUG] User has OFFICER_ROLE: ${hasOfficerRole}`)
-        console.log(`[DEBUG] User has ADMIN_ROLE: ${hasAdminRole}`)
-        
-        if (!hasOfficerRole && !hasAdminRole) {
-          throw new Error("You need OFFICER_ROLE or ADMIN_ROLE to burn tokens. Please contact an admin to grant you the required permissions.")
-        }
-      }
-
-      // Test if the function would work with a static call first
-      setBurnStatus("Testing contract function...")
-      console.log(`[DEBUG] Testing static call to burnToken(${tokenId})`)
+      // Check user permissions
+      const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"))
+      const adminRoleHash = ethers.ZeroHash
       
-      try {
-        await membershipContract.burnToken.staticCall(tokenId)
-        console.log(`[DEBUG] Static call succeeded - transaction should work`)
-      } catch (staticError: any) {
-        console.error(`[DEBUG] Static call failed:`, staticError)
-        
-        // Check if token is soulbound
-        try {
-          const isSoulbound = await membershipContract.soulbound(tokenId)
-          console.log(`[DEBUG] Token ${tokenId} is soulbound: ${isSoulbound}`)
-          if (isSoulbound) {
-            throw new Error(`Token #${tokenId} is soulbound and cannot be burned! 🔒`)
-          }
-        } catch (soulboundError) {
-          console.log(`[DEBUG] Could not check soulbound status:`, soulboundError)
-        }
-        
-        // Try to decode the specific revert reason
-        if (staticError.message?.includes("AccessControl") || staticError.message?.includes("Missing required role")) {
-          throw new Error("Access Control Error: You don't have the required OFFICER_ROLE to burn tokens.")
-        } else if (staticError.message?.includes("ERC721") || staticError.message?.includes("invalid token ID")) {
-          throw new Error("Token Error: This token cannot be burned (may not exist or have restrictions).")
-        } else if (staticError.message?.includes("revert")) {
-          throw new Error(`Contract rejected the burn: ${staticError.shortMessage || staticError.message}`)
-        } else {
-          throw new Error(`Contract validation failed: ${staticError.shortMessage || staticError.message || "Unknown reason"}`)
-        }
+      const hasOfficerRole = await freshRolesContract.hasRole(officerRoleHash, userAddress)
+      const hasAdminRole = await freshRolesContract.hasRole(adminRoleHash, userAddress)
+      
+      if (!hasOfficerRole && !hasAdminRole) {
+        throw new Error("You need OFFICER_ROLE or ADMIN_ROLE to burn tokens")
       }
-      
-      // Now try the actual transaction
-      setBurnStatus("Submitting transaction...")
-      console.log(`[DEBUG] Calling burnToken(${tokenId}) on contract`)
-      console.log(`[DEBUG] Contract target:`, membershipContract.target)
-      console.log(`[DEBUG] Contract interface has burnToken:`, typeof membershipContract.burnToken === 'function')
-      
+
+      // Pre-flight checks to avoid revert
+      setBurnStatus("Validating requirements...")
+
       // Check if contract is paused
       try {
-        const isPaused = await membershipContract.paused()
-        console.log(`[DEBUG] Contract is paused: ${isPaused}`)
+        const isPaused = await freshMembershipContract.paused()
+        console.log("- Contract is paused:", isPaused)
         if (isPaused) {
-          throw new Error("Contract is currently paused! ⏸️ Contact an admin to unpause it.")
+          throw new Error("Contract is currently paused. Cannot burn tokens.")
         }
       } catch (pausedError) {
-        console.log(`[DEBUG] Could not check paused status (contract might not have this function):`, pausedError)
+        console.log("- Could not check paused status (might not have paused function)")
       }
-      
-      try {
-        // Let's try a different approach - use the contract's connect method to ensure proper signer
-        const signer = await provider.getSigner()
-        const contractWithSigner = membershipContract.connect(signer)
-        
-        console.log(`[DEBUG] Using signer address:`, await signer.getAddress())
-        
-        // Try with ethers auto gas estimation
-        console.log(`[DEBUG] Attempting transaction with auto gas estimation`)
-        const tx = await (contractWithSigner as any).burnToken(tokenId)
-        console.log(`[DEBUG] Transaction submitted with auto gas: ${tx.hash}`)
-        
-        setBurnStatus(`Transaction submitted: ${tx.hash.slice(0, 10)}...`)
-        
-        toast({
-          title: "Transaction Submitted",
-          description: `Transaction ${tx.hash.slice(0, 10)}... submitted. Waiting for confirmation...`,
-        })
 
-        setBurnStatus("Waiting for confirmation...")
-        const receipt = await tx.wait()
-        console.log(`[DEBUG] Transaction confirmed in block: ${receipt.blockNumber}`)
-        
-        setBurnStatus("Token burned successfully!")
-        toast({
-          title: "Token Burned Successfully",
-          description: `Token #${tokenId} has been burned`,
-        })
-        
-        // Refresh data and clear form
-        await loadContractData()
-        setBurnTokenId("")
-        setBurnStatus("")
-        
-      } catch (txError: any) {
-        console.error(`[DEBUG] Transaction failed:`, txError)
-        
-        // Handle specific transaction errors
-        if (txError.code === 4001) {
-          throw new Error("Transaction was rejected by user")
-        } else if (txError.code === -32603) {
-          throw new Error("Internal JSON-RPC error: This is usually a network issue. Please try again in a few moments.")
-        } else if (txError.message?.includes("insufficient funds")) {
-          throw new Error("Insufficient funds for gas fees")
-        } else if (txError.message?.includes("nonce")) {
-          throw new Error("Transaction nonce error. Please try again.")
-        } else if (txError.message?.includes("replacement fee too low")) {
-          throw new Error("Transaction fee too low. Please try again with higher gas.")
-        } else if (txError.message?.includes("could not coalesce error")) {
-          throw new Error("Polygon Amoy is being dramatic again 🎭 - totally not your fault!")
-        } else {
-          // For debugging, show the full error
-          console.error("Full transaction error:", txError)
-          throw new Error(`Transaction failed: ${txError.shortMessage || txError.message || "Unknown error"}`)
-        }
-      }
+      // Submit transaction using fresh contract instance
+      const tx = await freshMembershipContract.burnToken(tokenId)
+      
+      setBurnStatus(`Transaction submitted: ${tx.hash.slice(0, 10)}...`)
+      toast({
+        title: "Transaction Submitted",
+        description: `Transaction ${tx.hash.slice(0, 10)}... submitted. Waiting for confirmation...`,
+      })
+
+      const receipt = await tx.wait()
+      console.log(`Transaction confirmed in block: ${receipt.blockNumber}`)
+      
+      setBurnStatus("Token burned successfully!")
+      toast({
+        title: "Token Burned Successfully",
+        description: `Token #${tokenId} has been burned`,
+      })
+      
+      // Refresh data and clear form
+      await loadContractData()
+      setBurnTokenId("")
+      setBurnStatus("")
       
     } catch (error: any) {
       console.error("Failed to burn token:", error)
@@ -1393,15 +1277,15 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
       return
     }
 
-    if (!membershipContract) {
+    if (!window.ethereum) {
       setTokenManagementStatus({
         loading: false,
-        message: "Contract not connected",
+        message: "MetaMask not found - please install MetaMask",
         type: "error"
       })
       toast({
         title: "Error",
-        description: "Contract not connected",
+        description: "MetaMask not found - please install MetaMask",
         variant: "destructive"
       })
       return
@@ -1425,17 +1309,43 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
         type: "loading"
       })
 
-      // Convert token type to bytes32
-      const tokenTypeBytes = ethers.keccak256(ethers.toUtf8Bytes(selectedTokenType))
+      // Convert token type to bytes32 (using keccak256 hash like in nft-detail-modal)
+      const tokenNameBytes32 = ethers.keccak256(ethers.toUtf8Bytes(selectedTokenType))
       
+      setTokenManagementStatus({
+        loading: true,
+        message: "Creating fresh contract instance...",
+        type: "loading"
+      })
+
+      // Create fresh contract instance like the working nft-detail-modal
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      const freshMembershipContract = new ethers.Contract(
+        contracts.membership.address,
+        contracts.membership.abi,
+        signer
+      )
+
+      // Check if this is a PUBLIC token
+      const selectedToken = tokenTypes.find(t => t.typeId === selectedTokenType)
+      const isPublicToken = selectedToken?.mintAccess === "PUBLIC"
+      const userAddress = await signer.getAddress()
+
       setTokenManagementStatus({
         loading: true,
         message: "Submitting transaction to blockchain...",
         type: "loading"
       })
 
-      // Call mint function
-      const tx = await membershipContract.mint(mintAddress, tokenTypeBytes, isSoulbound)
+      let tx
+      if (isPublicToken && mintAddress.toLowerCase() === userAddress.toLowerCase()) {
+        // Use publicMint for self-minting PUBLIC tokens
+        tx = await freshMembershipContract.publicMint(tokenNameBytes32, isSoulbound)
+      } else {
+        // Use regular mint function (requires whitelist or MEMBER_ROLE)
+        tx = await freshMembershipContract.mint(mintAddress, tokenNameBytes32, isSoulbound)
+      }
       
       setTokenManagementStatus({
         loading: true,
@@ -1476,59 +1386,25 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
     } catch (error: any) {
       console.error("Failed to mint token:", error)
       
-      let userFriendlyMessage = "Failed to mint token"
-      let statusMessage = "Minting failed"
-      
-      // Handle specific error cases with user-friendly messages
-      if (error.reason === "Wallet already owns a token of this type" || 
-          error.message?.includes("Wallet already owns a token of this type")) {
-        userFriendlyMessage = `This wallet already owns a ${selectedTokenType} token! Each wallet can only have one token of each type. 🎫`
-        statusMessage = "Already owns this token type"
-      } else if (error.code === 4001) {
-        userFriendlyMessage = "Transaction was cancelled by user"
-        statusMessage = "Transaction cancelled"
-      } else if (error.message?.includes("insufficient funds")) {
-        userFriendlyMessage = "Insufficient funds for gas fees. Please ensure you have enough MATIC in your wallet."
-        statusMessage = "Insufficient gas fees"
-      } else if (error.message?.includes("Token type does not exist") || 
-                 error.message?.includes("TokenTypeNotFound")) {
-        userFriendlyMessage = `The token type "${selectedTokenType}" doesn't exist in the contract. Please create it first or select a different type.`
-        statusMessage = "Token type doesn't exist"
-      } else if (error.message?.includes("Mint window closed") || 
-                 error.message?.includes("not active")) {
-        userFriendlyMessage = `The minting window for "${selectedTokenType}" is currently closed. Check the token type settings.`
-        statusMessage = "Minting window closed"
-      } else if (error.message?.includes("Max supply reached")) {
-        userFriendlyMessage = `Maximum supply reached for "${selectedTokenType}". No more tokens of this type can be minted.`
-        statusMessage = "Max supply reached"
-      } else if (error.message?.includes("Access denied") || 
-                 error.message?.includes("OFFICER_ROLE")) {
-        userFriendlyMessage = "You don't have permission to mint tokens. Officer role required."
-        statusMessage = "Permission denied"
-      } else if (error.message?.includes("could not coalesce error") || 
-                 error.message?.includes("Internal JSON-RPC error")) {
-        userFriendlyMessage = "Polygon Amoy is having a moment 🎭 - totally not your fault! Try again in a few seconds."
-        statusMessage = "Network being dramatic"
-      } else if (error.shortMessage) {
-        // Use ethers' cleaned up error message if available
-        userFriendlyMessage = error.shortMessage
-        statusMessage = "Transaction failed"
-      } else if (error.message) {
-        userFriendlyMessage = error.message
-        statusMessage = "Minting failed"
-      }
+      // Get user-friendly error message
+      const errorMessage = getBlockchainErrorMessage(error)
       
       setTokenManagementStatus({
         loading: false,
-        message: statusMessage,
+        message: errorMessage,
         type: "error"
       })
 
       toast({
         title: "Minting Failed",
-        description: userFriendlyMessage,
+        description: errorMessage,
         variant: "destructive"
       })
+
+      // Clear status after 10 seconds on error
+      setTimeout(() => {
+        setTokenManagementStatus({ loading: false, message: "", type: "idle" })
+      }, 10000)
     }
   }
 
@@ -1777,118 +1653,6 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
       
       <div className="container mx-auto px-4 py-12">
 
-      {/* Stats Cards - Only show when wallet is connected */}
-      {isConnected && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Contract Statistics</h2>
-            <Button 
-              onClick={() => {
-                if (isConnected && isOfficer) {
-                  loadContractData()
-                } else {
-                  loadPublicContractStats()
-                }
-              }} 
-              disabled={isLoading || publicStatsLoading}
-              variant="outline" 
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${(isLoading || publicStatsLoading) ? 'animate-spin' : ''}`} />
-              Refresh Data
-            </Button>
-          </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {publicStatsLoading ? (
-                  <InlineLoadingSkeleton />
-                ) : (
-                  contractStats?.totalMembers || 0
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Active club members</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Admins</CardTitle>
-              <Crown className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {publicStatsLoading ? (
-                  <InlineLoadingSkeleton />
-                ) : (
-                  contractStats?.totalAdmins || 0
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Full administrators</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Officers</CardTitle>
-              <Award className="h-4 w-4 text-amber-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {publicStatsLoading ? (
-                  <InlineLoadingSkeleton />
-                ) : (
-                  contractStats?.totalOfficers || 0
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Total officers</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Supply</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {publicStatsLoading ? (
-                  <InlineLoadingSkeleton />
-                ) : (
-                  contractStats?.totalSupply || 0
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Tokens minted</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Whitelisted</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {whitelistLoading ? (
-                  <InlineLoadingSkeleton />
-                ) : (
-                  contractStats?.whitelistedCount || 0
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">Approved addresses</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      )}
-
       {/* Conditional content based on connection and officer status */}
       {isConnected && isOfficer && membersLoading && publicStatsLoading ? (
         // Show loading when officer is connected but data is still loading
@@ -1906,11 +1670,15 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                 Connect your wallet to access officer tools and view detailed management controls.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button onClick={connectWallet} className="w-full bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold">
+            <CardFooter className="flex justify-center">
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
+              >
+                <Wallet className="mr-2 h-4 w-4" />
                 Connect Wallet
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         </div>
       ) : !isOfficer ? (
@@ -2919,7 +2687,7 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                           variant="destructive"
                           className="w-full"
                           onClick={async () => {
-                            if (!provider) return
+                            if (!walletClient) return
                             
                             setEmergencyFunctionStatus({
                               loading: true,
@@ -2935,6 +2703,8 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                                 type: "loading"
                               })
 
+                              // Use WAGMI wallet client (benefits from fallback RPC)
+                              const provider = new ethers.BrowserProvider(walletClient.transport)
                               const signer = await provider.getSigner()
                               const treasuryContract = new ethers.Contract(
                                 contracts.treasury.address,
@@ -3024,7 +2794,7 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                             variant="outline"
                             className="border-red-300 text-red-700 hover:bg-red-100"
                             onClick={async () => {
-                              if (!provider || !targetAddress) return
+                              if (!walletClient || !targetAddress) return
                               
                               setEmergencyFunctionStatus({
                                 loading: true,
@@ -3040,6 +2810,8 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
                                   type: "loading"
                                 })
 
+                                // Use WAGMI wallet client (benefits from fallback RPC)
+                                const provider = new ethers.BrowserProvider(walletClient.transport)
                                 const signer = await provider.getSigner()
                                 const treasuryContract = new ethers.Contract(
                                   contracts.treasury.address,

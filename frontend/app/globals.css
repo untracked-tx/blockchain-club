@@ -107,3 +107,11 @@
 [data-testid="rk-connect-button"]:hover {
   background-color: #B8A569 !important;
 }
+
+/* Line clamp utility for text truncation */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Vote, Shield, ExternalLink, Wallet, BarChart3, History } from "lucide-react"
-import { useAccount } from "wagmi";
+import { Vote, Shield, ExternalLink, Wallet, BarChart3, History, Users, Crown, Award, TrendingUp, Eye, RefreshCw } from "lucide-react"
+import { useAccount, useConfig } from "wagmi";
 import { contracts } from "../../lib/contracts";
 import { useContractRead } from "wagmi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,15 @@ import { useMyTokens, Token } from "@/hooks/use-mytokens";
 import { useVotingPower } from "@/hooks/use-voting-power";
 import OwnedNFTModal from "@/components/owned-nft-modal";
 import { InlineLoadingSkeleton, TokenCardSkeleton, SectionLoadingSkeleton, PageLoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { ethers } from "ethers"
+
+// Extend window object for ethereum
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ethereum?: any
+  }
+}
 
 const CHAIN_ID = process.env.NEXT_PUBLIC_CHAIN_ID || "80002";
 const CONTRACT_NAME = "membership";
@@ -54,6 +63,7 @@ const mockVotingHistory = [
 
 export default function MembersPage() {
   const { address, isConnected } = useAccount();
+  const config = useConfig();
   const [votingHistory, setVotingHistory] = useState(mockVotingHistory)
   const [activeTab, setActiveTab] = useState("tokens")
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -61,10 +71,134 @@ export default function MembersPage() {
   const [mounted, setMounted] = useState(false); // NEW: track client mount
   const [selectedModalToken, setSelectedModalToken] = useState<Token | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Role-based access control
+  const [isMember, setIsMember] = useState(false)
+  const [isCheckingRole, setIsCheckingRole] = useState(true)
+  
+  // Community stats state
+  const [communityStats, setCommunityStats] = useState({
+    totalMembers: 0,
+    totalAdmins: 0,
+    totalOfficers: 0,
+    totalSupply: 0,
+    totalVotingPower: 0
+  });
+  const [communityLoading, setCommunityLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Load community stats when component mounts
+    if (mounted) {
+      loadCommunityStats();
+    }
+    // Check member role when wallet is connected
+    if (mounted && isConnected && address) {
+      checkMemberRole();
+    }
+  }, [mounted, isConnected, address]);
+
+  // Function to check if user has MEMBER_ROLE
+  const checkMemberRole = async () => {
+    if (!address || !window.ethereum) {
+      setIsMember(false);
+      setIsCheckingRole(false);
+      return;
+    }
+
+    try {
+      setIsCheckingRole(true);
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const userAddress = await signer.getAddress();
+      
+      const rolesContractInstance = new ethers.Contract(
+        contracts.roles.address,
+        contracts.roles.abi,
+        signer
+      );
+      
+      // Check if user has MEMBER_ROLE
+      const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"));
+      const hasMemberRole = await rolesContractInstance.hasRole(memberRoleHash, userAddress);
+      
+      // Check if user has OFFICER_ROLE (officers are also members)
+      const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"));
+      const hasOfficerRole = await rolesContractInstance.hasRole(officerRoleHash, userAddress);
+      
+      // Check if user has ADMIN_ROLE (admins are also members)
+      const adminRoleHash = ethers.ZeroHash; // DEFAULT_ADMIN_ROLE is bytes32(0)
+      const hasAdminRole = await rolesContractInstance.hasRole(adminRoleHash, userAddress);
+      
+      setIsMember(hasMemberRole || hasOfficerRole || hasAdminRole); // Allow members, officers, and admins
+    } catch (error) {
+      console.error("Failed to check member role:", error);
+      setIsMember(false);
+    } finally {
+      setIsCheckingRole(false);
+    }
+  };
+
+  // Function to load community statistics
+  const loadCommunityStats = async () => {
+    if (communityLoading) return;
+    setCommunityLoading(true);
+    
+    try {
+      // Get total supply from membership contract
+      const totalSupply = await readContract(config, {
+        address: CONTRACT_ADDRESS,
+        abi: CONTRACT_ABI,
+        functionName: "totalSupply",
+        args: [],
+      });
+
+      // Get role counts from Roles contract
+      const rolesContract = contracts["roles"];
+      
+      // Generate role hashes dynamically (same method as officers page)
+      const adminRoleHash = ethers.ZeroHash; // DEFAULT_ADMIN_ROLE is bytes32(0)
+      const officerRoleHash = ethers.keccak256(ethers.toUtf8Bytes("OFFICER_ROLE"));
+      const memberRoleHash = ethers.keccak256(ethers.toUtf8Bytes("MEMBER_ROLE"));
+
+      const [adminCount, officerCount, memberCount] = await Promise.all([
+        readContract(config, {
+          address: rolesContract.address,
+          abi: rolesContract.abi,
+          functionName: "getRoleMemberCount",
+          args: [adminRoleHash],
+        }),
+        readContract(config, {
+          address: rolesContract.address,
+          abi: rolesContract.abi,
+          functionName: "getRoleMemberCount",
+          args: [officerRoleHash],
+        }),
+        readContract(config, {
+          address: rolesContract.address,
+          abi: rolesContract.abi,
+          functionName: "getRoleMemberCount",
+          args: [memberRoleHash],
+        }),
+      ]);
+
+      // Calculate total voting power (this is an approximation)
+      const totalVotingPower = Number(adminCount) * 5 + Number(officerCount) * 3 + Number(memberCount) * 1;
+
+      setCommunityStats({
+        totalMembers: Number(memberCount),
+        totalAdmins: Number(adminCount),
+        totalOfficers: Number(officerCount),
+        totalSupply: Number(totalSupply),
+        totalVotingPower: totalVotingPower
+      });
+
+    } catch (error) {
+      console.error("Error loading community stats:", error);
+    } finally {
+      setCommunityLoading(false);
+    }
+  };
 
   // Fetch balanceOf using wagmi - only when connected
   const { data: balance, isLoading: isBalanceLoading, error: balanceError } = useContractRead({
@@ -80,8 +214,8 @@ export default function MembersPage() {
   const { tokens, isLoading, error } = useMyTokens(address);
   const { votingPower, isLoading: isVotingPowerLoading } = useVotingPower(address);
 
-  // Show loading state when data is still loading and we're connected
-  const showFullLoading = mounted && isConnected && !wrongNetwork && (isLoading || isVotingPowerLoading)
+  // Only show full loading on initial mount before wallet connection status is determined
+  const showFullLoading = !mounted || (isConnected && isCheckingRole)
 
   // Show full page loading for consistent experience
   if (showFullLoading) {
@@ -198,8 +332,8 @@ export default function MembersPage() {
           <div className="mx-auto max-w-4xl">
             {/* Floating Badge */}
             <div className="mb-6 inline-flex items-center rounded-full bg-white/20 px-4 py-2 text-sm font-medium text-blue-100 backdrop-blur-sm border border-white/30">
-              <Vote className="mr-2 h-4 w-4" />
-              Member Dashboard
+              <Users className="mr-2 h-4 w-4" />
+              Community Dashboard
             </div>
             
             <h1 className="mb-6 text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl">
@@ -208,6 +342,7 @@ export default function MembersPage() {
             
             <p className="mb-8 text-xl text-blue-100 leading-relaxed">
               Your blockchain governance dashboard. View your NFT membership tokens, role-based voting power, and governance participation history.
+
             </p>
           </div>
         </div>
@@ -254,6 +389,44 @@ export default function MembersPage() {
             </CardFooter>
           </Card>
         </div>
+      ) : !isMember ? (
+        // Access denied - not a member
+        <div className="mx-auto max-w-md text-center">
+          <Card className="border-amber-200 bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-amber-900">Member Access Required</CardTitle>
+              <CardDescription className="text-amber-700">
+                This page is restricted to blockchain club members only.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                <p className="text-sm text-amber-800 mb-3">
+                  You need to have the MEMBER_ROLE to access this page.
+                </p>
+                <p className="text-xs text-amber-700">
+                  If you believe you should have access, please contact a club officer to grant you the required permissions.
+                </p>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-2">
+              <Button 
+                onClick={() => window.location.href = "/gallery"}
+                className="w-full bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
+              >
+                <Award className="mr-2 h-4 w-4" />
+                Mint Membership Token
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => window.location.href = "/"}
+                className="w-full"
+              >
+                Return to Home
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       ) : wrongNetwork ? (
         // Wrong network
         <div className="mx-auto max-w-md text-center">
@@ -272,96 +445,236 @@ export default function MembersPage() {
       ) : (
         // Connected and ready - show main content
         <div>
-          {/* Stats Cards */}
-          <div className="mb-8 grid gap-6 md:grid-cols-3">
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
-                  <Wallet className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-gray-900">Membership Status</CardTitle>
-                <CardDescription className="text-gray-600">Your current membership level</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading || isVotingPowerLoading ? (
-                  <InlineLoadingSkeleton className="h-6 w-24" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Badge className={getMembershipLevel().color}>
-                      <Shield className="mr-1 h-3 w-3" /> {getMembershipLevel().icon} {getMembershipLevel().level}
-                    </Badge>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* Community Overview Section */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Community Overview</h2>
+                <p className="text-gray-600">Explore our blockchain community's growth and engagement</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={loadCommunityStats}
+                disabled={communityLoading}
+              >
+                <RefreshCw className={`h-4 w-4 ${communityLoading ? 'animate-spin' : ''}`} />
+                Refresh Data
+              </Button>
+            </div>
 
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 mb-2">
-                  <Vote className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-gray-900">Voting Power</CardTitle>
-                <CardDescription className="text-gray-600">Your influence in governance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading || isVotingPowerLoading ? (
-                  <InlineLoadingSkeleton className="h-6 w-24" />
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-gray-900">{getTotalVotingPower()}</span>
-                      <span className="text-sm text-gray-600">votes</span>
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Based on your {getMembershipLevel().level.toLowerCase()} role • {tokens?.length || 0} NFT{(tokens?.length || 0) !== 1 ? 's' : ''} owned
-                    </div>
+            {/* Community Stats Grid */}
+            <div className="grid gap-6 md:grid-cols-4 mb-6">
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
+                    <Users className="h-5 w-5" />
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  <CardTitle className="text-sm font-medium text-gray-700">Total Members</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {communityLoading ? (
+                    <InlineLoadingSkeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">{communityStats.totalMembers}</div>
+                  )}
+                  <p className="text-xs text-gray-500">Active community members</p>
+                </CardContent>
+              </Card>
 
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 mb-2">
-                  <BarChart3 className="h-5 w-5" />
-                </div>
-                <CardTitle className="text-gray-900">Participation</CardTitle>
-                <CardDescription className="text-gray-600">Your governance activity</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <InlineLoadingSkeleton className="h-6 w-24" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">{votingHistory.length}</span>
-                    <span className="text-sm text-gray-600">Votes cast</span>
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 mb-2">
+                    <Award className="h-5 w-5" />
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  <CardTitle className="text-sm font-medium text-gray-700">Officers</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {communityLoading ? (
+                    <InlineLoadingSkeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">{communityStats.totalOfficers}</div>
+                  )}
+                  <p className="text-xs text-gray-500">Active club officers</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 mb-2">
+                    <BarChart3 className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="text-sm font-medium text-gray-700">NFTs Minted</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {communityLoading ? (
+                    <InlineLoadingSkeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">{communityStats.totalSupply}</div>
+                  )}
+                  <p className="text-xs text-gray-500">Total tokens created</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 mb-2">
+                    <TrendingUp className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="text-sm font-medium text-gray-700">Voting Power</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {communityLoading ? (
+                    <InlineLoadingSkeleton className="h-8 w-16" />
+                  ) : (
+                    <div className="text-2xl font-bold text-gray-900">{communityStats.totalVotingPower}</div>
+                  )}
+                  <p className="text-xs text-gray-500">Total community votes</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Community Insights */}
+            <div className="grid gap-6 md:grid-cols-2 items-start">
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardHeader>
+                  <div className="flex items-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 mr-3">
+                      <History className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-gray-900">Voting History</CardTitle>
+                      <CardDescription className="text-gray-600">
+                        Your past votes and governance participation
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {Array(2)
+                        .fill(0)
+                        .map((_, i) => (
+                          <div key={i} className="rounded-md border border-gray-200 p-3">
+                            <Skeleton className="h-4 w-full mb-1" />
+                            <Skeleton className="h-3 w-3/4" />
+                          </div>
+                        ))}
+                    </div>
+                  ) : votingHistory.length > 0 ? (
+                    <div className="space-y-3">
+                      {votingHistory.slice(0, 2).map((vote: any) => (
+                        <div key={vote.id} className="rounded-md border border-gray-200 p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-gray-50 text-gray-700 text-xs">
+                                {vote.proposal}
+                              </Badge>
+                              <Badge className={`text-xs ${getVoteColor(vote.vote)}`}>
+                                {vote.vote.charAt(0).toUpperCase() + vote.vote.slice(1)}
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {formatDate(vote.timestamp)}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-900 font-medium">{vote.proposalTitle}</p>
+                          <div className="mt-1 text-xs text-gray-600">Voting power: {vote.votingPower}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-center">
+                      <p className="text-sm text-gray-600">No votes yet.</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Your voting history will appear here.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-gray-900 hover:text-gray-900 hover:bg-gray-100"
+                    onClick={() => window.open("https://snapshot.box/#/explore", "_blank")}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" /> View All Activity on Snapshot
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-gray-900">
+                    <BarChart3 className="mr-2 h-5 w-5 text-green-600" />
+                    Community Activity
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    See how our community is growing and engaging
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Member Engagement</span>
+                        <span className="font-medium">High</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full w-4/5"></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Token Distribution</span>
+                        <span className="font-medium">Growing</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full w-3/5"></div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Governance Participation</span>
+                        <span className="font-medium">Active</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-purple-500 h-2 rounded-full w-2/3"></div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.location.href = "/governance"}
+                  >
+                    <Vote className="mr-2 h-4 w-4" />
+                    View Governance
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
           </div>
 
-          <Tabs defaultValue="tokens" onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-100">
-              <TabsTrigger value="tokens" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                My Tokens
-              </TabsTrigger>
-              <TabsTrigger value="history" className="data-[state=active]:bg-white data-[state=active]:text-gray-900">
-                Voting History
-              </TabsTrigger>
-            </TabsList>
+          {/* My Tokens Section */}
+          <div className="mb-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">My Tokens</h2>
+              <p className="text-gray-600">View and manage your membership NFT collection</p>
+            </div>
 
-            <TabsContent value="tokens">
-              {isLoading ? (
-                <TokenCardSkeleton count={6} />
-              ) : tokens.length > 0 ? (
-                <div className="mb-6">
-                  <Card className="border-gray-200 bg-white shadow-sm">
-                    <CardHeader>
-                      <CardTitle className="text-gray-900">My Tokens</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {isLoading ? (
+              <TokenCardSkeleton count={6} />
+            ) : tokens.length > 0 ? (
+              <Card className="border-gray-200 bg-white shadow-sm">
+                <CardContent className="pt-6">
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         <AnimatePresence>
                           {tokens.map((token: any) => (
                             <motion.div
@@ -427,7 +740,6 @@ export default function MembersPage() {
                       </Button>
                     </CardFooter>
                   </Card>
-                </div>
               ) : (
                 <div className="text-center">
                   <p className="mb-4 text-gray-600">{error ? `Error: ${error.message}` : "You don't own any tokens yet."}</p>
@@ -439,74 +751,7 @@ export default function MembersPage() {
                   </Button>
                 </div>
               )}
-            </TabsContent>
-
-            <TabsContent value="history">
-              <Card className="border-gray-200 bg-white shadow-sm">
-                <CardHeader>
-                  <div className="flex items-center">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 mr-3">
-                      <History className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-gray-900">Voting History</CardTitle>
-                      <CardDescription className="text-gray-600">
-                        Your past votes and governance participation
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {Array(3)
-                        .fill(0)
-                        .map((_, i) => (
-                          <div key={i} className="rounded-md border border-gray-200 p-4">
-                            <Skeleton className="h-6 w-full mb-2" />
-                            <Skeleton className="h-4 w-3/4" />
-                          </div>
-                        ))}
-                    </div>
-                  ) : votingHistory.length > 0 ? (
-                    <div className="space-y-4">
-                      {votingHistory.map((vote: any) => (
-                        <div key={vote.id} className="rounded-md border border-gray-200 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-gray-50 text-gray-700">
-                                {vote.proposal}
-                              </Badge>
-                              <Badge className={getVoteColor(vote.vote)}>
-                                {vote.vote.charAt(0).toUpperCase() + vote.vote.slice(1)}
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              {formatDate(vote.timestamp)} at {formatTime(vote.timestamp)}
-                            </div>
-                          </div>
-                          <p className="text-gray-900 font-medium">{vote.proposalTitle}</p>
-                          <div className="mt-2 text-sm text-gray-600">Voting power used: {vote.votingPower}</div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-center">
-                      <p className="text-gray-600">You haven't voted on any proposals yet.</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        When you vote on proposals, your voting history will appear here.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="border-t border-gray-100 bg-gray-50 pt-3">
-                  <Button className="w-full border-gray-200 text-gray-700">
-                    <ExternalLink className="mr-2 h-4 w-4" /> View All Activity on Snapshot
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          </div>
         </div>
       )}
       

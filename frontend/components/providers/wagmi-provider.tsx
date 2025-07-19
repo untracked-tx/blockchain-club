@@ -7,7 +7,7 @@ import {
   connectorsForWallets,
   getDefaultWallets,
 } from "@rainbow-me/rainbowkit"
-import { WagmiProvider, createConfig, http } from "wagmi"
+import { WagmiProvider, createConfig, http, fallback } from "wagmi"
 import { polygon, mainnet, Chain } from "wagmi/chains"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { safeWallet } from "@rainbow-me/rainbowkit/wallets"
@@ -34,6 +34,19 @@ const queryClient = new QueryClient()
 export function WagmiConfigProvider({ children }: { children: React.ReactNode }) {
   const config = useMemo(() => {
     const chains = [polygon, mainnet, amoy] as const
+    
+    // Create fallback transport for Amoy with multiple RPCs
+    const amoyTransport = fallback(
+      [
+        http('https://rpc-amoy.polygon.technology'),
+        http('https://polygon-amoy.g.alchemy.com/v2/BKOaUhVk2Adt-aEqV-3AaKd4nmnfdaGa'),
+      ],
+      { 
+        rank: true, // Try in order
+        retryCount: 2, // Max 2 retries per RPC
+        retryDelay: 1000 // 1 second base delay
+      }
+    );
     
     // Get default wallets from RainbowKit
     const { wallets } = getDefaultWallets({
@@ -66,7 +79,7 @@ export function WagmiConfigProvider({ children }: { children: React.ReactNode })
       transports: {
         [polygon.id]: http(),
         [mainnet.id]: http(),
-        [amoy.id]: http(),
+        [amoy.id]: amoyTransport, // Use fallback transport for Amoy
       },
       ssr: false,
     });
