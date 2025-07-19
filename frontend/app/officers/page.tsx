@@ -1671,13 +1671,7 @@ Maybe someone beat you to it? 🤷‍♀️ Try checking what tokens actually ex
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-center">
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
-              >
-                <Wallet className="mr-2 h-4 w-4" />
-                Connect Wallet
-              </Button>
+              <ConnectButton />
             </CardFooter>
           </Card>
         </div>

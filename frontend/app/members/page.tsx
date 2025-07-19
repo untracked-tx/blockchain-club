@@ -18,6 +18,7 @@ import { useMyTokens, Token } from "@/hooks/use-mytokens";
 import { useVotingPower } from "@/hooks/use-voting-power";
 import OwnedNFTModal from "@/components/owned-nft-modal";
 import { InlineLoadingSkeleton, TokenCardSkeleton, SectionLoadingSkeleton, PageLoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ethers } from "ethers"
 
 // Extend window object for ethereum
@@ -379,13 +380,7 @@ export default function MembersPage() {
               </CardDescription>
             </CardHeader>
             <CardFooter className="flex justify-center">
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="bg-[#CFB87C] hover:bg-[#B8A569] text-black font-semibold"
-              >
-                <Wallet className="mr-2 h-4 w-4" />
-                Connect Wallet
-              </Button>
+              <ConnectButton />
             </CardFooter>
           </Card>
         </div>
