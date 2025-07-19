@@ -16,16 +16,17 @@ export default function Footer() {
             <h3 className="text-lg font-semibold text-gray-900">Quick Links</h3>
             <ul className="mt-2 space-y-2">
               <li>
-                <Link href="/mint" className="text-sm text-gray-600 hover:text-blue-600">
-                  Mint Tokens
+                <Link href="/portfolio" className="text-sm text-gray-600 hover:text-blue-600">
+                  Portfolio
+                </Link>
+              </li>
+              <li>
+                <Link href="/research" className="text-sm text-gray-600 hover:text-blue-600">
+                  Research
                 </Link>
               </li>
               <li>
                 <Link href="/governance" className="text-sm text-gray-600 hover:text-blue-600">
-                  Governance
-                </Link>
-              </li>              <li>
-                <Link href="/#about" className="text-sm text-gray-600 hover:text-blue-600">
                   About Us
                 </Link>
               </li>
@@ -34,10 +35,16 @@ export default function Footer() {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Resources</h3>
-            <ul className="mt-2 space-y-2">              <li>
-                <Link href="/#about" className="text-sm text-gray-600 hover:text-blue-600">
+            <ul className="mt-2 space-y-2">
+              <li>
+                <a
+                  href="https://github.com/untracked-tx/blockchain-club/blob/master/docs/whitepaper.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-600 hover:text-blue-600"
+                >
                   Whitepaper
-                </Link>
+                </a>
               </li>
               <li>
                 <a
@@ -64,36 +71,28 @@ export default function Footer() {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Connect</h3>
-            <ul className="mt-2 space-y-2">
-              <li>
-                <a
-                  href="https://twitter.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-blue-600"
+            <div className="mt-2">
+              <a
+                href="mailto:liam.murphy@ucdenver.edu"
+                className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
+              >
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://discord.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-blue-600"
-                >
-                  Discord
-                </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:contact@universityblockchainclub.edu"
-                  className="text-sm text-gray-600 hover:text-blue-600"
-                >
-                  Email Us
-                </a>
-              </li>
-            </ul>
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" 
+                  />
+                </svg>
+                Email Us
+              </a>
+            </div>
           </div>
         </div>
 

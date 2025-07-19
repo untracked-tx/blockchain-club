@@ -21,7 +21,12 @@ export function getBlockchainErrorMessage(err: any): string {
     err.message?.includes("network error") ||
     err.message?.includes("timeout")
   ) {
-    errorMessage = "🌐 Testnets can be a bit moody sometimes! Please wait 30 seconds and try again. ☕";
+    errorMessage = `🤖 Polygon Amoy is Having a Moment™
+
+Network's being dramatic again! Here's the fix:
+• Hit retry (sometimes it just needs encouragement)
+• Wait 30-60 seconds for the blockchain to get its act together
+• Grab some coffee ☕ – testnets have commitment issues`;
   } else if (err.message?.includes("Max supply reached") || err.reason?.includes("Max supply reached")) {
     errorMessage = "Maximum supply for this token has been reached.";
   } else if (err.message?.includes("Token type not active") || err.reason?.includes("Token type not active")) {
