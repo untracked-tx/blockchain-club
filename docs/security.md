@@ -87,8 +87,7 @@ sequenceDiagram
 - Code quality analysis via Solhint demonstrates 95%+ compliance with security best practices.
 - Gas optimization analysis confirms efficient contract deployment under 24KB size limits.
 
-📄 [Complete audit documentation](./analysis/slither-summary.md)  
-📊 [Code quality report](./analysis/code-quality.md)  
+ [Code quality report](./analysis/code-quality.md)  
 ⚡ [Performance analysis](./analysis/gas-analysis.md)
 
 ---

@@ -7,7 +7,7 @@ This project exists thanks to all the people who contribute.
 **Liam Murphy**
 - Role: Lead Developer & Founder
 - Email: Liam.Murphy@ucdenver.edu
-- GitHub: [@liammurphy](https://github.com/liammurphy)
+- GitHub: [@untracked-tx](https://github.com/untracked-tx)
 - Contributions: Smart contracts, frontend, documentation, project architecture
 
 *Started this project to bring transparent governance to university blockchain clubs.*

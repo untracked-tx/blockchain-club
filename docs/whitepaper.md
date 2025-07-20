@@ -341,7 +341,7 @@ Blockchain-based institutional governance represents a fundamental advancement i
 **Technical Contact:**
 
 * Website: https://untrackedtx.xyz
-* Repository: [https://github.com/blockchain-club](https://github.com/blockchain-club)
+* Repository: [https://github.com/untracked-tx/blockchain-club](https://github.com/untracked-tx/blockchain-club)
 * Protocol Lead: [Liam.Murphy@ucdenver.edu](mailto:Liam.Murphy@ucdenver.edu)
 
 ---
