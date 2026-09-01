@@ -104,17 +104,6 @@ This research asks whether the four-phase cycle model (accumulation, markup, dis
 - Guide optimal fee market mechanisms based on observed temporal patterns
 - Help users time transactions to minimize fees and confirmation times
 
-### C. Anti-Fed Narrative Support
-
-#### 1. Natural vs. Artificial Market Comparison
-- Compare stability of natural Bitcoin cycles to Fed-manipulated markets
-- Show how decentralized systems find equilibrium without central intervention
-- Demonstrate efficiency of market-determined fee rates versus administered rates
-
-#### 2. Freedom from Artificial Constraints
-- Highlight how removal of artificial time constraints (banking hours, trading halts) reveals natural economic rhythms
-- Relate to Hayek's vision of "taking money out of the hands of government" through "some sly roundabout way"
-- Show Bitcoin as the realization of Hayek's competitive currency ideal
 
 ## V. Methodological Innovations
 
@@ -175,11 +164,7 @@ Show how temporal patterns may reveal:
 
 ## Conclusion
 
-This research framework provides a comprehensive approach to analyzing temporal patterns in Bitcoin blockchain data through the lens of behavioral finance, macroeconomics, and fintech. By focusing on how natural market rhythms emerge in a decentralized system, your thesis can make significant theoretical contributions while remaining accessible and compelling to a broad audience.
-
-The approach is firmly grounded in Hayekian principles of spontaneous order while incorporating insights from chronobiology and behavioral finance. It maintains academic rigor while producing results that can be expressed in simple, elegant terms—just as your professor prefers.
-
-By focusing on the temporal dimensions of blockchain activity, you position yourself at the intersection of multiple disciplines, creating opportunities for truly pioneering insights that can reshape our understanding of financial markets and human economic behavior.
+This proposal outlines an approach to analyzing temporal patterns in Bitcoin blockchain data through behavioral finance and Austrian economic theory. I tested H1 and H3 in Efficient Price, Inefficient Blocks. Both were largely rejected. There were no reliable day-of-week effects in Bitcoin returns across five time horizons, and fee markets showed persistent, predictable overpayment rather than the natural equilibrium H3 predicted. This proposal is kept as a record of the original hypotheses.
 
 ## References
 
